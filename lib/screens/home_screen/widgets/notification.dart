@@ -1,27 +1,40 @@
 import 'dart:convert';
-
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/emp_leave_details_model.dart';
+
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Add HTTP package
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // Add HTTP package
 
 class NotificationsScreen extends StatefulWidget {
   final LoginModelApi userData; // Add this line
-  NotificationsScreen({super.key, required this.userData});
+  const NotificationsScreen({super.key, required this.userData});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  // final NotificationService _notificationService = NotificationService();
   List<EmpLeaveDetails> empLeaveDetails = [];
   @override
   void initState() {
     super.initState();
+    // _notificationService.initNotification((payload) {
     fetchDataLeaves(widget.userData.empNo);
     // fetchDataLeaves();
+    // });
   }
+
+
+  //  @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   // Fetch data whenever dependencies change (screen is navigated to or refreshed)
+  //   fetchDataLeaves(widget.userData.empNo);
+  // }
+
 
   Future<void> fetchDataLeaves(String empNo) async {
     // final url = Uri.parse('http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=$empNo');
@@ -78,53 +91,83 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         decoration: BoxDecoration(
           gradient: UiConstants.backgroundGradient.gradient,
         ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 20, bottom: 10),
-                  child: Text(
-                    'Recent Notifications',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+        child: empLeaveDetails.isEmpty
+            ? Center(
+                child: Text(
+                  'No Notifications',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
-                SizedBox(height: 10),
-                // buildNotificationCard(
-                //   icon: Icons.notifications_active,
-                //   title: 'New Update Available',
-                //   subtitle: 'Tap to update the app to the latest version.',
-                // ),
-                if (empLeaveDetails != null)
-                  for (var empLeave in empLeaveDetails)
-                    buildNotificationCard(
-                      icon: Icons.notifications_active,
-                      title: 'Leave Hours : ${empLeave.holidayKind}',
-                      subtitle:
-                          'Start Date: ${empLeave.startDate}, End Date: ${empLeave.endDate}',
+              )
+            : ListView.builder(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                itemCount: empLeaveDetails.length,
+                itemBuilder: (context, index) {
+                  final empLeave = empLeaveDetails[index];
+                  return Dismissible(
+                    // key: Key(empLeave.empNo.toString()), // Use a unique key
+                    key:
+                        UniqueKey(), // Ensure each Dismissible has a unique key
+                    direction: DismissDirection.endToStart,
+                    confirmDismiss: (direction) async {
+                      return await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Confirm Deletion'),
+                            content: Text(
+                                'Are you sure you want to delete this notification?'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: Text('Delete'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+
+                    onDismissed: (direction) {
+                      // Call deleteNotification method
+                      deleteNotification(empLeave.holidayId);
+                      setState(() {
+                        empLeaveDetails.removeAt(index);
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Notification dismissed'),
+                      ));
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
                     ),
-                // buildNotificationCard(
-                //   icon: Icons.notifications,
-                //   title: 'Reminder',
-                //   subtitle: 'You have an upcoming event tomorrow.',
-                // ),
-                // buildNotificationCard(
-                //   icon: Icons.notifications_off,
-                //   title: 'Notification Settings',
-                //   subtitle: 'Modify your notification preferences.',
-                // ),
-              ],
-            ),
-          ),
-        ),
+                    child: buildNotificationCard(
+                      icon: Icons.notifications_active,
+                      title: 'Leave Hours : ${empLeave.holidayQty}',
+                      subtitle:
+                          'Start Date: ${_formatDate(empLeave.startDate)}, \nEnd Date: ${_formatDate(empLeave.endDate)}',
+                    ),
+                  );
+                },
+              ),
       ),
     );
+  }
+
+  String _formatDate(DateTime dateTime) {
+    return DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
   }
 
   Widget buildNotificationCard(
@@ -161,5 +204,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         },
       ),
     );
+  }
+
+  Future<void> deleteNotification(String holidayId) async {
+    final url = Uri.parse(
+        'http://10.3.0.70:9040/api/Flutter/DeleteNotifications?holidayId=$holidayId');
+
+    try {
+      final response = await http.delete(url);
+      if (response.statusCode == 200) {
+        // Decode the response if needed, e.g., for error checking or messages
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        if (responseData['Status']) {
+          print('Delete successful: ${responseData['Message']}');
+        } else {
+          print('Delete failed: ${responseData['Message']}');
+        }
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error deleting notification: $e');
+    }
   }
 }

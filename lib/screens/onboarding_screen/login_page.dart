@@ -1,3 +1,4 @@
+import 'package:animated_movies_app/auth_provider.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/screens/home_screen/home_screen.dart';
 
@@ -5,6 +6,8 @@ import 'package:animated_movies_app/screens/onboarding_screen/sign_up_page.dart'
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,133 +23,6 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
-
-  // Future<void> loginApi() async {
-  //   final empNo = _empNoController.text;
-  //   final password = _passwordController.text;
-
-  //   // final url = Uri.parse(
-  //   //     'http://localhost:44303/api/TestFlutterLogin/LoginApi?empNo=$empNo&password=$password');
-
-  //   //   // Replace with your API URL using the emulator's IP address
-  //   // final url = Uri.parse('https://10.0.2.2:44311/api/Login/LoginApi?empNo=$empNo&password=$password');
-
-  //   final url = Uri.parse(
-  //       'https://localhost:44311/api/Login/LoginApi?empNo=$empNo&password=$password');
-
-  //   print('URL $url');
-
-  //   try {
-  //     final response = await http.post(url);
-  //     print('Response status: ${response.statusCode}');
-  //     print('Response body: ${response.body}');
-
-  //     if (response.statusCode == 200) {
-  //       // Parse the JSON response
-  //       final List<dynamic> jsonResponse = json.decode(response.body);
-
-  //       // Assuming your API returns a list with a single object
-  //       if (jsonResponse.isNotEmpty) {
-  //         // Extract the first object from the list
-  //         final data = jsonResponse[0];
-
-  //         // Assuming data is now {EMP_NO: '70068', Password: 'yuvi'}
-  //         final loginData = LoginModel.fromJson(data);
-  //         print('Login Data: $loginData');
-
-  //         // Navigate to HomeScreen or perform further actions with loginData
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => const HomeScreen()),
-  //         );
-  //       } else {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: Text('Invalid employee number or password.'),
-  //           ),
-  //         );
-  //       }
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           content: Text('Invalid employee number or password.'),
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(
-  //         content: Text('An error occurred. Please try again.'),
-  //       ),
-  //     );
-  //   }
-  // }
-
-// Future<void> loginApiBarcode() async {
-//   final barcode = _barcodeController.text;
-//   final password = _passwordController.text;
-
-//   final url = Uri.parse('http://10.3.0.70:9040/api/Flutter/LoginApi?empNo=$barcode&password=$password');
-
-//   print('URL $url');
-
-//   try {
-//     final response = await http.post(
-//       url,
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: jsonEncode({
-//         'barcode': barcode,
-//         'password': password,
-//       }),
-//     );
-
-//     print('Response status: ${response.statusCode}');
-//     print('Response body: ${response.body}');
-
-//     if (response.statusCode == 200) {
-//       // Parse the JSON response
-//       final List<dynamic> jsonResponse = json.decode(response.body);
-
-//       // Assuming your API returns a list with a single object
-//       if (jsonResponse.isNotEmpty) {
-//         // Extract the first object from the list
-//         final data = jsonResponse[0];
-
-//         // Assuming data is now {EMP_NO: '70068', Password: 'yuvi'}
-//         final loginData = LoginModelApi.fromJson(data);
-//         print('Login Data: $loginData');
-
-//         // Navigate to HomeScreen or perform further actions with loginData
-//         Navigator.pushReplacement(
-//           context,
-//           MaterialPageRoute(builder: (context) => const HomeScreen()),
-//         );
-//       } else {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           const SnackBar(
-//             content: Text('Invalid barcode or password.'),
-//           ),
-//         );
-//       }
-//     } else {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(
-//           content: Text('Invalid barcode or password.'),
-//         ),
-//       );
-//     }
-//   } catch (e) {
-//     print('Error: $e');
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(
-//         content: Text('An error occurred. Please try again.'),
-//       ),
-//     );
-//   }
-// }
 
   Future<void> loginApiBarcode() async {
     final barcode = _barcodeController.text;
@@ -189,6 +65,8 @@ class _LoginPageState extends State<LoginPage> {
           final loginData = LoginModelApi.fromJson(data);
           print('Login Data: $loginData');
 
+          // Use Provider to update login state
+          Provider.of<AuthProvider>(context, listen: false).login(loginData);
           // Navigate to HomeScreen with loginData
           Navigator.pushReplacement(
             context,
@@ -274,30 +152,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
 
-            // Email Field
-            // Padding(
-            //   padding: const EdgeInsets.only(top: 28, left: 24, right: 24),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.center,
-            //     children: [
-            //       TextField(
-            //         controller: _emailController,
-            //         decoration: InputDecoration(
-            //           hintText: 'Email',
-            //           hintStyle: const TextStyle(color: Colors.white70),
-            //           filled: true,
-            //           fillColor: Colors.white.withOpacity(0.3),
-            //           border: OutlineInputBorder(
-            //             borderRadius: BorderRadius.circular(10),
-            //             borderSide: BorderSide.none,
-            //           ),
-            //         ),
-            //         keyboardType: TextInputType.emailAddress,
-            //         style: const TextStyle(color: Colors.white),
-            //       ),
-            //     ],
-            //   ),
-            // ),
             // Password Field
             Padding(
               padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
@@ -396,30 +250,66 @@ class _LoginPageState extends State<LoginPage> {
 
 // Model class
 
-// List<LoginModel> loginModelFromJson(String str) =>
-//     List<LoginModel>.from(json.decode(str).map((x) => LoginModel.fromJson(x)));
+// List<LoginModelApi> loginModelApiFromJson(String str) =>
+//     List<LoginModelApi>.from(
+//         json.decode(str).map((x) => LoginModelApi.fromJson(x)));
 
-// String loginModelToJson(List<LoginModel> data) =>
+// String loginModelApiToJson(List<LoginModelApi> data) =>
 //     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
-// class LoginModel {
-//   String email;
+// class LoginModelApi {
+//   int id;
+//   dynamic username;
+//   dynamic email;
+//   String empNo;
 //   String password;
+//   String message;
+//   bool success;
+//   dynamic deptName;
+//   dynamic empName;
+//   dynamic position;
+//   bool status;
 
-//   LoginModel({
+//   LoginModelApi({
+//     required this.id,
+//     required this.username,
 //     required this.email,
+//     required this.empNo,
 //     required this.password,
+//     required this.message,
+//     required this.success,
+//     required this.deptName,
+//     required this.empName,
+//     required this.position,
+//     required this.status,
 //   });
 
-//   factory LoginModel.fromJson(Map<String, dynamic> json) {
-//     return LoginModel(
-//       email: json['Email'] ?? '',
-//       password: json['Password'] ?? '',
-//     );
-//   }
+//   factory LoginModelApi.fromJson(Map<String, dynamic> json) => LoginModelApi(
+//         id: json["ID"],
+//         username: json["Username"],
+//         email: json["Email"],
+//         empNo: json["EMP_NO"],
+//         password: json["Password"],
+//         message: json["Message"],
+//         success: json["Success"],
+//         deptName: json["DEPT_NAME"],
+//         empName: json["EMP_NAME"],
+//         position: json["POSITION"],
+//         status: json["Status"],
+//       );
+
 //   Map<String, dynamic> toJson() => {
+//         "ID": id,
+//         "Username": username,
 //         "Email": email,
+//         "EMP_NO": empNo,
 //         "Password": password,
+//         "Message": message,
+//         "Success": success,
+//         "DEPT_NAME": deptName,
+//         "EMP_NAME": empName,
+//         "POSITION": position,
+//         "Status": status,
 //       };
 // }
 
@@ -446,6 +336,7 @@ class LoginModelApi {
   dynamic empName;
   dynamic position;
   bool status;
+  String? token;
 
   LoginModelApi({
     required this.id,
@@ -459,6 +350,7 @@ class LoginModelApi {
     required this.empName,
     required this.position,
     required this.status,
+    this.token,
   });
 
   factory LoginModelApi.fromJson(Map<String, dynamic> json) => LoginModelApi(
@@ -473,6 +365,7 @@ class LoginModelApi {
         empName: json["EMP_NAME"],
         position: json["POSITION"],
         status: json["Status"],
+        token: json["Token"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -487,5 +380,6 @@ class LoginModelApi {
         "EMP_NAME": empName,
         "POSITION": position,
         "Status": status,
+        "Token": token,
       };
 }

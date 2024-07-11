@@ -1,13 +1,16 @@
 import 'package:animated_movies_app/screens/home_screen/about_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/account_screen.dart';
+
+import 'package:animated_movies_app/screens/home_screen/contacts_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/home_content_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/bottom_nav_bar.dart';
+import 'package:animated_movies_app/screens/home_screen/widgets/local_notifications_service.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/notification.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
-   final LoginModelApi userData; // Add this line
+  final LoginModelApi userData; // Add this line
   const HomeScreen({super.key, required this.userData});
 
   @override
@@ -15,27 +18,34 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final NotificationService _notificationService = NotificationService();
   int _selectedIndex = 0;
 
-  // final List<Widget> _widgetOptions = <Widget>[
-  //   HomeContent(),
-  //   NotificationsScreen(),
-  //   AboutScreen(),
-  //   AccountDetailsScreen(),
-  // ];
-    late final List<Widget> _widgetOptions;
-// List<Widget> _widgetOptions = [];
+  late final List<Widget> _widgetOptions;
 
   @override
   void initState() {
     super.initState();
+    _notificationService.initNotification((payload) {
+      _onItemTapped(1); // Navigate to notifications screen
+    });
     _widgetOptions = <Widget>[
-      HomeContent(userData: widget.userData,),
-      NotificationsScreen(userData: widget.userData,),
+      HomeContent(
+        userData: widget.userData,
+      ),
+
+      NotificationsScreen(
+        userData: widget.userData,
+      ),
+      // ChatScreen(),
+      ContactsPage(
+        userData: widget.userData,
+      ),
       AboutScreen(),
       AccountDetailsScreen(userData: widget.userData), // Pass userData here
     ];
   }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -52,6 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
+        notificationService: _notificationService,
+        userData: widget.userData,
       ),
     );
   }

@@ -4,8 +4,12 @@ import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/change_password_model.dart';
 import 'package:animated_movies_app/model/get_emp_details.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:animated_movies_app/screens/onboarding_screen/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
+import '../../auth_provider.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
   final LoginModelApi userData; // Add this line
@@ -145,6 +149,41 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     }
   }
 
+  Future<void> logout(String? empNo, String? token) async {
+    if (empNo == null || token == null) {
+      print('EmpNo or Token is null. Cannot perform logout.');
+      return;
+    }
+
+    final url = Uri.parse(
+        'http://10.3.0.70:9040/api/Flutter/LogoutApi?empNo=$empNo&token=$token');
+
+    try {
+      final response = await http.post(url);
+
+      if (response.statusCode == 200) {
+        // Assuming the logout API returns success
+        final jsonResponse = json.decode(response.body);
+        print('${jsonResponse}');
+        // Handle any additional logic after successful logout if needed
+
+        // Navigate to the login screen and remove all other routes from the stack
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => const LoginPage(),
+          ),
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        print('Logout request failed with status: ${response.statusCode}');
+        // Handle logout request failure if needed
+      }
+    } catch (e) {
+      print('Error logging out: $e');
+      // Handle logout error if needed
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -193,6 +232,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                         onPressed: () {
                           Navigator.of(context).pop(); // Close the dialog
                         },
+
+                        // onPressed: () {
+                        //   // Perform logout action here
+                        //   logout(user.empNo, user.token);
+                        // },
                       ),
                       TextButton(
                         child: Text(
@@ -201,15 +245,22 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                         ),
                         onPressed: () {
                           // Perform logout action here
+                          Provider.of<AuthProvider>(context, listen: false)
+                              .logout();
 
                           // Navigate to the login screen and remove all other routes from the stack
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
-                              builder: (context) => LoginPage(),
+                              builder: (context) => const LoginPage(),
                             ),
                             (Route<dynamic> route) => false,
                           );
                         },
+
+                        // onPressed: () {
+                        //   // Perform logout action here
+                        //   logout(user.empNo, user.token);
+                        // },
                       ),
                     ],
                   );

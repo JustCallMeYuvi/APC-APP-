@@ -49,7 +49,9 @@ class _HomeContentState extends State<HomeContent> {
                     padding: const EdgeInsets.only(
                       top: 28,
                     ),
-                    child: SearchField(size: size),
+                    child: SearchField(
+                      size: size,
+                    ),
                   ),
                   const Padding(
                     padding: EdgeInsets.only(top: 20),

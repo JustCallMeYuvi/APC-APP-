@@ -38,7 +38,7 @@ class _AboutScreenState extends State<AboutScreen> {
               ),
               SizedBox(height: 10),
               Text(
-                'Apache Footwear Pvt Ltd is a leading manufacturer of high-quality footwear based in [Location]. Established in [Year], we specialize in [type of footwear], catering to both domestic and international markets.',
+                'Apache Footwear Pvt Ltd is a leading manufacturer of high-quality footwear based in [Mambattu]. Established in [2000], we specialize in [type of adidas footwear], catering to both domestic and international markets.',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -73,11 +73,11 @@ class _AboutScreenState extends State<AboutScreen> {
               SizedBox(height: 10),
               buildContactInfo(
                 icon: Icons.location_on,
-                info: '1234, Street Name, City, Country',
+                info: 'Tada, Mambattu, Andhra Pradesh 524121, India',
               ),
               buildContactInfo(
                 icon: Icons.phone,
-                info: '+1234567890',
+                info: '+ 07635 772 688',
               ),
               buildContactInfo(
                 icon: Icons.email,
