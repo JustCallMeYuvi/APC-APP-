@@ -3,6 +3,7 @@ import 'package:animated_movies_app/screens/home_screen/account_screen.dart';
 
 import 'package:animated_movies_app/screens/home_screen/contacts_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/home_content_screen.dart';
+import 'package:animated_movies_app/screens/home_screen/multiple_forms.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/bottom_nav_bar.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/local_notifications_service.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/notification.dart';
@@ -41,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ContactsPage(
         userData: widget.userData,
       ),
+      MultipleForms(),
       AboutScreen(),
       AccountDetailsScreen(userData: widget.userData), // Pass userData here
     ];

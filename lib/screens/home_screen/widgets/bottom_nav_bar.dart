@@ -132,6 +132,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
               label: 'Chats',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.apps),
+              label: 'Apps',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.account_box_outlined),
               label: 'About',
             ),
