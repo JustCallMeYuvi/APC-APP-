@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'chat_screen.dart';
+import 'package:anim_search_bar/anim_search_bar.dart';
 
 class ContactsPage extends StatefulWidget {
   final LoginModelApi userData; // Add this line
@@ -18,7 +19,8 @@ class ContactsPage extends StatefulWidget {
 
 class _ContactsPageState extends State<ContactsPage> {
   List<Map<String, dynamic>> contacts = [];
-
+  List<Map<String, dynamic>> filteredContacts = [];
+  TextEditingController searchController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -43,6 +45,7 @@ class _ContactsPageState extends State<ContactsPage> {
                     'empNo': contact['EMP_NO'], // Include EMP_NO for chat data
                   })
               .toList();
+          filteredContacts = contacts; // Initialize filteredContacts
         });
       } else {
         print('Failed to load contacts. Status code: ${response.statusCode}');
@@ -50,6 +53,19 @@ class _ContactsPageState extends State<ContactsPage> {
     } catch (e) {
       print('Error occurred while fetching contacts: $e');
     }
+  }
+
+  void filterContacts(String query) {
+    List<Map<String, dynamic>> tempContacts = contacts.where((contact) {
+      String contactName = contact['name'].toLowerCase();
+      String empNo = contact['empNo'].toLowerCase();
+      return contactName.contains(query.toLowerCase()) ||
+          empNo.contains(query.toLowerCase());
+    }).toList();
+
+    setState(() {
+      filteredContacts = tempContacts;
+    });
   }
 
   @override
@@ -63,72 +79,107 @@ class _ContactsPageState extends State<ContactsPage> {
         decoration: BoxDecoration(
           gradient: UiConstants.backgroundGradient.gradient,
         ),
-        child: ListView.builder(
-          itemCount: contacts.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(
-                  vertical: 5.0, horizontal: 16.0), // Adjusted vertical padding
-              child: Column(
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 16.0), // Adjusted content padding
-                    leading: ClipOval(
-                      child: Image.network(
-                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRB36jHMpxnpuXsJjEe9F5AzGtu45KsL87N9Q&s',
-                        width: 50, // Adjust width as needed
-                        height: 50, // Adjust height as needed
-                        fit: BoxFit
-                            .cover, // Ensure the image covers the oval shape
-                      ),
-                    ),
-                    title: Text(
-                      contacts[index]['name'],
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      contacts[index]['empNo'],
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14.0,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatScreen(
-                            contactName: contacts[index]['name'],
-                            // senderId: 1, // Replace with actual sender ID
-                            senderId: int.parse(widget.userData
-                                .empNo), // Ensure empNo is parsed as int
-                            // receiverId: contacts[index]['id'], // Use contact's ID
-                            receiverId: int.parse(contacts[index][
-                                'empNo']), // Parse empNo to int before assigning
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  Divider(
-                    color: Colors.white, // Change the color as needed
-                    thickness: 1, // Change the thickness as needed
-                    indent: 1,
-                    endIndent: 1,
-                  ),
-                ],
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 0.0, right: 10, left: 10),
+              child: AnimSearchBar(
+                width: MediaQuery.of(context).size.width * 0.8,
+                textController: searchController,
+                onSuffixTap: () {
+                  setState(() {
+                    searchController.clear();
+                    filterContacts(
+                        ''); // Clear filter when suffix icon is tapped
+                  });
+                },
+                onSubmitted: (query) {
+                  filterContacts(
+                      query); // Apply filter when search is submitted
+                },
               ),
-            );
-          },
+            ),
+            Expanded(
+              child: ListView.builder(
+                // itemCount: contacts.length,
+                itemCount: filteredContacts.length,
+
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 5.0,
+                        horizontal: 16.0), // Adjusted vertical padding
+                    child: Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 16.0), // Adjusted content padding
+                          leading: ClipOval(
+                            child: Image.network(
+                              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRB36jHMpxnpuXsJjEe9F5AzGtu45KsL87N9Q&s',
+                              width: 50, // Adjust width as needed
+                              height: 50, // Adjust height as needed
+                              fit: BoxFit
+                                  .cover, // Ensure the image covers the oval shape
+                            ),
+                          ),
+                          title: Text(
+                            // contacts[index]['name'],
+                            filteredContacts[index]['name'],
+
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            // contacts[index]['empNo'],
+                            filteredContacts[index]['empNo'],
+
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14.0,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.white,
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatScreen(
+                                  // contactName: contacts[index]['name'],
+                                  contactName: filteredContacts[index]['name'],
+
+                                  // senderId: 1, // Replace with actual sender ID
+                                  senderId: int.parse(widget.userData
+                                      .empNo), // Ensure empNo is parsed as int
+                                  // receiverId: contacts[index]['id'], // Use contact's ID
+                                  // receiverId: int.parse(contacts[index]['empNo']), // Parse empNo to int before assigning
+                                  receiverId: int.parse(filteredContacts[index][
+                                      'empNo']), // Parse empNo to int before assigning
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        Divider(
+                          color: Colors.white, // Change the color as needed
+                          thickness: 1, // Change the thickness as needed
+                          indent: 1,
+                          endIndent: 1,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

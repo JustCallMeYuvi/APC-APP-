@@ -64,6 +64,9 @@ dependencies:
   dio: ^5.5.0+1
   permission_handler: ^11.3.1
   mime: ^1.0.5
+  open_file: ^3.3.2
+  open_file_plus: ^3.4.1+1
+  anim_search_bar: ^2.0.3
   
 
 dev_dependencies:

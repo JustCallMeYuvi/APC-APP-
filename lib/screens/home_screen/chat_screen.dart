@@ -2,12 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:animated_movies_app/constants/ui_constant.dart';
+import 'package:animated_movies_app/screens/home_screen/file_preview_view.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
@@ -417,6 +419,44 @@ class _ChatScreenState extends State<ChatScreen> {
   //   }
   // }
 
+  // Future<void> _downloadAndSaveFile(
+  //     BuildContext context, String base64String, String fileName) async {
+  //   try {
+  //     // Decode the base64 string
+  //     Uint8List bytes = base64Decode(base64String);
+
+  //     // Get the directory to save the file
+  //     Directory? directory;
+  //     if (Platform.isAndroid) {
+  //       directory = await getExternalStorageDirectory();
+  //     } else if (Platform.isIOS) {
+  //       directory = await getApplicationDocumentsDirectory();
+  //     }
+
+  //     if (directory != null) {
+  //       // Create the file with the provided fileName
+  //       File file = File('${directory.path}/$fileName');
+
+  //       // Write the bytes to the file
+  //       await file.writeAsBytes(bytes);
+
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('File saved to ${file.path}'),
+  //         ),
+  //       );
+  //     } else {
+  //       throw Exception('Could not get the storage directory');
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Failed to save file: $e'),
+  //       ),
+  //     );
+  //   }
+  // }
+
   Future<void> _downloadAndSaveFile(
       BuildContext context, String base64String, String fileName) async {
     try {
@@ -443,6 +483,9 @@ class _ChatScreenState extends State<ChatScreen> {
             content: Text('File saved to ${file.path}'),
           ),
         );
+
+        // Open the file using open_file package
+        await OpenFile.open(file.path);
       } else {
         throw Exception('Could not get the storage directory');
       }
@@ -880,6 +923,16 @@ class _ChatScreenState extends State<ChatScreen> {
                   message.fileBytesBase64!.isNotEmpty &&
                   isImage(message.fileBytesBase64!))
                 GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FullScreenImageView(
+                          imageBytes: base64Decode(message.fileBytesBase64!),
+                        ),
+                      ),
+                    );
+                  },
                   onLongPress: () async {
                     if (await Permission.storage.request().isGranted) {
                       _downloadAndSaveImage(
@@ -907,6 +960,18 @@ class _ChatScreenState extends State<ChatScreen> {
                   message.fileBytesBase64!.isNotEmpty &&
                   !isImage(message.fileBytesBase64!))
                 GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FilePreviewView(
+                          fileBytes: base64Decode(message.fileBytesBase64!),
+                          filename: message.filename ??
+                              'file_${message.messageId}.${message.format}',
+                        ),
+                      ),
+                    );
+                  },
                   onLongPress: () async {
                     if (await Permission.storage.request().isGranted) {
                       _downloadAndSaveFile(
@@ -1271,6 +1336,33 @@ class ChatMessage {
       };
 }
 
+
+
+// class FilePreviewView extends StatelessWidget {
+//   final Uint8List fileBytes;
+//   final String filename;
+
+//   const FilePreviewView(
+//       {Key? key, required this.fileBytes, required this.filename})
+//       : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // Implement your file preview logic here. For simplicity, we will just show the file name.
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(filename),
+//       ),
+//       body: Center(
+//         child: Text('Preview of $filename'),
+//       ),
+//     );
+//   }
+// }
+
+
+
+
 //below is chat view text send crctly working on image send
 
 // import 'dart:io';
@@ -1456,7 +1548,7 @@ class ChatMessage {
 //           isFile: file != null,
 //           fileType: fileType,
 //           fileUrl: file?.path,
-//           fileBytesBase64: fileBytesBase64 ?? '',
+//           fileBytesBase64: fileBytesBase64 ?? '', format: '', filename: null,
 //         );
 
 //         setState(() {
@@ -1545,6 +1637,8 @@ class ChatMessage {
 //   String? fileBytesBase64;
 //   bool isFile;
 //   String? fileType;
+//   String? format;
+//   dynamic filename;
 
 //   ChatMessage({
 //     required this.messageId,
@@ -1557,20 +1651,24 @@ class ChatMessage {
 //     this.fileBytesBase64,
 //     this.isFile = false,
 //     this.fileType,
+//     // this.fileName, // Add this line
+//     required this.format,
+//     required this.filename,
 //   });
 
 //   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
-//         messageId: json["MessageId"],
-//         senderId: json["SenderId"],
-//         receiverId: json["ReceiverId"],
-//         messageText: json["MessageText"],
-//         messageTimestamp: DateTime.parse(json["MessageTimestamp"]),
-//         isUserMessage: json["IsUserMessage"],
-//         fileUrl: json["FileUrl"],
-//         fileBytesBase64: json["FileBytesBase64"],
-//         isFile: json["IsFile"] ?? false,
-//         fileType: json["FileType"],
-//       );
+//       messageId: json["MessageId"],
+//       senderId: json["SenderId"],
+//       receiverId: json["ReceiverId"],
+//       messageText: json["MessageText"],
+//       messageTimestamp: DateTime.parse(json["MessageTimestamp"]),
+//       isUserMessage: json["IsUserMessage"],
+//       fileUrl: json["FileUrl"],
+//       fileBytesBase64: json["FileBytesBase64"],
+//       isFile: json["IsFile"] ?? false,
+//       fileType: json["FileType"],
+//       format: json["FORMAT"],
+//       filename: json["FILENAME"]);
 
 //   Map<String, dynamic> toJson() => {
 //         "MessageId": messageId,
@@ -1583,5 +1681,11 @@ class ChatMessage {
 //         "FileBytesBase64": fileBytesBase64,
 //         "IsFile": isFile,
 //         "FileType": fileType,
+//         "FORMAT": format,
+//         "FILENAME": filename,
 //       };
 // }
+
+
+
+
