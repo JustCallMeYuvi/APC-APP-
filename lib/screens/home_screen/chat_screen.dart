@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/screens/home_screen/file_preview_view.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -12,8 +12,9 @@ import 'package:mime/mime.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'dart:convert';
-
+import 'package:video_player/video_player.dart';
 import 'package:web_socket_channel/io.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -114,7 +115,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _sendMessageOrFile({String? text, File? file}) async {
+  Future<void> _sendMessageOrFile(
+      {String? text, File? file, String? fileExtension}) async {
     try {
       final String url = 'http://10.3.0.70:9040/api/Flutter/AddMessageAsync';
       final request = http.MultipartRequest('POST', Uri.parse(url))
@@ -168,7 +170,9 @@ class _ChatScreenState extends State<ChatScreen> {
               fileType: fileType, // Set fileType
               fileUrl: file?.path,
               fileBytesBase64: fileBytesBase64 ?? '',
-              format: '', filename: '', // Store Base64 string
+              format: '',
+              // format: fileExtension,
+              filename: '', // Store Base64 string
             ),
           );
           if (file != null) {
@@ -195,6 +199,25 @@ class _ChatScreenState extends State<ChatScreen> {
       await _sendMessageOrFile(file: selectedFile);
     }
   }
+  // Future<void> _pickAndSendFile() async {
+  //   final result = await FilePicker.platform.pickFiles(
+  //     type: FileType.custom,
+  //     allowedExtensions: [
+  //       'jpg', 'jpeg', 'png', // Image formats
+  //       'mp4', 'avi', 'mov', // Video formats
+  //       'pdf', 'doc', 'docx', // Document formats
+  //       'xls', 'xlsx', // Excel formats
+  //     ],
+  //   );
+
+  //   if (result != null) {
+  //     final selectedFile = File(result.files.single.path!);
+  //     await _sendMessageOrFile(
+  //       file: selectedFile,
+  //       fileExtension: result.files.single.extension ?? '',
+  //     );
+  //   }
+  // }
 
 //   Future<void> _sendMessageOrFile({String? text, File? file}) async {
 //   try {
@@ -311,45 +334,133 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Future<void> _downloadFile(String base64String, String fileName) async {
+  // Future<void> _downloadAndSaveImage(
+  //     BuildContext context, String base64String, String fileName) async {
   //   try {
   //     // Decode the Base64 string
   //     Uint8List fileBytes = base64Decode(base64String);
 
-  //     // Get the directory to save the file
-  //     Directory? directory = await getExternalStorageDirectory();
-  //     String filePath = '${directory!.path}/$fileName';
+  //     // Request permission
+  //     if (await _requestPermission(Permission.storage)) {
+  //       // Save to gallery
+  //       final result = await ImageGallerySaver.saveImage(
+  //         Uint8List.fromList(fileBytes),
+  //         quality: 60,
+  //         name: fileName,
+  //       );
+  //       print('Image saved to gallery: $result');
 
-  //     // Save the file
-  //     File file = File(filePath);
-  //     await file.writeAsBytes(fileBytes);
-  //     print('File saved to $filePath');
-
-  //     // Show a confirmation message
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('File saved to $filePath'),
-  //       ),
-  //     );
+  //       // Show a confirmation message
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Image saved to gallery'),
+  //         ),
+  //       );
+  //     } else {
+  //       // Permission denied
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Permission denied to save file'),
+  //         ),
+  //       );
+  //     }
   //   } catch (e) {
-  //     print('Error downloading file: $e');
+  //     print('Error downloading/saving image: $e');
   //     ScaffoldMessenger.of(context).showSnackBar(
   //       SnackBar(
-  //         content: Text('Error saving file'),
+  //         content: Text('Error saving image'),
   //       ),
   //     );
   //   }
   // }
 
+  // Future<void> _downloadAndSaveFile(
+  //     BuildContext context, String base64String, String fileName) async {
+  //   try {
+  //     // Decode the base64 string
+  //     Uint8List bytes = base64Decode(base64String);
+
+  //     // Request permission
+  //     if (await _requestPermission(Permission.storage)) {
+  //       // Get the directory to save the file
+  //       Directory? directory;
+  //       if (Platform.isAndroid) {
+  //         directory = await getExternalStorageDirectory();
+  //         if (directory == null) {
+  //           directory = Directory('/storage/emulated/0/Download');
+  //         }
+  //       } else if (Platform.isIOS) {
+  //         directory = await getApplicationDocumentsDirectory();
+  //       }
+
+  //       if (directory != null) {
+  //         // Create the file with the provided fileName
+  //         File file = File('${directory.path}/$fileName');
+
+  //         // Write the bytes to the file
+  //         await file.writeAsBytes(bytes);
+
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text('File saved to ${file.path}'),
+  //           ),
+  //         );
+
+  //         // Open the file using open_file package
+  //         await OpenFile.open(file.path);
+  //       } else {
+  //         throw Exception('Could not get the storage directory');
+  //       }
+  //     } else {
+  //       // Permission denied
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Permission denied to save file'),
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Failed to save file: $e'),
+  //       ),
+  //     );
+  //   }
+  // }
+
+  // Future<bool> _requestPermission(Permission permission) async {
+  //   if (await permission.isGranted) {
+  //     return true;
+  //   } else {
+  //     final status = await permission.request();
+  //     return status == PermissionStatus.granted;
+  //   }
+  // }
+
+
+// this below code is working on android 14 perfectly also below versions also
   Future<void> _downloadAndSaveImage(
       BuildContext context, String base64String, String fileName) async {
     try {
       // Decode the Base64 string
       Uint8List fileBytes = base64Decode(base64String);
 
-      // Request permission
-      if (await Permission.storage.request().isGranted) {
-        // Save to gallery
+      // Get Android version
+      final plugin = DeviceInfoPlugin();
+      final androidInfo = await plugin.androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      // Check and request permission status based on SDK version
+      PermissionStatus permissionStatus;
+      if (sdkInt < 33) {
+        permissionStatus = await Permission.storage.request();
+      } else {
+        permissionStatus = PermissionStatus.granted;
+      }
+
+      // Handle permission statuses
+      if (permissionStatus == PermissionStatus.granted) {
+        // Permission is granted, proceed to save image
         final result = await ImageGallerySaver.saveImage(
           Uint8List.fromList(fileBytes),
           quality: 60,
@@ -363,13 +474,13 @@ class _ChatScreenState extends State<ChatScreen> {
             content: Text('Image saved to gallery'),
           ),
         );
-      } else {
-        // Permission denied
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Permission denied to save file'),
-          ),
-        );
+      } else if (permissionStatus == PermissionStatus.denied) {
+        print("Permission denied");
+        // Optionally handle denied state if needed
+      } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
+        print("Permission permanently denied");
+        // Open app settings if permission is permanently denied
+        await openAppSettings();
       }
     } catch (e) {
       print('Error downloading/saving image: $e');
@@ -381,72 +492,62 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Future<void> _downloadAndSaveFile(
-  //     BuildContext context, String base64String, String fileName) async {
-  //   try {
-  //     // Decode the base64 string
-  //     Uint8List bytes = base64Decode(base64String);
-
-  //     // Get the directory to save the file
-  //     Directory? directory;
-  //     if (Platform.isAndroid) {
-  //       directory = await getExternalStorageDirectory();
-  //     } else if (Platform.isIOS) {
-  //       directory = await getApplicationDocumentsDirectory();
-  //     }
-
-  //     if (directory != null) {
-  //       // Create the file
-  //       File file = File('${directory.path}/$fileName');
-
-  //       // Write the bytes to the file
-  //       await file.writeAsBytes(bytes);
-
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('File saved to ${file.path}'),
-  //         ),
-  //       );
-  //     } else {
-  //       throw Exception('Could not get the storage directory');
-  //     }
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Failed to save file: $e'),
-  //       ),
-  //     );
-  //   }
-  // }
+  Future<PermissionStatus> _requestPermission(Permission permission) async {
+    // Check if the permission is already granted
+    if (await permission.isGranted) {
+      return PermissionStatus.granted;
+    } else {
+      // Request permission
+      final status = await permission.request();
+      return status;
+    }
+  }
 
   // Future<void> _downloadAndSaveFile(
   //     BuildContext context, String base64String, String fileName) async {
   //   try {
   //     // Decode the base64 string
   //     Uint8List bytes = base64Decode(base64String);
+  //     final permissionStatus = await _requestPermission(Permission.storage);
+  //     // Request permission
+  //     // if (await _requestPermission(Permission.storage)) {
+  //     if (permissionStatus == PermissionStatus.granted) {
+  //       // Get the directory to save the file
+  //       Directory? directory;
+  //       if (Platform.isAndroid) {
+  //         directory = await getExternalStorageDirectory();
+  //         if (directory == null) {
+  //           directory = Directory('/storage/emulated/0/Download');
+  //         }
+  //       } else if (Platform.isIOS) {
+  //         directory = await getApplicationDocumentsDirectory();
+  //       }
 
-  //     // Get the directory to save the file
-  //     Directory? directory;
-  //     if (Platform.isAndroid) {
-  //       directory = await getExternalStorageDirectory();
-  //     } else if (Platform.isIOS) {
-  //       directory = await getApplicationDocumentsDirectory();
-  //     }
+  //       if (directory != null) {
+  //         // Create the file with the provided fileName
+  //         File file = File('${directory.path}/$fileName');
 
-  //     if (directory != null) {
-  //       // Create the file with the provided fileName
-  //       File file = File('${directory.path}/$fileName');
+  //         // Write the bytes to the file
+  //         await file.writeAsBytes(bytes);
 
-  //       // Write the bytes to the file
-  //       await file.writeAsBytes(bytes);
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text('File saved to ${file.path}'),
+  //           ),
+  //         );
 
+  //         // Open the file using open_file package
+  //         await OpenFile.open(file.path);
+  //       } else {
+  //         throw Exception('Could not get the storage directory');
+  //       }
+  //     } else {
+  //       // Permission denied
   //       ScaffoldMessenger.of(context).showSnackBar(
   //         SnackBar(
-  //           content: Text('File saved to ${file.path}'),
+  //           content: Text('Permission denied to save file'),
   //         ),
   //       );
-  //     } else {
-  //       throw Exception('Could not get the storage directory');
   //     }
   //   } catch (e) {
   //     ScaffoldMessenger.of(context).showSnackBar(
@@ -460,34 +561,63 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _downloadAndSaveFile(
       BuildContext context, String base64String, String fileName) async {
     try {
-      // Decode the base64 string
+      // Decode the Base64 string
       Uint8List bytes = base64Decode(base64String);
 
-      // Get the directory to save the file
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = await getExternalStorageDirectory();
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
+      // Get Android version
+      final plugin = DeviceInfoPlugin();
+      final androidInfo = await plugin.androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      // Check and request permission status based on SDK version
+      PermissionStatus permissionStatus;
+      if (sdkInt < 33) {
+        permissionStatus = await Permission.storage.request();
+      } else {
+        permissionStatus = PermissionStatus.granted;
       }
 
-      if (directory != null) {
-        // Create the file with the provided fileName
-        File file = File('${directory.path}/$fileName');
+      // Handle permission statuses
+      if (permissionStatus == PermissionStatus.granted) {
+        // Get the directory to save the file
+        Directory? directory;
+        if (Platform.isAndroid) {
+          directory = await getExternalStorageDirectory();
+          if (directory == null) {
+            directory = Directory('/storage/emulated/0/Download');
+          }
+        } else if (Platform.isIOS) {
+          directory = await getApplicationDocumentsDirectory();
+        }
 
-        // Write the bytes to the file
-        await file.writeAsBytes(bytes);
+        if (directory != null) {
+          // Create the file with the provided fileName
+          File file = File('${directory.path}/$fileName');
 
+          // Write the bytes to the file
+          await file.writeAsBytes(bytes);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File saved to ${file.path}'),
+            ),
+          );
+
+          // Open the file using open_file package
+          await OpenFile.open(file.path);
+        } else {
+          throw Exception('Could not get the storage directory');
+        }
+      } else if (permissionStatus == PermissionStatus.denied) {
+        // Optionally handle denied state if needed
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('File saved to ${file.path}'),
+            content: Text('Permission denied to save file'),
           ),
         );
-
-        // Open the file using open_file package
-        await OpenFile.open(file.path);
-      } else {
-        throw Exception('Could not get the storage directory');
+      } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
+        // Open app settings if permission is permanently denied
+        await openAppSettings();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -497,6 +627,15 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
   }
+
+  // Future<bool> _requestPermission(Permission permission) async {
+  //   if (await permission.isGranted) {
+  //     return true;
+  //   } else {
+  //     final status = await permission.request();
+  //     return status == PermissionStatus.granted;
+  //   }
+  // }
 
   void _receiveMessage(String text) {
     // Simulate receiving a message (if needed)
@@ -901,6 +1040,17 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
 
+    // Function to check if a file is a video based on its MIME type
+    bool isVideo(String base64String) {
+      try {
+        Uint8List bytes = base64Decode(base64String);
+        String mimeType = lookupMimeType('', headerBytes: bytes) ?? '';
+        return mimeType.startsWith('video/');
+      } catch (e) {
+        return false;
+      }
+    }
+
     return Align(
       alignment: message.senderId == widget.senderId
           ? Alignment.centerRight
@@ -934,19 +1084,21 @@ class _ChatScreenState extends State<ChatScreen> {
                     );
                   },
                   onLongPress: () async {
-                    if (await Permission.storage.request().isGranted) {
-                      _downloadAndSaveImage(
-                        context,
-                        message.fileBytesBase64!,
-                        message.filename ?? 'image_${message.messageId}.png',
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Permission denied to save file'),
-                        ),
-                      );
-                    }
+                    print('Long press detected'); // For debugging
+                    // if (await Permission.storage.request().isGranted) {
+
+                    _downloadAndSaveImage(
+                      context,
+                      message.fileBytesBase64!,
+                      message.filename ?? 'image_${message.messageId}.png',
+                    );
+                    // } else {
+                    //   ScaffoldMessenger.of(context).showSnackBar(
+                    //     SnackBar(
+                    //       content: Text('Permission denied to save file'),
+                    //     ),
+                    //   );
+                    // }
                   },
                   child: Image.memory(
                     base64Decode(message.fileBytesBase64!),
@@ -955,6 +1107,52 @@ class _ChatScreenState extends State<ChatScreen> {
                     fit: BoxFit.cover,
                   ),
                 ),
+              // // Display video icon if it is a video file
+              // if (message.fileBytesBase64 != null &&
+              //     message.fileBytesBase64!.isNotEmpty &&
+              //     isVideo(message.fileBytesBase64!))
+              //   GestureDetector(
+              //     onTap: () {
+              //       // Navigator.push(
+              //       //   context,
+              //       //   MaterialPageRoute(
+              //       //     builder: (_) => VideoPlayerScreen(
+              //       //       videoBytes: base64Decode(message.fileBytesBase64!),
+              //       //     ),
+              //       //   ),
+              //       // );
+              //     },
+              //     onLongPress: () async {
+              //       if (await Permission.storage.request().isGranted) {
+              //         _downloadAndSaveFile(
+              //           context,
+              //           message.fileBytesBase64!,
+              //           message.filename ??
+              //               'video_${message.messageId}.${message.format}',
+              //         );
+              //       } else {
+              //         ScaffoldMessenger.of(context).showSnackBar(
+              //           SnackBar(
+              //             content: Text('Permission denied to save file'),
+              //           ),
+              //         );
+              //       }
+              //     },
+              //     child: Row(
+              //       children: [
+              //         Icon(Icons.video_collection, color: Colors.white),
+              //         SizedBox(width: 10),
+              //         Text(
+              //           message.filename != null
+              //               ? (message.filename!.length > 15
+              //                   ? '${message.filename!.substring(0, 15)}.${message.format}'
+              //                   : '${message.filename!}.${message.format}') // Show the truncated file name with format
+              //               : 'video_${message.messageId}.${message.format}', // Default text
+              //           style: TextStyle(color: Colors.white),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
               // Display a file icon and filename for non-image files
               if (message.fileBytesBase64 != null &&
                   message.fileBytesBase64!.isNotEmpty &&
@@ -973,19 +1171,19 @@ class _ChatScreenState extends State<ChatScreen> {
                     );
                   },
                   onLongPress: () async {
-                    if (await Permission.storage.request().isGranted) {
-                      _downloadAndSaveFile(
-                        context,
-                        message.fileBytesBase64!,
-                        message.filename ?? 'file_${message.messageId}',
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Permission denied to save file'),
-                        ),
-                      );
-                    }
+                    // if (await Permission.storage.request().isGranted) {
+                    _downloadAndSaveFile(
+                      context,
+                      message.fileBytesBase64!,
+                      message.filename ?? 'file_${message.messageId}',
+                    );
+                    // } else {
+                    //   ScaffoldMessenger.of(context).showSnackBar(
+                    //     SnackBar(
+                    //       content: Text('Permission denied to save file'),
+                    //     ),
+                    //   );
+                    // }
                   },
                   child: Row(
                     children: [
@@ -1035,179 +1233,6 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-
-// Widget _buildMessage(ChatMessage message) {
-//   // Get the width of the screen
-//   double screenWidth = MediaQuery.of(context).size.width;
-
-//   // Set a responsive width for the image
-//   double imageWidth = screenWidth * 0.6; // 60% of the screen width
-//   double imageHeight = 300;
-
-//   return Align(
-//     alignment: message.senderId == widget.senderId
-//         ? Alignment.centerRight
-//         : Alignment.centerLeft,
-//     child: Container(
-//       margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-//       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-//       decoration: BoxDecoration(
-//         color: message.senderId == widget.senderId ? Colors.lightGreen : Colors.grey,
-//         borderRadius: BorderRadius.circular(10.0),
-//       ),
-//       child: IntrinsicWidth(
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             if (message.fileBytesBase64 != null && message.fileBytesBase64!.isNotEmpty)
-//               GestureDetector(
-//                 onLongPress: () async {
-//                   if (await Permission.storage.request().isGranted) {
-//                     _downloadAndSaveImage(
-//                       context,
-//                       message.fileBytesBase64!,
-//                       'file_${message.messageId}.${message.fileType}',
-//                     );
-//                   } else {
-//                     ScaffoldMessenger.of(context).showSnackBar(
-//                       SnackBar(
-//                         content: Text('Permission denied to save file'),
-//                       ),
-//                     );
-//                   }
-//                 },
-//                 child: message.fileType == 'jpg' || message.fileType == 'png'
-//                     ? Image.memory(
-//                         base64Decode(message.fileBytesBase64!),
-//                         height: imageHeight,
-//                         width: imageWidth,
-//                         fit: BoxFit.cover,
-//                       )
-//                     : Column(
-//                         children: [
-//                           Icon(
-//                             Icons.insert_drive_file,
-//                             size: 50,
-//                             color: Colors.white,
-//                           ),
-//                           Text(
-//                             'File: ${message.fileType!.toUpperCase()}',
-//                             style: const TextStyle(
-//                               color: Colors.white,
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//               ),
-//             if (message.messageText != null && message.messageText!.isNotEmpty)
-//               Text(
-//                 message.messageText!,
-//                 style: const TextStyle(
-//                   color: Colors.white,
-//                 ),
-//               ),
-//             Text(
-//               DateFormat('hh:mm a').format(message.messageTimestamp),
-//               style: const TextStyle(
-//                 color: Colors.white60,
-//                 fontSize: 12.0,
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     ),
-//   );
-// }
-
-// Widget _buildMessage(ChatMessage message) {
-//   // Get the width of the screen
-//   double screenWidth = MediaQuery.of(context).size.width;
-
-//   // Set a responsive width for the image
-//   double imageWidth = screenWidth * 0.6; // 60% of the screen width
-//   double imageHeight = 300;
-
-//   return Align(
-//     alignment: message.senderId == widget.senderId
-//         ? Alignment.centerRight
-//         : Alignment.centerLeft,
-//     child: Container(
-//       margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-//       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-//       decoration: BoxDecoration(
-//         color: message.senderId == widget.senderId ? Colors.lightGreen : Colors.grey,
-//         borderRadius: BorderRadius.circular(10.0),
-//       ),
-//       child: IntrinsicWidth(
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             if (message.fileBytesBase64 != null && message.fileBytesBase64!.isNotEmpty)
-//               GestureDetector(
-//                 onLongPress: () async {
-//                   if (await Permission.storage.request().isGranted) {
-//                     _downloadAndSaveImage(
-//                       context,
-//                       message.fileBytesBase64!,
-//                       'file_${message.messageId}.${message.fileType}',
-//                     );
-//                   } else {
-//                     ScaffoldMessenger.of(context).showSnackBar(
-//                       SnackBar(
-//                         content: Text('Permission denied to save file'),
-//                       ),
-//                     );
-//                   }
-//                 },
-//                 child: _isImageFile(message.fileType)
-//                     ? Image.memory(
-//                         base64Decode(message.fileBytesBase64!),
-//                         height: imageHeight,
-//                         width: imageWidth,
-//                         fit: BoxFit.cover,
-//                       )
-//                     : Column(
-//                         children: [
-//                           Icon(
-//                             Icons.insert_drive_file,
-//                             size: 50,
-//                             color: Colors.white,
-//                           ),
-//                           Text(
-//                             'File: ${message.fileType?.toUpperCase() ?? 'UNKNOWN'}',
-//                             style: const TextStyle(
-//                               color: Colors.white,
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//               ),
-//             if (message.messageText != null && message.messageText!.isNotEmpty)
-//               Text(
-//                 message.messageText!,
-//                 style: const TextStyle(
-//                   color: Colors.white,
-//                 ),
-//               ),
-//             Text(
-//               DateFormat('hh:mm a').format(message.messageTimestamp),
-//               style: const TextStyle(
-//                 color: Colors.white60,
-//                 fontSize: 12.0,
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     ),
-//   );
-// }
-
-// bool _isImageFile(String? fileType) {
-//   const imageFileTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-//   return imageFileTypes.contains(fileType?.toLowerCase());
-// }
 
   Widget _buildTextComposer() {
     return IconTheme(
@@ -1335,32 +1360,6 @@ class ChatMessage {
         "FILENAME": filename,
       };
 }
-
-
-
-// class FilePreviewView extends StatelessWidget {
-//   final Uint8List fileBytes;
-//   final String filename;
-
-//   const FilePreviewView(
-//       {Key? key, required this.fileBytes, required this.filename})
-//       : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // Implement your file preview logic here. For simplicity, we will just show the file name.
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(filename),
-//       ),
-//       body: Center(
-//         child: Text('Preview of $filename'),
-//       ),
-//     );
-//   }
-// }
-
-
 
 
 //below is chat view text send crctly working on image send
@@ -1685,7 +1684,3 @@ class ChatMessage {
 //         "FILENAME": filename,
 //       };
 // }
-
-
-
-

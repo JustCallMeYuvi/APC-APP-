@@ -1,3 +1,4 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_file/open_file.dart';
@@ -36,10 +37,75 @@ class FilePreviewView extends StatefulWidget {
 class _FilePreviewViewState extends State<FilePreviewView> {
   bool _isDownloading = false;
 
-  Future<void> _downloadAndOpenFile() async {
+  // Future<void> _downloadAndOpenFile() async {
+  //   try {
+  //     // Request storage permission
+  //     if (await Permission.storage.request().isGranted) {
+  //       setState(() {
+  //         _isDownloading = true;
+  //       });
+
+  //       // Get the directory to save the file
+  //       Directory? directory;
+  //       if (Platform.isAndroid) {
+  //         directory = await getExternalStorageDirectory();
+  //       } else if (Platform.isIOS) {
+  //         directory = await getApplicationDocumentsDirectory();
+  //       }
+
+  //       if (directory != null) {
+  //         // Create the file with the provided fileName
+  //         File file = File('${directory.path}/${widget.filename}');
+
+  //         // Write the bytes to the file
+  //         await file.writeAsBytes(widget.fileBytes);
+
+  //         // Open the file using open_file package
+  //         final result = await OpenFile.open(file.path);
+  //         if (result.type != ResultType.done) {
+  //           throw Exception('Failed to open file');
+  //         }
+  //       } else {
+  //         throw Exception('Could not get the storage directory');
+  //       }
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text('Permission denied to save file'),
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Failed to download and open file: $e'),
+  //       ),
+  //     );
+  //   } finally {
+  //     setState(() {
+  //       _isDownloading = false;
+  //     });
+  //   }
+  // }
+
+// below is working android 14 and all versions
+Future<void> _downloadAndOpenFile() async {
     try {
-      // Request storage permission
-      if (await Permission.storage.request().isGranted) {
+      // Get Android version
+      final plugin = DeviceInfoPlugin();
+      final androidInfo = await plugin.androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      // Check and request permission status based on SDK version
+      PermissionStatus permissionStatus;
+      if (sdkInt < 33) {
+        permissionStatus = await Permission.storage.request();
+      } else {
+        permissionStatus = PermissionStatus.granted;
+      }
+
+      // Handle permission statuses
+      if (permissionStatus == PermissionStatus.granted) {
         setState(() {
           _isDownloading = true;
         });
@@ -48,6 +114,9 @@ class _FilePreviewViewState extends State<FilePreviewView> {
         Directory? directory;
         if (Platform.isAndroid) {
           directory = await getExternalStorageDirectory();
+          if (directory == null) {
+            directory = Directory('/storage/emulated/0/Download');
+          }
         } else if (Platform.isIOS) {
           directory = await getApplicationDocumentsDirectory();
         }
@@ -67,12 +136,15 @@ class _FilePreviewViewState extends State<FilePreviewView> {
         } else {
           throw Exception('Could not get the storage directory');
         }
-      } else {
+      } else if (permissionStatus == PermissionStatus.denied) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Permission denied to save file'),
           ),
         );
+      } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
+        // Open app settings if permission is permanently denied
+        await openAppSettings();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,6 +158,7 @@ class _FilePreviewViewState extends State<FilePreviewView> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -67,6 +67,9 @@ dependencies:
   open_file: ^3.3.2
   open_file_plus: ^3.4.1+1
   anim_search_bar: ^2.0.3
+  video_player: ^2.9.1
+  photo_manager: ^3.2.2
+  device_info_plus: ^10.1.0
   
 
 dev_dependencies:
