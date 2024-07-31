@@ -12,9 +12,8 @@ import 'package:mime/mime.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:photo_manager/photo_manager.dart';
+
 import 'dart:convert';
-import 'package:video_player/video_player.dart';
 import 'package:web_socket_channel/io.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -52,6 +51,22 @@ class _ChatScreenState extends State<ChatScreen> {
     // _initializeWebSocket();
   }
 
+  // void _initializeWebSocket() {
+  //   _channel = IOWebSocketChannel.connect(
+  //       'ws://10.3.0.70:9040/api/Flutter/GetWebSocket');
+
+  //   _channel.stream.listen((message) {
+  //     print('New message: $message');
+  //     final newMessage = ChatMessage.fromJson(jsonDecode(message));
+  //     setState(() {
+  //       _messages.insert(0, newMessage);
+  //     });
+  //   }, onError: (error) {
+  //     print('WebSocket error: $error');
+  //   }, onDone: () {
+  //     print('WebSocket closed');
+  //   });
+  // }
   void _initializeWebSocket() {
     _channel = IOWebSocketChannel.connect(
         'ws://10.3.0.70:9040/api/Flutter/GetWebSocket');
@@ -436,7 +451,6 @@ class _ChatScreenState extends State<ChatScreen> {
   //     return status == PermissionStatus.granted;
   //   }
   // }
-
 
 // this below code is working on android 14 perfectly also below versions also
   Future<void> _downloadAndSaveImage(

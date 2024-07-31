@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ContactsPage(
         userData: widget.userData,
       ),
-      MultipleForms(),
+      MultipleForms(userData: widget.userData,),
       AboutScreen(),
       AccountDetailsScreen(userData: widget.userData), // Pass userData here
     ];
