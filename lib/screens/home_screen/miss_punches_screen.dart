@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -26,10 +27,8 @@ class _MissPunchesScreenState extends State<MissPunchesScreen> {
   }
 
   Future<void> fetchPunchDetails() async {
-    final String startDate =
-        dateRange?.start.toString().substring(0, 10) ?? '2024-01-01';
-    final String endDate =
-        dateRange?.end.toString().substring(0, 10) ?? '2024-07-31';
+    final String startDate = dateRange?.start.toString().substring(0, 10) ?? '';
+    final String endDate = dateRange?.end.toString().substring(0, 10) ?? '';
     final String apiUrl =
         "http://10.3.0.70:9040/api/Flutter/GetEmpPunchDetails?employeeNumber=${widget.userData.empNo}&startDate=$startDate&endDate=$endDate";
 
@@ -104,58 +103,78 @@ class _MissPunchesScreenState extends State<MissPunchesScreen> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          dateRange == null
-                              ? 'Please Select Date Range'
-                              : '${DateFormat('yyyy-MM-dd').format(dateRange!.start)} - ${DateFormat('yyyy-MM-dd').format(dateRange!.end)}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _selectDateRange(context),
-                        child: const Text('Select Dates'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: filteredPunches.length,
-                      itemBuilder: (context, index) {
-                        final punch = filteredPunches[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: ExpansionTile(
-                              minTileHeight: 02,
-                              title: Text('Date: ${punch['cardTime']}'),
-                              // crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildDetailRow('Barcode', punch['barcode']!),
-                                _buildDetailRow('Date', punch['cardTime']!),
-                                _buildDetailRow('In Punch', punch['workOnA']!),
-                                _buildDetailRow(
-                                    'Lunch Before', punch['workOffA']!),
-                                _buildDetailRow(
-                                    'Lunch After', punch['workOnB']!),
-                                _buildDetailRow(
-                                    'End Punch', punch['workOffB']!),
-                              ],
-                            ),
+          : Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: UiConstants
+                    .backgroundGradient.gradient, // Add your gradient here
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            dateRange == null
+                                ? 'Please Select Date Range'
+                                : '${DateFormat('yyyy-MM-dd').format(dateRange!.start)} - ${DateFormat('yyyy-MM-dd').format(dateRange!.end)}',
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.white),
                           ),
-                        );
-                      },
+                        ),
+                        ElevatedButton(
+                          onPressed: () => _selectDateRange(context),
+                          child: const Text('Select Dates'),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: filteredPunches.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No data available',
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: filteredPunches.length,
+                              itemBuilder: (context, index) {
+                                final punch = filteredPunches[index];
+                                return Card(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: ExpansionTile(
+                                      minTileHeight: 02,
+                                      title: Text('Date: ${punch['cardTime']}'),
+                                      // crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildDetailRow(
+                                            'Barcode', punch['barcode']!),
+                                        _buildDetailRow(
+                                            'Date', punch['cardTime']!),
+                                        _buildDetailRow(
+                                            'In Punch', punch['workOnA']!),
+                                        _buildDetailRow(
+                                            'Lunch Before', punch['workOffA']!),
+                                        _buildDetailRow(
+                                            'Lunch After', punch['workOnB']!),
+                                        _buildDetailRow(
+                                            'End Punch', punch['workOffB']!),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ),
     );

@@ -12,6 +12,7 @@ import 'package:mime/mime.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:swipe_to/swipe_to.dart';
 
 import 'dart:convert';
 import 'package:web_socket_channel/io.dart';
@@ -51,22 +52,6 @@ class _ChatScreenState extends State<ChatScreen> {
     // _initializeWebSocket();
   }
 
-  // void _initializeWebSocket() {
-  //   _channel = IOWebSocketChannel.connect(
-  //       'ws://10.3.0.70:9040/api/Flutter/GetWebSocket');
-
-  //   _channel.stream.listen((message) {
-  //     print('New message: $message');
-  //     final newMessage = ChatMessage.fromJson(jsonDecode(message));
-  //     setState(() {
-  //       _messages.insert(0, newMessage);
-  //     });
-  //   }, onError: (error) {
-  //     print('WebSocket error: $error');
-  //   }, onDone: () {
-  //     print('WebSocket closed');
-  //   });
-  // }
   void _initializeWebSocket() {
     _channel = IOWebSocketChannel.connect(
         'ws://10.3.0.70:9040/api/Flutter/GetWebSocket');
@@ -214,98 +199,6 @@ class _ChatScreenState extends State<ChatScreen> {
       await _sendMessageOrFile(file: selectedFile);
     }
   }
-  // Future<void> _pickAndSendFile() async {
-  //   final result = await FilePicker.platform.pickFiles(
-  //     type: FileType.custom,
-  //     allowedExtensions: [
-  //       'jpg', 'jpeg', 'png', // Image formats
-  //       'mp4', 'avi', 'mov', // Video formats
-  //       'pdf', 'doc', 'docx', // Document formats
-  //       'xls', 'xlsx', // Excel formats
-  //     ],
-  //   );
-
-  //   if (result != null) {
-  //     final selectedFile = File(result.files.single.path!);
-  //     await _sendMessageOrFile(
-  //       file: selectedFile,
-  //       fileExtension: result.files.single.extension ?? '',
-  //     );
-  //   }
-  // }
-
-//   Future<void> _sendMessageOrFile({String? text, File? file}) async {
-//   try {
-//     final String url = 'http://10.3.0.70:9040/api/Flutter/AddMessageAsync';
-//     final request = http.MultipartRequest('POST', Uri.parse(url))
-//       ..fields['SenderId'] = widget.senderId.toString()
-//       ..fields['ReceiverId'] = widget.receiverId.toString()
-//       ..fields['MessageText'] = text ?? '' // Use provided text or empty string
-//       ..fields['IsUserMessage'] = 'true'
-//       ..fields['MessageTimestamp'] = DateTime.now().toIso8601String();
-
-//     String? fileType;
-//     String? fileBytesBase64;
-//     if (file != null) {
-//       final fileName = file.path.split('/').last;
-//       fileType = fileName.split('.').last.toLowerCase();
-
-//       // Read the file bytes and convert to Base64
-//       final Uint8List bytes = await file.readAsBytes();
-//       fileBytesBase64 = base64.encode(bytes);
-//       print('base64: $fileBytesBase64');
-
-//       request.fields['FileBytesBase64'] = fileBytesBase64; // Include Base64 in the request
-
-//       request.files.add(await http.MultipartFile.fromPath('file', file.path, filename: fileName));
-//     }
-
-//     final response = await request.send();
-//     final responseBody = await response.stream.bytesToString();
-
-//     if (response.statusCode == 200) {
-//       print(file != null ? 'File sent successfully' : 'Message sent successfully');
-//       _controller.clear();
-
-//       setState(() {
-//         _messages.insert(
-//           0,
-//           ChatMessage(
-//             messageId: _messages.length + 1,
-//             senderId: widget.senderId,
-//             receiverId: widget.receiverId,
-//             messageText: file != null ? 'Sent a file: ${file.path.split('/').last}' : text!,
-//             messageTimestamp: DateTime.now(),
-//             isUserMessage: true,
-//             isFile: file != null, // Set isFile
-//             fileType: fileType, // Set fileType
-//             fileUrl: file?.path,
-//             fileBytesBase64: fileBytesBase64 ?? '', // Store Base64 string
-//           ),
-//         );
-//         if (file != null) {
-//           buttonVisibility[0] = false; // Hide button after sending file
-//         }
-//       });
-//     } else {
-//       print('Failed to send ${file != null ? 'file' : 'message'}: ${response.statusCode}');
-//       print('Response Body: $responseBody');
-//     }
-//   } catch (e) {
-//     print('Error sending ${file != null ? 'file' : 'message'}: $e');
-//   }
-// }
-
-// Future<void> _pickAndSendFile() async {
-//   final result = await FilePicker.platform.pickFiles();
-//   if (result != null) {
-//     final PlatformFile file = result.files.first;
-//     final selectedFile = File(file.path!);
-
-//     // Call the unified method to handle file sending
-//     await _sendMessageOrFile(file: selectedFile);
-//   }
-// }
 
   Future<void> longPolling() async {
     try {
@@ -348,109 +241,6 @@ class _ChatScreenState extends State<ChatScreen> {
       Future.delayed(const Duration(seconds: 1), longPolling);
     }
   }
-
-  // Future<void> _downloadAndSaveImage(
-  //     BuildContext context, String base64String, String fileName) async {
-  //   try {
-  //     // Decode the Base64 string
-  //     Uint8List fileBytes = base64Decode(base64String);
-
-  //     // Request permission
-  //     if (await _requestPermission(Permission.storage)) {
-  //       // Save to gallery
-  //       final result = await ImageGallerySaver.saveImage(
-  //         Uint8List.fromList(fileBytes),
-  //         quality: 60,
-  //         name: fileName,
-  //       );
-  //       print('Image saved to gallery: $result');
-
-  //       // Show a confirmation message
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Image saved to gallery'),
-  //         ),
-  //       );
-  //     } else {
-  //       // Permission denied
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Permission denied to save file'),
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print('Error downloading/saving image: $e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Error saving image'),
-  //       ),
-  //     );
-  //   }
-  // }
-
-  // Future<void> _downloadAndSaveFile(
-  //     BuildContext context, String base64String, String fileName) async {
-  //   try {
-  //     // Decode the base64 string
-  //     Uint8List bytes = base64Decode(base64String);
-
-  //     // Request permission
-  //     if (await _requestPermission(Permission.storage)) {
-  //       // Get the directory to save the file
-  //       Directory? directory;
-  //       if (Platform.isAndroid) {
-  //         directory = await getExternalStorageDirectory();
-  //         if (directory == null) {
-  //           directory = Directory('/storage/emulated/0/Download');
-  //         }
-  //       } else if (Platform.isIOS) {
-  //         directory = await getApplicationDocumentsDirectory();
-  //       }
-
-  //       if (directory != null) {
-  //         // Create the file with the provided fileName
-  //         File file = File('${directory.path}/$fileName');
-
-  //         // Write the bytes to the file
-  //         await file.writeAsBytes(bytes);
-
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text('File saved to ${file.path}'),
-  //           ),
-  //         );
-
-  //         // Open the file using open_file package
-  //         await OpenFile.open(file.path);
-  //       } else {
-  //         throw Exception('Could not get the storage directory');
-  //       }
-  //     } else {
-  //       // Permission denied
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Permission denied to save file'),
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Failed to save file: $e'),
-  //       ),
-  //     );
-  //   }
-  // }
-
-  // Future<bool> _requestPermission(Permission permission) async {
-  //   if (await permission.isGranted) {
-  //     return true;
-  //   } else {
-  //     final status = await permission.request();
-  //     return status == PermissionStatus.granted;
-  //   }
-  // }
 
 // this below code is working on android 14 perfectly also below versions also
   Future<void> _downloadAndSaveImage(
@@ -516,61 +306,6 @@ class _ChatScreenState extends State<ChatScreen> {
       return status;
     }
   }
-
-  // Future<void> _downloadAndSaveFile(
-  //     BuildContext context, String base64String, String fileName) async {
-  //   try {
-  //     // Decode the base64 string
-  //     Uint8List bytes = base64Decode(base64String);
-  //     final permissionStatus = await _requestPermission(Permission.storage);
-  //     // Request permission
-  //     // if (await _requestPermission(Permission.storage)) {
-  //     if (permissionStatus == PermissionStatus.granted) {
-  //       // Get the directory to save the file
-  //       Directory? directory;
-  //       if (Platform.isAndroid) {
-  //         directory = await getExternalStorageDirectory();
-  //         if (directory == null) {
-  //           directory = Directory('/storage/emulated/0/Download');
-  //         }
-  //       } else if (Platform.isIOS) {
-  //         directory = await getApplicationDocumentsDirectory();
-  //       }
-
-  //       if (directory != null) {
-  //         // Create the file with the provided fileName
-  //         File file = File('${directory.path}/$fileName');
-
-  //         // Write the bytes to the file
-  //         await file.writeAsBytes(bytes);
-
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text('File saved to ${file.path}'),
-  //           ),
-  //         );
-
-  //         // Open the file using open_file package
-  //         await OpenFile.open(file.path);
-  //       } else {
-  //         throw Exception('Could not get the storage directory');
-  //       }
-  //     } else {
-  //       // Permission denied
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Permission denied to save file'),
-  //         ),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Failed to save file: $e'),
-  //       ),
-  //     );
-  //   }
-  // }
 
   Future<void> _downloadAndSaveFile(
       BuildContext context, String base64String, String fileName) async {
@@ -694,7 +429,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 // reverse: true,
                 itemCount: _messages.length,
                 itemBuilder: (context, index) {
-                  return _buildMessage(_messages[index]);
+                  // return _buildMessage(_messages[index]);
+                  return _buildMessage(
+                      _messages[index], widget.senderId, context);
                 },
               ),
             ),
@@ -775,144 +512,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-//here we show only image and text inside chat screen
-
-  // Widget _buildMessage(ChatMessage message) {
-  //   // Get the width of the screen
-  //   double screenWidth = MediaQuery.of(context).size.width;
-
-  //   // Set a responsive width for the image
-  //   double imageWidth = screenWidth * 0.6; // 40% of the screen width
-  //   double imageHeight = 300;
-  //   return Align(
-  //     alignment: message.senderId == widget.senderId
-  //         ? Alignment.centerRight
-  //         : Alignment.centerLeft,
-  //     child: Container(
-  //       margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-  //       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-  //       decoration: BoxDecoration(
-  //         color: message.senderId == widget.senderId
-  //             ? Colors.lightGreen
-  //             : Colors.grey,
-  //         borderRadius: BorderRadius.circular(10.0),
-  //       ),
-  //       child: IntrinsicWidth(
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             // Display image if it exists
-  //             if (message.fileBytesBase64 != null &&
-  //                 message.fileBytesBase64!.isNotEmpty)
-  //               Image.memory(
-  //                 base64Decode(message.fileBytesBase64!),
-  //                 // height: 250,
-  //                 // width: 150,
-  //                 height: imageHeight,
-  //                 width: imageWidth,
-  //                 fit: BoxFit.cover,
-  //               ),
-
-  //             // Display text message if it exists
-  //             if (message.messageText != null &&
-  //                 message.messageText!.isNotEmpty)
-  //               Text(
-  //                 message.messageText!,
-  //                 style: const TextStyle(
-  //                   color: Colors.white,
-  //                 ),
-  //               ),
-  //             // Display timestamp
-  //             Text(
-  //               DateFormat('hh:mm a').format(message.messageTimestamp),
-  //               style: const TextStyle(
-  //                 color: Colors.white60,
-  //                 fontSize: 12.0,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildMessage(ChatMessage message) {
-  //   // Get the width of the screen
-  //   double screenWidth = MediaQuery.of(context).size.width;
-
-  //   // Set a responsive width for the image
-  //   double imageWidth = screenWidth * 0.6; // 60% of the screen width
-  //   double imageHeight = 300;
-
-  //   return Align(
-  //     alignment: message.senderId == widget.senderId
-  //         ? Alignment.centerRight
-  //         : Alignment.centerLeft,
-  //     child: Container(
-  //       margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-  //       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-  //       decoration: BoxDecoration(
-  //         color: message.senderId == widget.senderId
-  //             ? Colors.lightGreen
-  //             : Colors.grey,
-  //         borderRadius: BorderRadius.circular(10.0),
-  //       ),
-  //       child: IntrinsicWidth(
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             // Display image if it exists
-  //             if (message.fileBytesBase64 != null &&
-  //                 message.fileBytesBase64!.isNotEmpty)
-  //               GestureDetector(
-  //                 onLongPress: () async {
-  //                   if (await Permission.storage.request().isGranted) {
-  //                     _downloadAndSaveImage(
-  //                       context,
-  //                       message.fileBytesBase64!,
-  //                       'image_${message.messageId}',
-  //                     );
-  //                   } else {
-  //                     ScaffoldMessenger.of(context).showSnackBar(
-  //                       SnackBar(
-  //                         content: Text('Permission denied to save file'),
-  //                       ),
-  //                     );
-  //                   }
-  //                 },
-  //                 child: Image.memory(
-  //                   base64Decode(message.fileBytesBase64!),
-  //                   height: imageHeight,
-  //                   width: imageWidth,
-  //                   fit: BoxFit.cover,
-  //                 ),
-  //               ),
-  //             // Display text message if it exists
-  //             if (message.messageText != null &&
-  //                 message.messageText!.isNotEmpty)
-  //               Text(
-  //                 message.messageText!,
-  //                 style: const TextStyle(
-  //                   color: Colors.white,
-  //                 ),
-  //               ),
-  //             // Display timestamp
-  //             Text(
-  //               DateFormat('hh:mm a').format(message.messageTimestamp),
-  //               style: const TextStyle(
-  //                 color: Colors.white60,
-  //                 fontSize: 12.0,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Method to build the message widget
   // Widget _buildMessage(ChatMessage message) {
   //   // Get the width of the screen
   //   double screenWidth = MediaQuery.of(context).size.width;
@@ -927,6 +526,17 @@ class _ChatScreenState extends State<ChatScreen> {
   //       Uint8List bytes = base64Decode(base64String);
   //       String mimeType = lookupMimeType('', headerBytes: bytes) ?? '';
   //       return mimeType.startsWith('image/');
+  //     } catch (e) {
+  //       return false;
+  //     }
+  //   }
+
+  //   // Function to check if a file is a video based on its MIME type
+  //   bool isVideo(String base64String) {
+  //     try {
+  //       Uint8List bytes = base64Decode(base64String);
+  //       String mimeType = lookupMimeType('', headerBytes: bytes) ?? '';
+  //       return mimeType.startsWith('video/');
   //     } catch (e) {
   //       return false;
   //     }
@@ -954,20 +564,32 @@ class _ChatScreenState extends State<ChatScreen> {
   //                 message.fileBytesBase64!.isNotEmpty &&
   //                 isImage(message.fileBytesBase64!))
   //               GestureDetector(
-  //                 onLongPress: () async {
-  //                   if (await Permission.storage.request().isGranted) {
-  //                     _downloadAndSaveImage(
-  //                       context,
-  //                       message.fileBytesBase64!,
-  //                       'image_${message.messageId}',
-  //                     );
-  //                   } else {
-  //                     ScaffoldMessenger.of(context).showSnackBar(
-  //                       SnackBar(
-  //                         content: Text('Permission denied to save file'),
+  //                 onTap: () {
+  //                   Navigator.push(
+  //                     context,
+  //                     MaterialPageRoute(
+  //                       builder: (_) => FullScreenImageView(
+  //                         imageBytes: base64Decode(message.fileBytesBase64!),
   //                       ),
-  //                     );
-  //                   }
+  //                     ),
+  //                   );
+  //                 },
+  //                 onLongPress: () async {
+  //                   print('Long press detected'); // For debugging
+  //                   // if (await Permission.storage.request().isGranted) {
+
+  //                   _downloadAndSaveImage(
+  //                     context,
+  //                     message.fileBytesBase64!,
+  //                     message.filename ?? 'image_${message.messageId}.png',
+  //                   );
+  //                   // } else {
+  //                   //   ScaffoldMessenger.of(context).showSnackBar(
+  //                   //     SnackBar(
+  //                   //       content: Text('Permission denied to save file'),
+  //                   //     ),
+  //                   //   );
+  //                   // }
   //                 },
   //                 child: Image.memory(
   //                   base64Decode(message.fileBytesBase64!),
@@ -976,38 +598,61 @@ class _ChatScreenState extends State<ChatScreen> {
   //                   fit: BoxFit.cover,
   //                 ),
   //               ),
+
   //             // Display a file icon and filename for non-image files
   //             if (message.fileBytesBase64 != null &&
   //                 message.fileBytesBase64!.isNotEmpty &&
   //                 !isImage(message.fileBytesBase64!))
   //               GestureDetector(
-  //                 onLongPress: () async {
-  //                   if (await Permission.storage.request().isGranted) {
-  //                     _downloadAndSaveFile(
-  //                       context,
-  //                       message.fileBytesBase64!,
-  //                       'file_${message.messageId}',
-  //                     );
-  //                   } else {
-  //                     ScaffoldMessenger.of(context).showSnackBar(
-  //                       SnackBar(
-  //                         content: Text('Permission denied to save file'),
+  //                 onTap: () {
+  //                   Navigator.push(
+  //                     context,
+  //                     MaterialPageRoute(
+  //                       builder: (_) => FilePreviewView(
+  //                         fileBytes: base64Decode(message.fileBytesBase64!),
+  //                         filename: message.filename ??
+  //                             'file_${message.messageId}.${message.format}',
   //                       ),
-  //                     );
-  //                   }
+  //                     ),
+  //                   );
+  //                 },
+  //                 onLongPress: () async {
+  //                   // if (await Permission.storage.request().isGranted) {
+  //                   _downloadAndSaveFile(
+  //                     context,
+  //                     message.fileBytesBase64!,
+  //                     message.filename ?? 'file_${message.messageId}',
+  //                   );
+  //                   // } else {
+  //                   //   ScaffoldMessenger.of(context).showSnackBar(
+  //                   //     SnackBar(
+  //                   //       content: Text('Permission denied to save file'),
+  //                   //     ),
+  //                   //   );
+  //                   // }
   //                 },
   //                 child: Row(
   //                   children: [
   //                     Icon(Icons.insert_drive_file, color: Colors.white),
   //                     SizedBox(width: 10),
-  //                     Text(
-  //                       'File_${message.messageId}',
-  //                       style: TextStyle(color: Colors.white),
-  //                     ),
   //                     // Text(
-  //                     //   'File_${message.messageText}',
+  //                     //   message.fileName ?? 'file_${message.messageId}',
   //                     //   style: TextStyle(color: Colors.white),
   //                     // ),
+
+  //                     // Text(
+  //                     //   message.filename ??
+  //                     //       'file_${message.messageId}.${message.format}',
+  //                     //   style: TextStyle(color: Colors.white),
+  //                     // ),
+  //                     Text(
+  //                       message.filename != null
+  //                           ? (message.filename!.length > 15
+  //                               ? '${message.filename!.substring(0, 15)}.${message.format}'
+  //                               : '${message.filename!}.${message.format}') // Show the truncated file name with format
+  //                           : 'file_${message.messageId}.${message.format}', // Default text
+  //                       style: TextStyle(color: Colors.white),
+  //                     ),
   //                   ],
   //                 ),
   //               ),
@@ -1035,15 +680,14 @@ class _ChatScreenState extends State<ChatScreen> {
   //   );
   // }
 
-  Widget _buildMessage(ChatMessage message) {
-    // Get the width of the screen
-    double screenWidth = MediaQuery.of(context).size.width;
+// here swipe reply shows in show bottom widget
 
-    // Set a responsive width for the image
+  Widget _buildMessage(
+      ChatMessage message, int senderId, BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     double imageWidth = screenWidth * 0.6; // 60% of the screen width
     double imageHeight = 300;
 
-    // Function to check if a file is an image based on its MIME type
     bool isImage(String base64String) {
       try {
         Uint8List bytes = base64Decode(base64String);
@@ -1054,7 +698,6 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
 
-    // Function to check if a file is a video based on its MIME type
     bool isVideo(String base64String) {
       try {
         Uint8List bytes = base64Decode(base64String);
@@ -1065,188 +708,439 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
 
-    return Align(
-      alignment: message.senderId == widget.senderId
-          ? Alignment.centerRight
-          : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-        decoration: BoxDecoration(
-          color: message.senderId == widget.senderId
-              ? Colors.lightGreen
-              : Colors.grey,
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: IntrinsicWidth(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Display image if it exists and is an image
-              if (message.fileBytesBase64 != null &&
-                  message.fileBytesBase64!.isNotEmpty &&
-                  isImage(message.fileBytesBase64!))
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => FullScreenImageView(
-                          imageBytes: base64Decode(message.fileBytesBase64!),
+    return SwipeTo(
+      onRightSwipe: (details) {
+        _handleSwipeReply(
+          isRightSwipe: true,
+          replyMessage: message.messageText ?? 'No content',
+        );
+      },
+      onLeftSwipe: (details) {
+        _handleSwipeReply(
+          isRightSwipe: false,
+          replyMessage: message.messageText ?? 'No content',
+        );
+      },
+      iconOnLeftSwipe: Icons.reply,
+      leftSwipeWidget: const Icon(Icons.reply, color: Colors.white),
+      iconOnRightSwipe: Icons.reply,
+      rightSwipeWidget: const Icon(Icons.reply, color: Colors.white),
+      child: Align(
+        alignment: message.senderId == senderId
+            ? Alignment.centerRight
+            : Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+          decoration: BoxDecoration(
+            color:
+                message.senderId == senderId ? Colors.lightGreen : Colors.grey,
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: IntrinsicWidth(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (message.fileBytesBase64 != null &&
+                    message.fileBytesBase64!.isNotEmpty &&
+                    isImage(message.fileBytesBase64!))
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FullScreenImageView(
+                            imageBytes: base64Decode(message.fileBytesBase64!),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  onLongPress: () async {
-                    print('Long press detected'); // For debugging
-                    // if (await Permission.storage.request().isGranted) {
-
-                    _downloadAndSaveImage(
-                      context,
-                      message.fileBytesBase64!,
-                      message.filename ?? 'image_${message.messageId}.png',
-                    );
-                    // } else {
-                    //   ScaffoldMessenger.of(context).showSnackBar(
-                    //     SnackBar(
-                    //       content: Text('Permission denied to save file'),
-                    //     ),
-                    //   );
-                    // }
-                  },
-                  child: Image.memory(
-                    base64Decode(message.fileBytesBase64!),
-                    height: imageHeight,
-                    width: imageWidth,
-                    fit: BoxFit.cover,
+                      );
+                    },
+                    onLongPress: () async {
+                      print('Long press detected'); // For debugging
+                      _downloadAndSaveImage(
+                        context,
+                        message.fileBytesBase64!,
+                        message.filename ?? 'image_${message.messageId}.png',
+                      );
+                    },
+                    child: Image.memory(
+                      base64Decode(message.fileBytesBase64!),
+                      height: imageHeight,
+                      width: imageWidth,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
-              // // Display video icon if it is a video file
-              // if (message.fileBytesBase64 != null &&
-              //     message.fileBytesBase64!.isNotEmpty &&
-              //     isVideo(message.fileBytesBase64!))
-              //   GestureDetector(
-              //     onTap: () {
-              //       // Navigator.push(
-              //       //   context,
-              //       //   MaterialPageRoute(
-              //       //     builder: (_) => VideoPlayerScreen(
-              //       //       videoBytes: base64Decode(message.fileBytesBase64!),
-              //       //     ),
-              //       //   ),
-              //       // );
-              //     },
-              //     onLongPress: () async {
-              //       if (await Permission.storage.request().isGranted) {
-              //         _downloadAndSaveFile(
-              //           context,
-              //           message.fileBytesBase64!,
-              //           message.filename ??
-              //               'video_${message.messageId}.${message.format}',
-              //         );
-              //       } else {
-              //         ScaffoldMessenger.of(context).showSnackBar(
-              //           SnackBar(
-              //             content: Text('Permission denied to save file'),
-              //           ),
-              //         );
-              //       }
-              //     },
-              //     child: Row(
-              //       children: [
-              //         Icon(Icons.video_collection, color: Colors.white),
-              //         SizedBox(width: 10),
-              //         Text(
-              //           message.filename != null
-              //               ? (message.filename!.length > 15
-              //                   ? '${message.filename!.substring(0, 15)}.${message.format}'
-              //                   : '${message.filename!}.${message.format}') // Show the truncated file name with format
-              //               : 'video_${message.messageId}.${message.format}', // Default text
-              //           style: TextStyle(color: Colors.white),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // Display a file icon and filename for non-image files
-              if (message.fileBytesBase64 != null &&
-                  message.fileBytesBase64!.isNotEmpty &&
-                  !isImage(message.fileBytesBase64!))
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => FilePreviewView(
-                          fileBytes: base64Decode(message.fileBytesBase64!),
-                          filename: message.filename ??
-                              'file_${message.messageId}.${message.format}',
+                if (message.fileBytesBase64 != null &&
+                    message.fileBytesBase64!.isNotEmpty &&
+                    !isImage(message.fileBytesBase64!))
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FilePreviewView(
+                            fileBytes: base64Decode(message.fileBytesBase64!),
+                            filename: message.filename ??
+                                'file_${message.messageId}.${message.format}',
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  onLongPress: () async {
-                    // if (await Permission.storage.request().isGranted) {
-                    _downloadAndSaveFile(
-                      context,
-                      message.fileBytesBase64!,
-                      message.filename ?? 'file_${message.messageId}',
-                    );
-                    // } else {
-                    //   ScaffoldMessenger.of(context).showSnackBar(
-                    //     SnackBar(
-                    //       content: Text('Permission denied to save file'),
-                    //     ),
-                    //   );
-                    // }
-                  },
-                  child: Row(
-                    children: [
-                      Icon(Icons.insert_drive_file, color: Colors.white),
-                      SizedBox(width: 10),
-                      // Text(
-                      //   message.fileName ?? 'file_${message.messageId}',
-                      //   style: TextStyle(color: Colors.white),
-                      // ),
-
-                      // Text(
-                      //   message.filename ??
-                      //       'file_${message.messageId}.${message.format}',
-                      //   style: TextStyle(color: Colors.white),
-                      // ),
-                      Text(
-                        message.filename != null
-                            ? (message.filename!.length > 15
-                                ? '${message.filename!.substring(0, 15)}.${message.format}'
-                                : '${message.filename!}.${message.format}') // Show the truncated file name with format
-                            : 'file_${message.messageId}.${message.format}', // Default text
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
+                      );
+                    },
+                    onLongPress: () async {
+                      _downloadAndSaveFile(
+                        context,
+                        message.fileBytesBase64!,
+                        message.filename ?? 'file_${message.messageId}',
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Icon(Icons.insert_drive_file, color: Colors.white),
+                        SizedBox(width: 10),
+                        Text(
+                          message.filename != null
+                              ? (message.filename!.length > 15
+                                  ? '${message.filename!.substring(0, 15)}.${message.format}'
+                                  : '${message.filename!}.${message.format}')
+                              : 'file_${message.messageId}.${message.format}',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              // Display text message if it exists
-              if (message.messageText != null &&
-                  message.messageText!.isNotEmpty)
+                if (message.messageText != null &&
+                    message.messageText!.isNotEmpty)
+                  Text(
+                    message.messageText!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
                 Text(
-                  message.messageText!,
+                  DateFormat('hh:mm a').format(message.messageTimestamp),
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.white60,
+                    fontSize: 12.0,
                   ),
                 ),
-              // Display timestamp
-              Text(
-                DateFormat('hh:mm a').format(message.messageTimestamp),
-                style: const TextStyle(
-                  color: Colors.white60,
-                  fontSize: 12.0,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  void _handleSwipeReply(
+      {required bool isRightSwipe, required String replyMessage}) {
+    // Navigator.pop(context);
+    _displayInputBottomSheet(context, isRightSwipe, message: replyMessage);
+  }
+
+  void _displayInputBottomSheet(BuildContext context, bool isRightSwipe,
+      {String? message}) {
+    // TextEditingController _controller =
+    //     TextEditingController(text: message ?? '');
+    // Create an empty controller for the TextField to ensure it starts empty
+    TextEditingController _controller = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Container(
+            padding: const EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: 16.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Reply to: ${message ?? 'No message selected'}', // Show the swiped message
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.0,
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  textInputAction: TextInputAction.done,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: 'Reply',
+                    hintText: 'Enter reply here',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(5.0),
+                      ),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.send),
+                      onPressed: () {
+                        String text = _controller.text;
+                        _sendMessageOrFile(text: text);
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// here below chat screen UI shows Reply msh=g like whats app shows win progres
+
+// Widget _buildMessage(
+//     ChatMessage message, int senderId, BuildContext context) {
+//   double screenWidth = MediaQuery.of(context).size.width;
+//   double imageWidth = screenWidth * 0.6; // 60% of the screen width
+//   double imageHeight = 300;
+
+//   bool isImage(String base64String) {
+//     try {
+//       Uint8List bytes = base64Decode(base64String);
+//       String mimeType = lookupMimeType('', headerBytes: bytes) ?? '';
+//       return mimeType.startsWith('image/');
+//     } catch (e) {
+//       return false;
+//     }
+//   }
+
+//   bool isVideo(String base64String) {
+//     try {
+//       Uint8List bytes = base64Decode(base64String);
+//       String mimeType = lookupMimeType('', headerBytes: bytes) ?? '';
+//       return mimeType.startsWith('video/');
+//     } catch (e) {
+//       return false;
+//     }
+//   }
+
+//   return SwipeTo(
+//     onRightSwipe: (details) {
+//       _handleSwipeReply(
+//         isRightSwipe: true,
+//         replyMessage: message.messageText ?? 'No content',
+//         context: context,
+//       );
+//     },
+//     onLeftSwipe: (details) {
+//       _handleSwipeReply(
+//         isRightSwipe: false,
+//         replyMessage: message.messageText ?? 'No content',
+//         context: context,
+//       );
+//     },
+//     iconOnLeftSwipe: Icons.reply,
+//     leftSwipeWidget: const Icon(Icons.reply, color: Colors.white),
+//     iconOnRightSwipe: Icons.reply,
+//     rightSwipeWidget: const Icon(Icons.reply, color: Colors.white),
+//     child: Align(
+//       alignment: message.senderId == senderId
+//           ? Alignment.centerRight
+//           : Alignment.centerLeft,
+//       child: Stack(
+//         children: [
+//           if (message.replyMessage != null)
+//             Positioned(
+//               top: -40, // Adjust this value as needed
+//               left: 0,
+//               right: 0,
+//               child: Container(
+//                 padding: const EdgeInsets.all(8.0),
+//                 decoration: BoxDecoration(
+//                   color: Colors.blueAccent,
+//                   borderRadius: BorderRadius.circular(8.0),
+//                 ),
+//                 child: Text(
+//                   'Reply: ${message.replyMessage}',
+//                   style: const TextStyle(
+//                     color: Colors.white,
+//                     fontSize: 14.0,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//           Container(
+//             margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+//             padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+//             decoration: BoxDecoration(
+//               color:
+//                   message.senderId == senderId ? Colors.lightGreen : Colors.grey,
+//               borderRadius: BorderRadius.circular(10.0),
+//             ),
+//             child: IntrinsicWidth(
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   if (message.fileBytesBase64 != null &&
+//                       message.fileBytesBase64!.isNotEmpty &&
+//                       isImage(message.fileBytesBase64!))
+//                     GestureDetector(
+//                       onTap: () {
+//                         Navigator.push(
+//                           context,
+//                           MaterialPageRoute(
+//                             builder: (_) => FullScreenImageView(
+//                               imageBytes: base64Decode(message.fileBytesBase64!),
+//                             ),
+//                           ),
+//                         );
+//                       },
+//                       onLongPress: () async {
+//                         _downloadAndSaveImage(
+//                           context,
+//                           message.fileBytesBase64!,
+//                           message.filename ?? 'image_${message.messageId}.png',
+//                         );
+//                       },
+//                       child: Image.memory(
+//                         base64Decode(message.fileBytesBase64!),
+//                         height: imageHeight,
+//                         width: imageWidth,
+//                         fit: BoxFit.cover,
+//                       ),
+//                     ),
+//                   if (message.fileBytesBase64 != null &&
+//                       message.fileBytesBase64!.isNotEmpty &&
+//                       !isImage(message.fileBytesBase64!))
+//                     GestureDetector(
+//                       onTap: () {
+//                         Navigator.push(
+//                           context,
+//                           MaterialPageRoute(
+//                             builder: (_) => FilePreviewView(
+//                               fileBytes: base64Decode(message.fileBytesBase64!),
+//                               filename: message.filename ??
+//                                   'file_${message.messageId}.${message.format}',
+//                             ),
+//                           ),
+//                         );
+//                       },
+//                       onLongPress: () async {
+//                         _downloadAndSaveFile(
+//                           context,
+//                           message.fileBytesBase64!,
+//                           message.filename ?? 'file_${message.messageId}',
+//                         );
+//                       },
+//                       child: Row(
+//                         children: [
+//                           Icon(Icons.insert_drive_file, color: Colors.white),
+//                           SizedBox(width: 10),
+//                           Text(
+//                             message.filename != null
+//                                 ? (message.filename!.length > 15
+//                                     ? '${message.filename!.substring(0, 15)}.${message.format}'
+//                                     : '${message.filename!}.${message.format}')
+//                                 : 'file_${message.messageId}.${message.format}',
+//                             style: TextStyle(color: Colors.white),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   if (message.messageText != null &&
+//                       message.messageText!.isNotEmpty)
+//                     Text(
+//                       message.messageText!,
+//                       style: const TextStyle(
+//                         color: Colors.white,
+//                       ),
+//                     ),
+//                   Text(
+//                     DateFormat('hh:mm a').format(message.messageTimestamp),
+//                     style: const TextStyle(
+//                       color: Colors.white60,
+//                       fontSize: 12.0,
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     ),
+//   );
+// }
+
+// void _handleSwipeReply({
+//   required bool isRightSwipe,
+//   required String replyMessage,
+//   required BuildContext context,
+// }) {
+//   _displayInputBottomSheet(
+//     context,
+//     isRightSwipe,
+//     replyMessage: replyMessage,
+//   );
+// }
+
+// void _displayInputBottomSheet(BuildContext context, bool isRightSwipe,
+//     {String? replyMessage}) {
+//   TextEditingController _controller = TextEditingController();
+//   showModalBottomSheet(
+//     context: context,
+//     builder: (context) {
+//       return Padding(
+//         padding: MediaQuery.of(context).viewInsets,
+//         child: Container(
+//           padding: const EdgeInsets.only(
+//             left: 16.0,
+//             right: 16.0,
+//             top: 16.0,
+//             bottom: 16.0,
+//           ),
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               Text(
+//                 'Reply to: ${replyMessage ?? 'No message selected'}',
+//                 style: const TextStyle(
+//                   fontWeight: FontWeight.bold,
+//                   fontSize: 16.0,
+//                 ),
+//               ),
+//               const SizedBox(height: 8.0),
+//               TextField(
+//                 controller: _controller,
+//                 autofocus: true,
+//                 textInputAction: TextInputAction.done,
+//                 textCapitalization: TextCapitalization.words,
+//                 decoration: InputDecoration(
+//                   labelText: 'Reply',
+//                   hintText: 'Enter reply here',
+//                   border: OutlineInputBorder(
+//                     borderRadius: BorderRadius.all(
+//                       Radius.circular(5.0),
+//                     ),
+//                   ),
+//                   suffixIcon: IconButton(
+//                     icon: const Icon(Icons.send),
+//                     onPressed: () {
+//                       String text = _controller.text;
+//                       _sendMessageOrFile(text: text);
+//                       Navigator.pop(context);
+//                     },
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       );
+//     },
+//   );
+// }
 
   Widget _buildTextComposer() {
     return IconTheme(
@@ -1314,7 +1208,7 @@ class ChatMessage {
   String? fileType; // Add this property
   String? format;
   dynamic filename;
-
+  final String? replyMessage; // Property to store reply message
   ChatMessage({
     required this.messageId,
     required this.senderId,
@@ -1329,20 +1223,8 @@ class ChatMessage {
     // this.fileName, // Add this line
     required this.format,
     required this.filename,
+    this.replyMessage, // Initialize as needed
   });
-
-  // factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
-  //       messageId: json["MessageId"],
-  //       senderId: json["SenderId"],
-  //       receiverId: json["ReceiverId"],
-  //       messageText: json["MessageText"],
-  //       messageTimestamp: DateTime.parse(json["MessageTimestamp"]),
-  //       isUserMessage: json["IsUserMessage"],
-  //       fileUrl: json["FileUrl"],
-  //       fileBytesBase64: json["FileBytesBase64"],
-  //       isFile: json["IsFile"] ?? false, // Deserialize the isFile property
-  //       fileType: json["FileType"], // Deserialize the fileType property
-  //     );
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
         messageId: json['MessageId'],
@@ -1376,7 +1258,7 @@ class ChatMessage {
 }
 
 
-//below is chat view text send crctly working on image send
+// //below is chat view text send crctly working on image send
 
 // import 'dart:io';
 // import 'dart:typed_data';
@@ -1698,3 +1580,5 @@ class ChatMessage {
 //         "FILENAME": filename,
 //       };
 // }
+
+
