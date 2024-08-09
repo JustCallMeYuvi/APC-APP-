@@ -29,10 +29,52 @@ class _HeaderWidgetState extends State<HeaderWidget> {
     fetchData(widget.userData.empNo);
   }
 
+  // Future<void> fetchData(String empNo) async {
+  //   // final url = Uri.parse('http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=$empNo');
+  //   final url = Uri.parse(
+  //       'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
+  //   try {
+  //     final response = await http.get(url);
+  //     if (response.statusCode == 200) {
+  //       final List<dynamic> jsonResponse = json.decode(response.body);
+
+  //       // Debug: Print the raw response body
+  //       print('Response body: ${response.body}');
+
+  //       // Debug: Print the parsed JSON data
+  //       jsonResponse.forEach((data) {
+  //         print('Parsed JSON item: $data');
+  //       });
+
+  //       setState(() {
+  //         empDetailsList =
+  //             jsonResponse.map((data) => GetEmpDetails.fromJson(data)).toList();
+
+  //         // Debug: Print the list of empDetailsList
+  //         empDetailsList.forEach((detail) {
+  //           print(
+  //               'Emp Detail: ${detail.empNo}, ${detail.empName}, ${detail.deptName}, ${detail.position}');
+  //         });
+  //       });
+  //     } else {
+  //       print('Request failed with status: ${response.statusCode}');
+  //       // Handle error case, show error message or retry logic
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching data: $e');
+  //     // Handle error case, show error message or retry logic
+  //   }
+  // }
+
+// below is 9042 api
   Future<void> fetchData(String empNo) async {
-    // final url = Uri.parse('http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=$empNo');
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
+
     final url = Uri.parse(
-        'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
+        'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
+
+    print('URL ${url}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -52,8 +94,10 @@ class _HeaderWidgetState extends State<HeaderWidget> {
 
           // Debug: Print the list of empDetailsList
           empDetailsList.forEach((detail) {
+            // print(
+            //     'Emp Detail: ${detail.empNo}, ${detail.empName}, ${detail.deptName}, ${detail.position}');
             print(
-                'Emp Detail: ${detail.empNo}, ${detail.empName}, ${detail.deptName}, ${detail.position}');
+                'Emp Detail: ${detail.emPNo}, ${detail.emPName}, ${detail.depTName}, ${detail.position}');
           });
         });
       } else {
@@ -94,7 +138,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
                   // ),
                   TextSpan(
                     text: empDetailsList.isNotEmpty
-                        ? empDetailsList.first.empName
+                        ? empDetailsList.first.emPName
                         : 'User',
                     style: TextStyle(
                       fontWeight: FontWeight.normal,

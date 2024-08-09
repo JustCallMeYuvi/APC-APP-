@@ -37,9 +37,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   }
 
   Future<void> fetchData(String empNo) async {
-    // final url = Uri.parse('http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=$empNo');
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
+
     final url = Uri.parse(
-        'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
+        'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
 
     print('URL ${url}');
     try {
@@ -61,8 +63,10 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
           // Debug: Print the list of empDetailsList
           empDetailsList.forEach((detail) {
+            // print(
+            //     'Emp Detail: ${detail.empNo}, ${detail.empName}, ${detail.deptName}, ${detail.position}');
             print(
-                'Emp Detail: ${detail.empNo}, ${detail.empName}, ${detail.deptName}, ${detail.position}');
+                'Emp Detail: ${detail.emPNo}, ${detail.emPName}, ${detail.depTName}, ${detail.position}');
           });
         });
       } else {
@@ -77,9 +81,12 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
   Future<void> changePassword(String empNo, String oldPassword,
       String newPassword, BuildContext context) async {
-    final url = Uri.parse(
-        'http://10.3.0.70:9040/api/Flutter/UpdatePassword?empNo=$empNo&oldPassword=$oldPassword&newPassword=$newPassword');
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9040/api/Flutter/UpdatePassword?empNo=$empNo&oldPassword=$oldPassword&newPassword=$newPassword');
 
+    final url = Uri.parse(
+        'http://10.3.0.70:9042/api/HR/UpdatePassword?empNo=$empNo&oldPassword=$oldPassword&newPassword=$newPassword');
+    print('Change passwor $url');
     try {
       final response = await http.post(url);
 
@@ -149,40 +156,40 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     }
   }
 
-  Future<void> logout(String? empNo, String? token) async {
-    if (empNo == null || token == null) {
-      print('EmpNo or Token is null. Cannot perform logout.');
-      return;
-    }
+  // Future<void> logout(String? empNo, String? token) async {
+  //   if (empNo == null || token == null) {
+  //     print('EmpNo or Token is null. Cannot perform logout.');
+  //     return;
+  //   }
 
-    final url = Uri.parse(
-        'http://10.3.0.70:9040/api/Flutter/LogoutApi?empNo=$empNo&token=$token');
+  //   final url = Uri.parse(
+  //       'http://10.3.0.70:9040/api/Flutter/LogoutApi?empNo=$empNo&token=$token');
 
-    try {
-      final response = await http.post(url);
+  //   try {
+  //     final response = await http.post(url);
 
-      if (response.statusCode == 200) {
-        // Assuming the logout API returns success
-        final jsonResponse = json.decode(response.body);
-        print('${jsonResponse}');
-        // Handle any additional logic after successful logout if needed
+  //     if (response.statusCode == 200) {
+  //       // Assuming the logout API returns success
+  //       final jsonResponse = json.decode(response.body);
+  //       print('${jsonResponse}');
+  //       // Handle any additional logic after successful logout if needed
 
-        // Navigate to the login screen and remove all other routes from the stack
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => const LoginPage(),
-          ),
-          (Route<dynamic> route) => false,
-        );
-      } else {
-        print('Logout request failed with status: ${response.statusCode}');
-        // Handle logout request failure if needed
-      }
-    } catch (e) {
-      print('Error logging out: $e');
-      // Handle logout error if needed
-    }
-  }
+  //       // Navigate to the login screen and remove all other routes from the stack
+  //       Navigator.of(context).pushAndRemoveUntil(
+  //         MaterialPageRoute(
+  //           builder: (context) => const LoginPage(),
+  //         ),
+  //         (Route<dynamic> route) => false,
+  //       );
+  //     } else {
+  //       print('Logout request failed with status: ${response.statusCode}');
+  //       // Handle logout request failure if needed
+  //     }
+  //   } catch (e) {
+  //     print('Error logging out: $e');
+  //     // Handle logout error if needed
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -295,12 +302,12 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 Column(
                   children: [
                     buildAccountInfo(
-                        label: 'Barcode', value: empDetailsList.first.empNo),
+                        label: 'Barcode', value: empDetailsList.first.emPNo),
                     buildAccountInfo(
-                        label: 'Name', value: empDetailsList.first.empName),
+                        label: 'Name', value: empDetailsList.first.emPName),
                     buildAccountInfo(
                         label: 'Department',
-                        value: empDetailsList.first.deptName),
+                        value: empDetailsList.first.depTName),
                     buildAccountInfo(
                         label: 'Position',
                         value: empDetailsList.first.position),

@@ -28,8 +28,12 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   Future<void> fetchContacts() async {
+    // final url =
+    //     'http://10.3.0.70:9040/api/Flutter/GetUserDetails?empNo=${widget.userData.empNo}';
+
     final url =
-        'http://10.3.0.70:9040/api/Flutter/GetUserDetails?empNo=${widget.userData.empNo}';
+        'http://10.3.0.70:9042/api/HR/GetUserDetails?empNo=${widget.userData.empNo}';
+
     print('Fetching contacts from: $url');
 
     try {
@@ -37,12 +41,20 @@ class _ContactsPageState extends State<ContactsPage> {
 
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
+        // Print the response data
+        print('Response data contacts: $data');
         setState(() {
           contacts = data
               .map((contact) => {
-                    'name': contact['EMP_NAME'],
-                    'id': contact['ID'],
-                    'empNo': contact['EMP_NO'], // Include EMP_NO for chat data
+                    // below is 9040 api
+                    // 'name': contact['EMP_NAME'],
+                    // 'id': contact['ID'],
+                    // 'empNo': contact['EMP_NO'], // Include EMP_NO for chat data
+
+                    // below is 9042 api
+                    'name': contact['emP_NAME'],
+                    'id': contact['id'],
+                    'empNo': contact['emP_NO'],
                   })
               .toList();
           filteredContacts = contacts; // Initialize filteredContacts

@@ -27,7 +27,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     // });
   }
 
-
   //  @override
   // void didChangeDependencies() {
   //   super.didChangeDependencies();
@@ -35,11 +34,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   //   fetchDataLeaves(widget.userData.empNo);
   // }
 
-
   Future<void> fetchDataLeaves(String empNo) async {
     // final url = Uri.parse('http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=$empNo');
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9040/api/Flutter/GetAH_HOLIDAYDetails?empNo=${widget.userData.empNo}');
     final url = Uri.parse(
-        'http://10.3.0.70:9040/api/Flutter/GetAH_HOLIDAYDetails?empNo=${widget.userData.empNo}');
+        'http://10.3.0.70:9042/api/HR/GetAH_HOLIDAYDetails?empNo=${widget.userData.empNo}');
 
     print('Leave url $url');
     try {
@@ -63,8 +63,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
           // Debug: Print the list of empDetailsList
           empLeaveDetails.forEach((detail) {
-            print(
-                'Emp Detail: ${detail.empNo}, ${detail.deptNo}, ${detail.startDate}, ${detail.endDate}');
+            // print(
+            //     'Emp Detail: ${detail.empNo}, ${detail.deptNo}, ${detail.startDate}, ${detail.endDate}');
           });
         });
       } else {
@@ -136,7 +136,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
                     onDismissed: (direction) {
                       // Call deleteNotification method
-                      deleteNotification(empLeave.holidayId);
+                      deleteNotification(empLeave.holidaYId);
                       setState(() {
                         empLeaveDetails.removeAt(index);
                       });
@@ -155,9 +155,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
                     child: buildNotificationCard(
                       icon: Icons.notifications_active,
-                      title: 'Leave Hours : ${empLeave.holidayQty}',
+                      title: 'Leave Hours : ${empLeave.holidaYQty}',
                       subtitle:
-                          'Start Date: ${_formatDate(empLeave.startDate)}, \nEnd Date: ${_formatDate(empLeave.endDate)}',
+                          'Start Date: ${_formatDate(empLeave.starTDate)}, \nEnd Date: ${_formatDate(empLeave.enDDate)}',
                     ),
                   );
                 },
@@ -209,6 +209,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> deleteNotification(String holidayId) async {
     final url = Uri.parse(
         'http://10.3.0.70:9040/api/Flutter/DeleteNotifications?holidayId=$holidayId');
+
+    // final url = Uri.parse(
+    //       'http://10.3.0.70:9042/api/HR/DeleteNotifications?holidayId=$holidayId');
 
     try {
       final response = await http.delete(url);

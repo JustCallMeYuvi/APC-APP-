@@ -67,18 +67,21 @@ class NotificationService {
 
   Future<void> initNotification(Function(String?) onNotificationClick) async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher'); // Ensure this icon exists
+        AndroidInitializationSettings(
+            '@mipmap/ic_launcher'); // Ensure this icon exists
 
     final DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
             requestAlertPermission: true,
             requestBadgePermission: true,
             requestSoundPermission: true,
-            onDidReceiveLocalNotification:
-                (int id, String? title, String? body, String? payload) async {});
+            onDidReceiveLocalNotification: (int id, String? title, String? body,
+                String? payload) async {});
 
-    final InitializationSettings initializationSettings = InitializationSettings(
-        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsIOS);
 
     await notificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse:

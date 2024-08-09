@@ -36,13 +36,16 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = [];
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  bool _isHovered = false;
   late IOWebSocketChannel _channel;
   List<bool> buttonVisibility = [
     true,
     true,
     true
   ]; // Track visibility of buttons
-
+  int? _replyToMessageId; // Declare the replyToMessageId
+  String? _replyToMessageText;
   @override
   void initState() {
     super.initState();
@@ -50,6 +53,22 @@ class _ChatScreenState extends State<ChatScreen> {
 // fetchReceiveMessages();
     // longPolling(); // Start long polling for new messages
     // _initializeWebSocket();
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    }
+  }
+
+  void _scrollToBottomOnTap() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   void _initializeWebSocket() {
@@ -73,6 +92,10 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final String url =
           'http://10.3.0.70:9040/api/Flutter/GetMessagesAsync?senderId=${widget.senderId}&receiverId=${widget.receiverId}';
+
+      // final String url =
+      //   'http://10.3.0.70:9042/api/HR/GetMessagesAsync?senderId=${widget.senderId}&receiverId=${widget.receiverId}';
+
       final response = await http.get(Uri.parse(url));
 
       print('Request URL: $url');
@@ -116,16 +139,23 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendMessageOrFile(
-      {String? text, File? file, String? fileExtension}) async {
+      {String? text,
+      File? file,
+      String? fileExtension,
+      int? replyToMessageId}) async {
     try {
-      final String url = 'http://10.3.0.70:9040/api/Flutter/AddMessageAsync';
+      // final String url = 'http://10.3.0.70:9040/api/Flutter/AddMessageAsync';
+
+      final String url = 'http://10.3.0.70:9042/api/HR/AddMessageAsync';
+
       final request = http.MultipartRequest('POST', Uri.parse(url))
         ..fields['SenderId'] = widget.senderId.toString()
         ..fields['ReceiverId'] = widget.receiverId.toString()
         ..fields['MessageText'] =
             text ?? '' // Use provided text or empty string
         ..fields['IsUserMessage'] = 'true'
-        ..fields['MessageTimestamp'] = DateTime.now().toIso8601String();
+        ..fields['MessageTimestamp'] = DateTime.now().toIso8601String()
+        ..fields['ReplyToMessageId'] = replyToMessageId?.toString() ?? '';
 
       String? fileType;
       String? fileBytesBase64;
@@ -172,7 +202,7 @@ class _ChatScreenState extends State<ChatScreen> {
               fileBytesBase64: fileBytesBase64 ?? '',
               format: '',
               // format: fileExtension,
-              filename: '', // Store Base64 string
+              filename: '', readStatus: 0, // Store Base64 string
             ),
           );
           if (file != null) {
@@ -398,7 +428,7 @@ class _ChatScreenState extends State<ChatScreen> {
       // fileUrl: null,
       fileBytesBase64: '',
       fileUrl: null, format: '',
-      filename: '', // Received messages are not user messages
+      filename: '', readStatus: 0, // Received messages are not user messages
     );
 
     setState(() {
@@ -413,114 +443,137 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Text(widget.contactName),
         backgroundColor: Colors.lightGreen,
       ),
-      body: Container(
-        // decoration: BoxDecoration(
-        //   gradient: LinearGradient(
-        //     begin: Alignment.topLeft,
-        //     end: Alignment.bottomRight,
-        //     colors: [Colors.lightGreen, Colors.redAccent],
-        //   ),
-        // ),
-        decoration: UiConstants.backgroundGradient,
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: ListView.builder(
-                // reverse: true,
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  // return _buildMessage(_messages[index]);
-                  return _buildMessage(
-                      _messages[index], widget.senderId, context);
-                },
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (buttonVisibility[0])
-                  GestureDetector(
-                    onTap: () {
-                      // sendMessage('How are you?', 0);
-                      _sendMessageOrFile(
-                          text:
-                              'How are you?'); // Send predefined message 'Hi!'
+      body: Stack(
+        children: <Widget>[
+          Container(
+            // decoration: BoxDecoration(
+            //   gradient: LinearGradient(
+            //     begin: Alignment.topLeft,
+            //     end: Alignment.bottomRight,
+            //     colors: [Colors.lightGreen, Colors.redAccent],
+            //   ),
+            // ),
+            decoration: UiConstants.backgroundGradient,
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  child: ListView.builder(
+                    // reverse: true,
+                    controller:
+                        _scrollController, // Attach the ScrollController here
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      // return _buildMessage(_messages[index]);
+                      return _buildMessage(
+                        _messages[index],
+                        widget.senderId,
+                        context,
+                        replyToMessageId: _replyToMessageId,
+                      );
                     },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 8.0, right: 8.0),
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      child: const Text(
-                        'How are you?',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
                   ),
-                if (buttonVisibility[1])
-                  GestureDetector(
-                    onTap: () {
-                      // sendMessage('Hi!', 1);
-                      _sendMessageOrFile(text: 'Hi!');
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 8.0, right: 8.0),
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(5.0),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (buttonVisibility[0])
+                      GestureDetector(
+                        onTap: () {
+                          // sendMessage('How are you?', 0);
+                          _sendMessageOrFile(
+                              text:
+                                  'How are you?'); // Send predefined message 'Hi!'
+                        },
+                        child: Container(
+                          margin:
+                              const EdgeInsets.only(bottom: 8.0, right: 8.0),
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          child: const Text(
+                            'How are you?',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
-                      child: const Text(
-                        'Hi!',
-                        style: TextStyle(color: Colors.white),
+                    if (buttonVisibility[1])
+                      GestureDetector(
+                        onTap: () {
+                          // sendMessage('Hi!', 1);
+                          _sendMessageOrFile(text: 'Hi!');
+                        },
+                        child: Container(
+                          margin:
+                              const EdgeInsets.only(bottom: 8.0, right: 8.0),
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          child: const Text(
+                            'Hi!',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
-                    ),
+                    if (buttonVisibility[2])
+                      GestureDetector(
+                        onTap: () {
+                          // sendMessage('What\'s up?', 2);
+                          _sendMessageOrFile(text: 'What\'s up?');
+                        },
+                        child: Container(
+                          margin:
+                              const EdgeInsets.only(bottom: 8.0, right: 8.0),
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          child: const Text(
+                            'What\'s up?',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const Divider(height: 1.0),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
                   ),
-                if (buttonVisibility[2])
-                  GestureDetector(
-                    onTap: () {
-                      // sendMessage('What\'s up?', 2);
-                      _sendMessageOrFile(text: 'What\'s up?');
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 8.0, right: 8.0),
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      child: const Text(
-                        'What\'s up?',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
+                  child: _buildTextComposer(),
+                ),
               ],
             ),
-            const Divider(height: 1.0),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-              ),
-              child: _buildTextComposer(),
+          ),
+          Positioned(
+            bottom: 70,
+            right: 06,
+            child: IconButton(
+              onPressed: () {
+                _scrollToBottomOnTap();
+              },
+              icon: Icon(Icons.keyboard_arrow_down_rounded),
+              color: Colors.red,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  // Widget _buildMessage(ChatMessage message) {
-  //   // Get the width of the screen
-  //   double screenWidth = MediaQuery.of(context).size.width;
+// here swipe reply shows in show bottom widget
 
-  //   // Set a responsive width for the image
+  // Widget _buildMessage(
+  //     ChatMessage message, int senderId, BuildContext context) {
+  //   double screenWidth = MediaQuery.of(context).size.width;
   //   double imageWidth = screenWidth * 0.6; // 60% of the screen width
   //   double imageHeight = 300;
 
-  //   // Function to check if a file is an image based on its MIME type
   //   bool isImage(String base64String) {
   //     try {
   //       Uint8List bytes = base64Decode(base64String);
@@ -531,7 +584,6 @@ class _ChatScreenState extends State<ChatScreen> {
   //     }
   //   }
 
-  //   // Function to check if a file is a video based on its MIME type
   //   bool isVideo(String base64String) {
   //     try {
   //       Uint8List bytes = base64Decode(base64String);
@@ -542,148 +594,130 @@ class _ChatScreenState extends State<ChatScreen> {
   //     }
   //   }
 
-  //   return Align(
-  //     alignment: message.senderId == widget.senderId
-  //         ? Alignment.centerRight
-  //         : Alignment.centerLeft,
-  //     child: Container(
-  //       margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-  //       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-  //       decoration: BoxDecoration(
-  //         color: message.senderId == widget.senderId
-  //             ? Colors.lightGreen
-  //             : Colors.grey,
-  //         borderRadius: BorderRadius.circular(10.0),
-  //       ),
-  //       child: IntrinsicWidth(
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             // Display image if it exists and is an image
-  //             if (message.fileBytesBase64 != null &&
-  //                 message.fileBytesBase64!.isNotEmpty &&
-  //                 isImage(message.fileBytesBase64!))
-  //               GestureDetector(
-  //                 onTap: () {
-  //                   Navigator.push(
-  //                     context,
-  //                     MaterialPageRoute(
-  //                       builder: (_) => FullScreenImageView(
-  //                         imageBytes: base64Decode(message.fileBytesBase64!),
+  //   return SwipeTo(
+  //     onRightSwipe: (details) {
+  //       _handleSwipeReply(
+  //         isRightSwipe: true,
+  //         message: message,
+  //       );
+  //     },
+  //     onLeftSwipe: (details) {
+  //       _handleSwipeReply(
+  //         isRightSwipe: false,
+  //         message: message,
+  //       );
+  //     },
+  //     iconOnLeftSwipe: Icons.reply,
+  //     leftSwipeWidget: const Icon(Icons.reply, color: Colors.white),
+  //     iconOnRightSwipe: Icons.reply,
+  //     rightSwipeWidget: const Icon(Icons.reply, color: Colors.white),
+  //     child: Align(
+  //       alignment: message.senderId == senderId
+  //           ? Alignment.centerRight
+  //           : Alignment.centerLeft,
+  //       child: Container(
+  //         margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+  //         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+  //         decoration: BoxDecoration(
+  //           color:
+  //               message.senderId == senderId ? Colors.lightGreen : Colors.grey,
+  //           borderRadius: BorderRadius.circular(10.0),
+  //         ),
+  //         child: IntrinsicWidth(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               if (message.fileBytesBase64 != null &&
+  //                   message.fileBytesBase64!.isNotEmpty &&
+  //                   isImage(message.fileBytesBase64!))
+  //                 GestureDetector(
+  //                   onTap: () {
+  //                     Navigator.push(
+  //                       context,
+  //                       MaterialPageRoute(
+  //                         builder: (_) => FullScreenImageView(
+  //                           imageBytes: base64Decode(message.fileBytesBase64!),
+  //                         ),
   //                       ),
-  //                     ),
-  //                   );
-  //                 },
-  //                 onLongPress: () async {
-  //                   print('Long press detected'); // For debugging
-  //                   // if (await Permission.storage.request().isGranted) {
-
-  //                   _downloadAndSaveImage(
-  //                     context,
-  //                     message.fileBytesBase64!,
-  //                     message.filename ?? 'image_${message.messageId}.png',
-  //                   );
-  //                   // } else {
-  //                   //   ScaffoldMessenger.of(context).showSnackBar(
-  //                   //     SnackBar(
-  //                   //       content: Text('Permission denied to save file'),
-  //                   //     ),
-  //                   //   );
-  //                   // }
-  //                 },
-  //                 child: Image.memory(
-  //                   base64Decode(message.fileBytesBase64!),
-  //                   height: imageHeight,
-  //                   width: imageWidth,
-  //                   fit: BoxFit.cover,
+  //                     );
+  //                   },
+  //                   onLongPress: () async {
+  //                     _downloadAndSaveImage(
+  //                       context,
+  //                       message.fileBytesBase64!,
+  //                       message.filename ?? 'image_${message.messageId}.png',
+  //                     );
+  //                   },
+  //                   child: Image.memory(
+  //                     base64Decode(message.fileBytesBase64!),
+  //                     height: imageHeight,
+  //                     width: imageWidth,
+  //                     fit: BoxFit.cover,
+  //                   ),
   //                 ),
-  //               ),
-
-  //             // Display a file icon and filename for non-image files
-  //             if (message.fileBytesBase64 != null &&
-  //                 message.fileBytesBase64!.isNotEmpty &&
-  //                 !isImage(message.fileBytesBase64!))
-  //               GestureDetector(
-  //                 onTap: () {
-  //                   Navigator.push(
-  //                     context,
-  //                     MaterialPageRoute(
-  //                       builder: (_) => FilePreviewView(
-  //                         fileBytes: base64Decode(message.fileBytesBase64!),
-  //                         filename: message.filename ??
-  //                             'file_${message.messageId}.${message.format}',
+  //               if (message.fileBytesBase64 != null &&
+  //                   message.fileBytesBase64!.isNotEmpty &&
+  //                   !isImage(message.fileBytesBase64!))
+  //                 GestureDetector(
+  //                   onTap: () {
+  //                     Navigator.push(
+  //                       context,
+  //                       MaterialPageRoute(
+  //                         builder: (_) => FilePreviewView(
+  //                           fileBytes: base64Decode(message.fileBytesBase64!),
+  //                           filename: message.filename ??
+  //                               'file_${message.messageId}.${message.format}',
+  //                         ),
   //                       ),
-  //                     ),
-  //                   );
-  //                 },
-  //                 onLongPress: () async {
-  //                   // if (await Permission.storage.request().isGranted) {
-  //                   _downloadAndSaveFile(
-  //                     context,
-  //                     message.fileBytesBase64!,
-  //                     message.filename ?? 'file_${message.messageId}',
-  //                   );
-  //                   // } else {
-  //                   //   ScaffoldMessenger.of(context).showSnackBar(
-  //                   //     SnackBar(
-  //                   //       content: Text('Permission denied to save file'),
-  //                   //     ),
-  //                   //   );
-  //                   // }
-  //                 },
-  //                 child: Row(
-  //                   children: [
-  //                     Icon(Icons.insert_drive_file, color: Colors.white),
-  //                     SizedBox(width: 10),
-  //                     // Text(
-  //                     //   message.fileName ?? 'file_${message.messageId}',
-  //                     //   style: TextStyle(color: Colors.white),
-  //                     // ),
-
-  //                     // Text(
-  //                     //   message.filename ??
-  //                     //       'file_${message.messageId}.${message.format}',
-  //                     //   style: TextStyle(color: Colors.white),
-  //                     // ),
-  //                     Text(
-  //                       message.filename != null
-  //                           ? (message.filename!.length > 15
-  //                               ? '${message.filename!.substring(0, 15)}.${message.format}'
-  //                               : '${message.filename!}.${message.format}') // Show the truncated file name with format
-  //                           : 'file_${message.messageId}.${message.format}', // Default text
-  //                       style: TextStyle(color: Colors.white),
-  //                     ),
-  //                   ],
+  //                     );
+  //                   },
+  //                   onLongPress: () async {
+  //                     _downloadAndSaveFile(
+  //                       context,
+  //                       message.fileBytesBase64!,
+  //                       message.filename ?? 'file_${message.messageId}',
+  //                     );
+  //                   },
+  //                   child: Row(
+  //                     children: [
+  //                       Icon(Icons.insert_drive_file, color: Colors.white),
+  //                       SizedBox(width: 10),
+  //                       Text(
+  //                         message.filename != null
+  //                             ? (message.filename!.length > 15
+  //                                 ? '${message.filename!.substring(0, 15)}.${message.format}'
+  //                                 : '${message.filename!}.${message.format}')
+  //                             : 'file_${message.messageId}.${message.format}',
+  //                         style: TextStyle(color: Colors.white),
+  //                       ),
+  //                     ],
+  //                   ),
   //                 ),
-  //               ),
-  //             // Display text message if it exists
-  //             if (message.messageText != null &&
-  //                 message.messageText!.isNotEmpty)
+  //               if (message.messageText != null &&
+  //                   message.messageText!.isNotEmpty)
+  //                 Text(
+  //                   message.messageText!,
+  //                   style: const TextStyle(
+  //                     color: Colors.white,
+  //                   ),
+  //                 ),
   //               Text(
-  //                 message.messageText!,
+  //                 DateFormat('hh:mm a').format(message.messageTimestamp),
   //                 style: const TextStyle(
-  //                   color: Colors.white,
+  //                   color: Colors.white60,
+  //                   fontSize: 12.0,
   //                 ),
   //               ),
-  //             // Display timestamp
-  //             Text(
-  //               DateFormat('hh:mm a').format(message.messageTimestamp),
-  //               style: const TextStyle(
-  //                 color: Colors.white60,
-  //                 fontSize: 12.0,
-  //               ),
-  //             ),
-  //           ],
+  //             ],
+  //           ),
   //         ),
   //       ),
   //     ),
   //   );
   // }
 
-// here swipe reply shows in show bottom widget
-
-  Widget _buildMessage(
-      ChatMessage message, int senderId, BuildContext context) {
+  Widget _buildMessage(ChatMessage message, int senderId, BuildContext context,
+      {int? replyToMessageId}) {
     double screenWidth = MediaQuery.of(context).size.width;
     double imageWidth = screenWidth * 0.6; // 60% of the screen width
     double imageHeight = 300;
@@ -712,13 +746,13 @@ class _ChatScreenState extends State<ChatScreen> {
       onRightSwipe: (details) {
         _handleSwipeReply(
           isRightSwipe: true,
-          replyMessage: message.messageText ?? 'No content',
+          message: message,
         );
       },
       onLeftSwipe: (details) {
         _handleSwipeReply(
           isRightSwipe: false,
-          replyMessage: message.messageText ?? 'No content',
+          message: message,
         );
       },
       iconOnLeftSwipe: Icons.reply,
@@ -741,6 +775,18 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // if (_replyToMessageId == message.messageId)
+                //   Container(
+                //     padding: const EdgeInsets.all(8.0),
+                //     color: Colors.blueGrey[200],
+                //     child: Text(
+                //       'Replying to: ${_replyToMessageText ?? ''}',
+                //       style: const TextStyle(
+                //         color: Colors.black,
+                //         fontWeight: FontWeight.bold,
+                //       ),
+                //     ),
+                //   ),
                 if (message.fileBytesBase64 != null &&
                     message.fileBytesBase64!.isNotEmpty &&
                     isImage(message.fileBytesBase64!))
@@ -756,7 +802,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       );
                     },
                     onLongPress: () async {
-                      print('Long press detected'); // For debugging
                       _downloadAndSaveImage(
                         context,
                         message.fileBytesBase64!,
@@ -823,6 +868,32 @@ class _ChatScreenState extends State<ChatScreen> {
                     fontSize: 12.0,
                   ),
                 ),
+
+                // if (message.messageText != null)
+                //   Text(
+                //     message.messageText!,
+                //     style: TextStyle(color: Colors.white),
+                //   ),
+                if (message.receiverId == widget.receiverId &&
+                    message.readStatus == 0)
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Icon(
+                      Icons.done,
+                      color: Colors.white,
+                      size: 16.0,
+                    ),
+                  )
+                else if (message.receiverId == widget.receiverId &&
+                    message.readStatus == 1)
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Icon(
+                      Icons.done_all,
+                      color: Colors.blue,
+                      size: 16.0,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -832,16 +903,22 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleSwipeReply(
-      {required bool isRightSwipe, required String replyMessage}) {
-    // Navigator.pop(context);
-    _displayInputBottomSheet(context, isRightSwipe, message: replyMessage);
+      {required bool isRightSwipe, required ChatMessage message}) {
+    setState(() {
+      _replyToMessageId = message.messageId; // Set the message ID to reply to
+      _replyToMessageText = message.messageText ??
+          'No content'; // Set the text of the message being replied to
+    });
+    _displayInputBottomSheet(
+      context,
+      isRightSwipe,
+      message: _replyToMessageText,
+      messageId: message.messageId,
+    );
   }
 
   void _displayInputBottomSheet(BuildContext context, bool isRightSwipe,
-      {String? message}) {
-    // TextEditingController _controller =
-    //     TextEditingController(text: message ?? '');
-    // Create an empty controller for the TextField to ensure it starts empty
+      {String? message, required int messageId}) {
     TextEditingController _controller = TextEditingController();
     showModalBottomSheet(
       context: context,
@@ -859,7 +936,14 @@ class _ChatScreenState extends State<ChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Reply to: ${message ?? 'No message selected'}', // Show the swiped message
+                  'Reply to: ${message ?? 'No message selected'}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.0,
+                  ),
+                ),
+                Text(
+                  'Reply to: ${messageId ?? 'No message selected'}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16.0,
@@ -883,7 +967,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       icon: const Icon(Icons.send),
                       onPressed: () {
                         String text = _controller.text;
-                        _sendMessageOrFile(text: text);
+                        _sendMessageOrFile(
+                            text: text, replyToMessageId: messageId);
                         Navigator.pop(context);
                       },
                     ),
@@ -896,251 +981,6 @@ class _ChatScreenState extends State<ChatScreen> {
       },
     );
   }
-
-// here below chat screen UI shows Reply msh=g like whats app shows win progres
-
-// Widget _buildMessage(
-//     ChatMessage message, int senderId, BuildContext context) {
-//   double screenWidth = MediaQuery.of(context).size.width;
-//   double imageWidth = screenWidth * 0.6; // 60% of the screen width
-//   double imageHeight = 300;
-
-//   bool isImage(String base64String) {
-//     try {
-//       Uint8List bytes = base64Decode(base64String);
-//       String mimeType = lookupMimeType('', headerBytes: bytes) ?? '';
-//       return mimeType.startsWith('image/');
-//     } catch (e) {
-//       return false;
-//     }
-//   }
-
-//   bool isVideo(String base64String) {
-//     try {
-//       Uint8List bytes = base64Decode(base64String);
-//       String mimeType = lookupMimeType('', headerBytes: bytes) ?? '';
-//       return mimeType.startsWith('video/');
-//     } catch (e) {
-//       return false;
-//     }
-//   }
-
-//   return SwipeTo(
-//     onRightSwipe: (details) {
-//       _handleSwipeReply(
-//         isRightSwipe: true,
-//         replyMessage: message.messageText ?? 'No content',
-//         context: context,
-//       );
-//     },
-//     onLeftSwipe: (details) {
-//       _handleSwipeReply(
-//         isRightSwipe: false,
-//         replyMessage: message.messageText ?? 'No content',
-//         context: context,
-//       );
-//     },
-//     iconOnLeftSwipe: Icons.reply,
-//     leftSwipeWidget: const Icon(Icons.reply, color: Colors.white),
-//     iconOnRightSwipe: Icons.reply,
-//     rightSwipeWidget: const Icon(Icons.reply, color: Colors.white),
-//     child: Align(
-//       alignment: message.senderId == senderId
-//           ? Alignment.centerRight
-//           : Alignment.centerLeft,
-//       child: Stack(
-//         children: [
-//           if (message.replyMessage != null)
-//             Positioned(
-//               top: -40, // Adjust this value as needed
-//               left: 0,
-//               right: 0,
-//               child: Container(
-//                 padding: const EdgeInsets.all(8.0),
-//                 decoration: BoxDecoration(
-//                   color: Colors.blueAccent,
-//                   borderRadius: BorderRadius.circular(8.0),
-//                 ),
-//                 child: Text(
-//                   'Reply: ${message.replyMessage}',
-//                   style: const TextStyle(
-//                     color: Colors.white,
-//                     fontSize: 14.0,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           Container(
-//             margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-//             padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-//             decoration: BoxDecoration(
-//               color:
-//                   message.senderId == senderId ? Colors.lightGreen : Colors.grey,
-//               borderRadius: BorderRadius.circular(10.0),
-//             ),
-//             child: IntrinsicWidth(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   if (message.fileBytesBase64 != null &&
-//                       message.fileBytesBase64!.isNotEmpty &&
-//                       isImage(message.fileBytesBase64!))
-//                     GestureDetector(
-//                       onTap: () {
-//                         Navigator.push(
-//                           context,
-//                           MaterialPageRoute(
-//                             builder: (_) => FullScreenImageView(
-//                               imageBytes: base64Decode(message.fileBytesBase64!),
-//                             ),
-//                           ),
-//                         );
-//                       },
-//                       onLongPress: () async {
-//                         _downloadAndSaveImage(
-//                           context,
-//                           message.fileBytesBase64!,
-//                           message.filename ?? 'image_${message.messageId}.png',
-//                         );
-//                       },
-//                       child: Image.memory(
-//                         base64Decode(message.fileBytesBase64!),
-//                         height: imageHeight,
-//                         width: imageWidth,
-//                         fit: BoxFit.cover,
-//                       ),
-//                     ),
-//                   if (message.fileBytesBase64 != null &&
-//                       message.fileBytesBase64!.isNotEmpty &&
-//                       !isImage(message.fileBytesBase64!))
-//                     GestureDetector(
-//                       onTap: () {
-//                         Navigator.push(
-//                           context,
-//                           MaterialPageRoute(
-//                             builder: (_) => FilePreviewView(
-//                               fileBytes: base64Decode(message.fileBytesBase64!),
-//                               filename: message.filename ??
-//                                   'file_${message.messageId}.${message.format}',
-//                             ),
-//                           ),
-//                         );
-//                       },
-//                       onLongPress: () async {
-//                         _downloadAndSaveFile(
-//                           context,
-//                           message.fileBytesBase64!,
-//                           message.filename ?? 'file_${message.messageId}',
-//                         );
-//                       },
-//                       child: Row(
-//                         children: [
-//                           Icon(Icons.insert_drive_file, color: Colors.white),
-//                           SizedBox(width: 10),
-//                           Text(
-//                             message.filename != null
-//                                 ? (message.filename!.length > 15
-//                                     ? '${message.filename!.substring(0, 15)}.${message.format}'
-//                                     : '${message.filename!}.${message.format}')
-//                                 : 'file_${message.messageId}.${message.format}',
-//                             style: TextStyle(color: Colors.white),
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                   if (message.messageText != null &&
-//                       message.messageText!.isNotEmpty)
-//                     Text(
-//                       message.messageText!,
-//                       style: const TextStyle(
-//                         color: Colors.white,
-//                       ),
-//                     ),
-//                   Text(
-//                     DateFormat('hh:mm a').format(message.messageTimestamp),
-//                     style: const TextStyle(
-//                       color: Colors.white60,
-//                       fontSize: 12.0,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     ),
-//   );
-// }
-
-// void _handleSwipeReply({
-//   required bool isRightSwipe,
-//   required String replyMessage,
-//   required BuildContext context,
-// }) {
-//   _displayInputBottomSheet(
-//     context,
-//     isRightSwipe,
-//     replyMessage: replyMessage,
-//   );
-// }
-
-// void _displayInputBottomSheet(BuildContext context, bool isRightSwipe,
-//     {String? replyMessage}) {
-//   TextEditingController _controller = TextEditingController();
-//   showModalBottomSheet(
-//     context: context,
-//     builder: (context) {
-//       return Padding(
-//         padding: MediaQuery.of(context).viewInsets,
-//         child: Container(
-//           padding: const EdgeInsets.only(
-//             left: 16.0,
-//             right: 16.0,
-//             top: 16.0,
-//             bottom: 16.0,
-//           ),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text(
-//                 'Reply to: ${replyMessage ?? 'No message selected'}',
-//                 style: const TextStyle(
-//                   fontWeight: FontWeight.bold,
-//                   fontSize: 16.0,
-//                 ),
-//               ),
-//               const SizedBox(height: 8.0),
-//               TextField(
-//                 controller: _controller,
-//                 autofocus: true,
-//                 textInputAction: TextInputAction.done,
-//                 textCapitalization: TextCapitalization.words,
-//                 decoration: InputDecoration(
-//                   labelText: 'Reply',
-//                   hintText: 'Enter reply here',
-//                   border: OutlineInputBorder(
-//                     borderRadius: BorderRadius.all(
-//                       Radius.circular(5.0),
-//                     ),
-//                   ),
-//                   suffixIcon: IconButton(
-//                     icon: const Icon(Icons.send),
-//                     onPressed: () {
-//                       String text = _controller.text;
-//                       _sendMessageOrFile(text: text);
-//                       Navigator.pop(context);
-//                     },
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       );
-//     },
-//   );
-// }
 
   Widget _buildTextComposer() {
     return IconTheme(
@@ -1209,6 +1049,12 @@ class ChatMessage {
   String? format;
   dynamic filename;
   final String? replyMessage; // Property to store reply message
+  int? replyToMessageId;
+  final bool isReply;
+  // bool isRead; // Add this field
+  // final int readStatus; // Add this line
+  int readStatus;
+
   ChatMessage({
     required this.messageId,
     required this.senderId,
@@ -1224,6 +1070,11 @@ class ChatMessage {
     required this.format,
     required this.filename,
     this.replyMessage, // Initialize as needed
+    this.replyToMessageId,
+    this.isReply = false,
+    // this.isRead = false, // Default to false
+    // this.readStatus = 0, // Initialize the readStatus with default value
+    required this.readStatus,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
@@ -1239,6 +1090,11 @@ class ChatMessage {
             json['FileBytesBase64'], // Ensure this is correctly mapped
         format: json["FORMAT"],
         filename: json["FILENAME"],
+        replyToMessageId: json["REPLY_TO_MESSAGE_ID"],
+        // isRead: json['isRead'] ?? false,
+        //  readStatus: json['READ_STATUS'], // Add this line
+        readStatus: json['ReadStatus'] ?? 0, // Map readStatus
+        // readStatus: json["ReadStatus"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -1254,9 +1110,11 @@ class ChatMessage {
         "FileType": fileType, // Serialize the fileType property
         "FORMAT": format,
         "FILENAME": filename,
+        "REPLY_TO_MESSAGE_ID": replyToMessageId,
+        // 'isRead': isRead,
+        "ReadStatus": readStatus,
       };
 }
-
 
 // //below is chat view text send crctly working on image send
 
@@ -1580,5 +1438,3 @@ class ChatMessage {
 //         "FILENAME": filename,
 //       };
 // }
-
-

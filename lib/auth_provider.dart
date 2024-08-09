@@ -64,6 +64,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   LoginModelApi? _userData;
+  
 
   bool get isLoggedIn => _isLoggedIn;
   LoginModelApi? get userData => _userData;
