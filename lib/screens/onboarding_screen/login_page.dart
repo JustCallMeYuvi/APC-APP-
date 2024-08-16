@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonResponse = json.decode(response.body);
@@ -66,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
         if (jsonResponse.isNotEmpty) {
           final data = jsonResponse[0];
           final loginData = LoginModelApi.fromJson(data);
-          print('Login Data: $loginData');
+          // print('Login Data: $loginData');
 
           // Use Provider to update login state
           Provider.of<AuthProvider>(context, listen: false).login(loginData);

@@ -16,6 +16,8 @@ import 'package:swipe_to/swipe_to.dart';
 
 import 'dart:convert';
 import 'package:web_socket_channel/io.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
+import 'package:web_socket_client/web_socket_client.dart';
 
 class ChatScreen extends StatefulWidget {
   final String contactName;
@@ -39,6 +41,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isHovered = false;
   late IOWebSocketChannel _channel;
+  late WebSocket _socket;
+
   List<bool> buttonVisibility = [
     true,
     true,
@@ -52,41 +56,73 @@ class _ChatScreenState extends State<ChatScreen> {
     fetchMessages();
 // fetchReceiveMessages();
     // longPolling(); // Start long polling for new messages
-    // _initializeWebSocket();
-  }
-
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    }
+    _initializeWebSocket();
+    // _initializeSocket();
   }
 
   void _scrollToBottomOnTap() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
     }
   }
 
   void _initializeWebSocket() {
-    _channel = IOWebSocketChannel.connect(
-        'ws://10.3.0.70:9040/api/Flutter/GetWebSocket');
-
-    _channel.stream.listen((message) {
-      print('New message: $message');
-      final newMessage = ChatMessage.fromJson(jsonDecode(message));
-      setState(() {
-        _messages.insert(0, newMessage);
-      });
-    }, onError: (error) {
-      print('WebSocket error: $error');
-    }, onDone: () {
-      print('WebSocket closed');
-    });
+    try {
+      _channel = IOWebSocketChannel.connect('ws://10.3.0.70:9042/api/HR');
+      _channel.stream.listen(
+        (message) {
+          print('Received messagess: $message');
+          // Handle WebSocket messages
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+        },
+        onDone: () {
+          print('WebSocket connection closed');
+        },
+      );
+    } catch (e) {
+      print('WebSocket connection error: $e');
+    }
   }
+
+// below web socket is using web socket client
+
+  //   void _initializeWebSocket() {
+  //   final uri = Uri.parse('ws://10.3.0.70:9042/api/HR');
+  //   final backoff = ConstantBackoff(Duration(seconds: 1));
+  //   _socket = WebSocket(uri, backoff: backoff);
+
+  //   // Listen for connection state changes
+  //   _socket.connection.listen((state) {
+  //     print('Connection state: $state');
+  //   });
+
+  //   // Listen for incoming messages
+  //   _socket.messages.listen((message) {
+  //     setState(() {
+  //       _messages.add(message);
+  //     });
+  //     print('Received message: $message');
+
+  //     // Optionally, send a response back to the server
+  //     _socket.send('ping');
+  //   });
+
+  //   // Handle errors
+  //   // _socket.errors.listen((error) {
+  //   //   print('WebSocket error: $error');
+  //   // });
+
+  //   // Handle connection closure
+  //   // _socket.close.listen((_) {
+  //   //   print('WebSocket connection closed');
+  //   // });
+  // }
 
   Future<void> fetchMessages() async {
     try {
@@ -120,11 +156,14 @@ class _ChatScreenState extends State<ChatScreen> {
             // });
             // Update button visibility based on messages list
 
-            if (_messages.isNotEmpty) {
-              buttonVisibility = [false, false, false]; // Hide buttons
-            } else {
-              buttonVisibility = [true, true, true]; // Show buttons
-            }
+            // if (_messages.isNotEmpty) {
+            //   buttonVisibility = [false, false, false]; // Hide buttons
+            // } else {
+            //   buttonVisibility = [true, true, true]; // Show buttons
+            // }
+            buttonVisibility = _messages.isNotEmpty
+                ? [false, false, false]
+                : [true, true, true];
           });
         } else {
           print('Response body is null');
@@ -138,21 +177,103 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  // Future<void> _sendMessageOrFile(
+  //     {String? text,
+  //     File? file,
+  //     String? fileExtension,
+  //     int? replyToMessageId}) async {
+  //   try {
+  //     // final String url = 'http://10.3.0.70:9040/api/Flutter/AddMessageAsync';
+
+  //     final String url = 'http://10.3.0.70:9042/api/HR/AddMessageAsync';
+
+  //     final request = http.MultipartRequest('POST', Uri.parse(url))
+  //       ..fields['SenderId'] = widget.senderId.toString()
+  //       ..fields['ReceiverId'] = widget.receiverId.toString()
+  //       ..fields['MessageText'] =
+  //           text ?? '' // Use provided text or empty string
+  //       ..fields['IsUserMessage'] = 'true'
+  //       ..fields['MessageTimestamp'] = DateTime.now().toIso8601String()
+  //       ..fields['ReplyToMessageId'] = replyToMessageId?.toString() ?? '';
+
+  //     String? fileType;
+  //     String? fileBytesBase64;
+
+  //     if (file != null) {
+  //       final fileName = file.path.split('/').last;
+  //       fileType = fileName.split('.').last.toLowerCase();
+
+  //       // Read the file bytes and convert to Base64
+  //       final Uint8List bytes = await file.readAsBytes();
+  //       fileBytesBase64 = base64.encode(bytes);
+  //       print('base 64 : ${fileBytesBase64}');
+
+  //       request.fields['FileBytesBase64'] =
+  //           fileBytesBase64; // Include Base64 in the request
+
+  //       request.files.add(await http.MultipartFile.fromPath('file', file.path,
+  //           filename: fileName));
+  //     }
+
+  //     final response = await request.send();
+  //     final responseBody = await response.stream.bytesToString();
+
+  //     if (response.statusCode == 200) {
+  //       print(file != null
+  //           ? 'File sent successfully'
+  //           : 'Message sent successfully');
+  //       _controller.clear();
+
+  //       setState(() {
+  //         _messages.insert(
+  //           0,
+  //           ChatMessage(
+  //             messageId: _messages.length + 1,
+  //             senderId: widget.senderId,
+  //             receiverId: widget.receiverId,
+  //             messageText: file != null
+  //                 ? 'Sent a file: ${file.path.split('/').last}'
+  //                 : text!,
+  //             messageTimestamp: DateTime.now(),
+  //             isUserMessage: true,
+  //             isFile: file != null, // Set isFile
+  //             fileType: fileType, // Set fileType
+  //             fileUrl: file?.path,
+  //             fileBytesBase64: fileBytesBase64 ?? '',
+  //             format: '',
+  //             // format: fileExtension,
+  //             filename: '', readStatus: 0, // Store Base64 string
+  //           ),
+  //         );
+  //         if (file != null) {
+  //           buttonVisibility[0] = false; // Hide button after sending file
+  //         }
+  //       });
+  //     }
+  //     else {
+  //       print(
+  //           'Failed to send ${file != null ? 'file' : 'message'}: ${response.statusCode}');
+  //       print('Response Body: $responseBody');
+  //     }
+  //   } catch (e) {
+  //     print('Error sending ${file != null ? 'file' : 'message'}: $e');
+  //   }
+  // }
+
+// below _sendMessageOrFile method using web socket
+
   Future<void> _sendMessageOrFile(
       {String? text,
       File? file,
       String? fileExtension,
       int? replyToMessageId}) async {
     try {
-      // final String url = 'http://10.3.0.70:9040/api/Flutter/AddMessageAsync';
-
       final String url = 'http://10.3.0.70:9042/api/HR/AddMessageAsync';
 
       final request = http.MultipartRequest('POST', Uri.parse(url))
         ..fields['SenderId'] = widget.senderId.toString()
         ..fields['ReceiverId'] = widget.receiverId.toString()
-        ..fields['MessageText'] =
-            text ?? '' // Use provided text or empty string
+        ..fields['MessageText'] = text ?? ''
         ..fields['IsUserMessage'] = 'true'
         ..fields['MessageTimestamp'] = DateTime.now().toIso8601String()
         ..fields['ReplyToMessageId'] = replyToMessageId?.toString() ?? '';
@@ -163,14 +284,11 @@ class _ChatScreenState extends State<ChatScreen> {
         final fileName = file.path.split('/').last;
         fileType = fileName.split('.').last.toLowerCase();
 
-        // Read the file bytes and convert to Base64
         final Uint8List bytes = await file.readAsBytes();
         fileBytesBase64 = base64.encode(bytes);
-        print('base 64 : ${fileBytesBase64}');
+        print('base64: $fileBytesBase64');
 
-        request.fields['FileBytesBase64'] =
-            fileBytesBase64; // Include Base64 in the request
-
+        request.fields['FileBytesBase64'] = fileBytesBase64;
         request.files.add(await http.MultipartFile.fromPath('file', file.path,
             filename: fileName));
       }
@@ -184,6 +302,27 @@ class _ChatScreenState extends State<ChatScreen> {
             : 'Message sent successfully');
         _controller.clear();
 
+        if (file != null) {
+          _channel.sink.add(jsonEncode({
+            'senderId': widget.senderId,
+            'receiverId': widget.receiverId,
+            'messageText': 'Sent a file: ${file.path.split('/').last}',
+            'messageTimestamp': DateTime.now().toIso8601String(),
+            'isUserMessage': true,
+            'isFile': true,
+            'fileType': fileType,
+            'fileBytesBase64': fileBytesBase64,
+          }));
+        } else {
+          _channel.sink.add(jsonEncode({
+            'senderId': widget.senderId,
+            'receiverId': widget.receiverId,
+            'messageText': text!,
+            'messageTimestamp': DateTime.now().toIso8601String(),
+            'isUserMessage': true,
+          }));
+        }
+
         setState(() {
           _messages.insert(
             0,
@@ -196,17 +335,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   : text!,
               messageTimestamp: DateTime.now(),
               isUserMessage: true,
-              isFile: file != null, // Set isFile
-              fileType: fileType, // Set fileType
+              isFile: file != null,
+              fileType: fileType,
               fileUrl: file?.path,
               fileBytesBase64: fileBytesBase64 ?? '',
               format: '',
-              // format: fileExtension,
-              filename: '', readStatus: 0, // Store Base64 string
+              filename: '',
+              readStatus: 0,
             ),
           );
           if (file != null) {
-            buttonVisibility[0] = false; // Hide button after sending file
+            buttonVisibility[0] = false;
           }
         });
       } else {
@@ -218,6 +357,102 @@ class _ChatScreenState extends State<ChatScreen> {
       print('Error sending ${file != null ? 'file' : 'message'}: $e');
     }
   }
+
+  // belwo using web socket client package
+
+// Future<void> _sendMessageOrFile({
+//   String? text,
+//   File? file,
+//   String? fileExtension,
+//   int? replyToMessageId,
+// }) async {
+//   try {
+//     final String url = 'http://10.3.0.70:9042/api/HR/AddMessageAsync';
+
+//     final request = http.MultipartRequest('POST', Uri.parse(url))
+//       ..fields['SenderId'] = widget.senderId.toString()
+//       ..fields['ReceiverId'] = widget.receiverId.toString()
+//       ..fields['MessageText'] = text ?? ''
+//       ..fields['IsUserMessage'] = 'true'
+//       ..fields['MessageTimestamp'] = DateTime.now().toIso8601String()
+//       ..fields['ReplyToMessageId'] = replyToMessageId?.toString() ?? '';
+
+//     String? fileType;
+//     String? fileBytesBase64;
+//     if (file != null) {
+//       final fileName = file.path.split('/').last;
+//       fileType = fileName.split('.').last.toLowerCase();
+
+//       final Uint8List bytes = await file.readAsBytes();
+//       fileBytesBase64 = base64.encode(bytes);
+//       print('base64: $fileBytesBase64');
+
+//       request.fields['FileBytesBase64'] = fileBytesBase64;
+//       request.files.add(await http.MultipartFile.fromPath('file', file.path, filename: fileName));
+//     }
+
+//     final response = await request.send();
+//     final responseBody = await response.stream.bytesToString();
+
+//     if (response.statusCode == 200) {
+//       print(file != null ? 'File sent successfully' : 'Message sent successfully');
+//       _controller.clear();
+
+//       // Send message or file via WebSocket
+//       if (file != null) {
+//         _socket.send(jsonEncode({
+//           'senderId': widget.senderId,
+//           'receiverId': widget.receiverId,
+//           'messageText': 'Sent a file: ${file.path.split('/').last}',
+//           'messageTimestamp': DateTime.now().toIso8601String(),
+//           'isUserMessage': true,
+//           'isFile': true,
+//           'fileType': fileType,
+//           'fileBytesBase64': fileBytesBase64,
+//         }));
+//       } else {
+//         _socket.send(jsonEncode({
+//           'senderId': widget.senderId,
+//           'receiverId': widget.receiverId,
+//           'messageText': text!,
+//           'messageTimestamp': DateTime.now().toIso8601String(),
+//           'isUserMessage': true,
+//         }));
+//       }
+
+//       setState(() {
+//         _messages.insert(
+//           0,
+//           ChatMessage(
+//             messageId: _messages.length + 1,
+//             senderId: widget.senderId,
+//             receiverId: widget.receiverId,
+//             messageText: file != null
+//                 ? 'Sent a file: ${file.path.split('/').last}'
+//                 : text!,
+//             messageTimestamp: DateTime.now(),
+//             isUserMessage: true,
+//             isFile: file != null,
+//             fileType: fileType,
+//             fileUrl: file?.path,
+//             fileBytesBase64: fileBytesBase64 ?? '',
+//             format: '',
+//             filename: '',
+//             readStatus: 0,
+//           ),
+//         );
+//         if (file != null) {
+//           buttonVisibility[0] = false;
+//         }
+//       });
+//     } else {
+//       print('Failed to send ${file != null ? 'file' : 'message'}: ${response.statusCode}');
+//       print('Response Body: $responseBody');
+//     }
+//   } catch (e) {
+//     print('Error sending ${file != null ? 'file' : 'message'}: $e');
+//   }
+// }
 
   Future<void> _pickAndSendFile() async {
     final result = await FilePicker.platform.pickFiles();
@@ -1115,6 +1350,83 @@ class ChatMessage {
         "ReadStatus": readStatus,
       };
 }
+
+// below is 9042 hr model web api core model
+
+// List<ChatMessage> chatMessageFromJson(String str) =>
+//     List<ChatMessage>.from(
+//         json.decode(str).map((x) => ChatMessage.fromJson(x)));
+
+// String chatMessageToJson(List<ChatMessage> data) =>
+//     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+// class ChatMessage {
+//   int messageId;
+//   int senderId;
+//   int receiverId;
+//   String messageText;
+//   DateTime messageTimestamp;
+//   bool isUserMessage;
+//   dynamic fileUrl;
+//   dynamic fileBytesBase64;
+//   dynamic format;
+//   dynamic filename;
+//   dynamic replyToMessageId;
+//   bool isFile; // Add this property
+//   String? fileType; // Add this property
+//   int readStatus;
+
+//   ChatMessage({
+//     required this.messageId,
+//     required this.senderId,
+//     required this.receiverId,
+//     required this.messageText,
+//     required this.messageTimestamp,
+//     required this.isUserMessage,
+//     required this.fileUrl,
+//     required this.fileBytesBase64,
+//     required this.format,
+//     required this.filename,
+//     this.replyToMessageId,
+//     this.isFile = false, // Default to false
+//     this.fileType,
+//     required this.readStatus,
+//   });
+
+//   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
+//         messageId: json["messageId"],
+//         senderId: json["senderId"],
+//         receiverId: json["receiverId"],
+//         messageText: json["messageText"],
+//         messageTimestamp: DateTime.parse(json["messageTimestamp"]),
+//         isUserMessage: json["isUserMessage"],
+//         fileUrl: json["fileUrl"],
+//         fileBytesBase64: json["fileBytesBase64"],
+//         format: json["format"],
+//         filename: json["filename"],
+//         replyToMessageId: json["replyToMessageId"],
+//         isFile: json["isFile"] ?? false, // Ensure default value is false
+//         fileType: json["fileType"],
+//         readStatus: json['readStatus'] ?? 0, // Ensure default value is 0
+//       );
+
+//   Map<String, dynamic> toJson() => {
+//         "messageId": messageId,
+//         "senderId": senderId,
+//         "receiverId": receiverId,
+//         "messageText": messageText,
+//         "messageTimestamp": messageTimestamp.toIso8601String(),
+//         "isUserMessage": isUserMessage,
+//         "fileUrl": fileUrl,
+//         "fileBytesBase64": fileBytesBase64,
+//         "format": format,
+//         "filename": filename,
+//         "replyToMessageId": replyToMessageId,
+//         "isFile": isFile, // Serialize the isFile property
+//         "fileType": fileType, // Serialize the fileType property
+//         "readStatus": readStatus, // Serialize the readStatus property
+//       };
+// }
 
 // //below is chat view text send crctly working on image send
 

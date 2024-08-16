@@ -338,7 +338,7 @@ class _MissPunchesScreenState extends State<MissPunchesScreen> {
         final punchDetails = punchDetailsFromJson(response.body);
 
         // Print the full response data for debugging
-        print('API Data: ${response.body}');
+        // print('API Data: ${response.body}');
 
         setState(() {
           punches = punchDetails.data

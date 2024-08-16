@@ -1,6 +1,8 @@
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/screens/home_screen/OTScreenPage.dart';
 import 'package:animated_movies_app/screens/home_screen/miss_punches_screen.dart';
+import 'package:animated_movies_app/screens/home_screen/socket_checking.dart';
+import 'package:animated_movies_app/screens/home_screen/warnings_screen.dart';
 import 'package:flutter/material.dart';
 import 'leaves_details.dart'; // Ensure this path is correct
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
@@ -100,14 +102,14 @@ class _MultipleFormsState extends State<MultipleForms> {
                               icon: Icons.access_alarm,
                               label: 'OT',
                               onPressed: () {
-                                   Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => OTScreenPage(userData: widget.userData,
-                                    
-                                     ),
-                                ),
-                              ); // Navigate to OT Page
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => OTScreenPage(
+                                      userData: widget.userData,
+                                    ),
+                                  ),
+                                ); // Navigate to OT Page
                               },
                             ),
                             _buildGridButton(
@@ -116,6 +118,12 @@ class _MultipleFormsState extends State<MultipleForms> {
                               label: 'Current Shift',
                               onPressed: () {
                                 // Navigate to Current Shift Page
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SocketChecking(),
+                                  ),
+                                );
                               },
                             ),
                             _buildGridButton(
@@ -124,6 +132,12 @@ class _MultipleFormsState extends State<MultipleForms> {
                               label: 'Warnings',
                               onPressed: () {
                                 // Navigate to Warnings Page
+                               Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => WarningsScreen(),
+                                  ),
+                                );
                               },
                             ),
                           ],

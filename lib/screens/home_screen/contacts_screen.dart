@@ -42,7 +42,7 @@ class _ContactsPageState extends State<ContactsPage> {
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
         // Print the response data
-        print('Response data contacts: $data');
+        // print('Response data contacts: $data');
         setState(() {
           contacts = data
               .map((contact) => {

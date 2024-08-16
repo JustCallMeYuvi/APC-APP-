@@ -49,11 +49,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
         // Debug: Print the raw response body
         print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        // print('Response body: ${response.body}');
 
         // Debug: Print the parsed JSON data
         jsonResponse.forEach((data) {
-          print('Parsed JSON item: $data');
+          // print('Parsed JSON item: $data');
         });
 
         setState(() {

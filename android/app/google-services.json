@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "374764198142",
+    "project_id": "pushnotificationtesting-a45a0",
+    "storage_bucket": "pushnotificationtesting-a45a0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:374764198142:android:b4663dbb2488bd5184edaf",
+        "android_client_info": {
+          "package_name": "com.example.animated_movies_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKWq71NG5nG-GXVi7tKwt-iajIEzZpzpo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

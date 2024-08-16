@@ -58,7 +58,7 @@
 //         "Message": message,
 //         "Success": success,
 //         "DEPT_NAME": deptName,
-//         "EMP_NAME": empName,
+//         "EMP_NAME": empName,       
 //         "POSITION": position,
 //         "Status": status,
 //     };
