@@ -4,7 +4,6 @@
 // import 'package:flutter/foundation.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
-
 // class AuthProvider with ChangeNotifier {
 //   bool _isLoggedIn = false;
 //   LoginModelApi? _userData;
@@ -54,17 +53,15 @@
 //   }
 // }
 
-
-
 import 'dart:convert';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   LoginModelApi? _userData;
-  
 
   bool get isLoggedIn => _isLoggedIn;
   LoginModelApi? get userData => _userData;
@@ -96,6 +93,11 @@ class AuthProvider with ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('isLoggedIn', true);
     prefs.setString('userData', json.encode(userData.toJson()));
+
+
+    // Obtain a new FCM token
+    String? fcmToken = await FirebaseMessaging.instance.getToken();
+    print('New FCM Token: $fcmToken');
   }
 
   Future<void> logout() async {
@@ -108,6 +110,11 @@ class AuthProvider with ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('isLoggedIn');
     prefs.remove('userData');
+
+
+    // Delete the FCM token
+    await FirebaseMessaging.instance.deleteToken();
+
+    print('FCM Token deleted.');
   }
-  
 }

@@ -24,17 +24,18 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  late Timer _timer;
+  // late Timer _timer;
   bool _showNotificationIndicator = false; // Indicator visibility flag
 
   @override
   void initState() {
     super.initState();
     // Start a timer to show notifications every minute
-    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
-      // Call API to fetch holiday details
-      _fetchHolidayDetails(widget.userData.empNo);
-    });
+
+    // _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+    //   // Call API to fetch holiday details
+    //   _fetchHolidayDetails(widget.userData.empNo);
+    // });
 
     // Initialize notification service with a callback to navigate to notifications screen
     widget.notificationService.initNotification((payload) {
@@ -108,11 +109,11 @@ class _BottomNavBarState extends State<BottomNavBar> {
     }
   }
 
-  @override
-  void dispose() {
-    _timer.cancel(); // Cancel the timer when the widget is disposed
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _timer.cancel(); // Cancel the timer when the widget is disposed
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {

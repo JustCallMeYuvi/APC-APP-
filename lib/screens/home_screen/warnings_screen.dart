@@ -14,7 +14,7 @@ class _WarningsScreenState extends State<WarningsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Warningfs Screen'),
+        title: Text('Warnings Screen'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
