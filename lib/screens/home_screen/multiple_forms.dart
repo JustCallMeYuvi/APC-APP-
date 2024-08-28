@@ -86,12 +86,12 @@ class _MultipleFormsState extends State<MultipleForms> {
                             _buildGridButton(
                               context,
                               icon: Icons.access_time,
-                              label: 'Miss Punch',
+                              label: 'Punch Details',
                               onPressed: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => MissPunchesScreen(
+                                    builder: (context) => PunchDetailsScreen(
                                         userData: widget.userData),
                                   ),
                                 );
@@ -121,7 +121,9 @@ class _MultipleFormsState extends State<MultipleForms> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => TokenScreen(userData:widget.userData ,empDetailsList:[]),
+                                    builder: (context) => TokenScreen(
+                                        userData: widget.userData,
+                                        empDetailsList: []),
                                   ),
                                 );
                               },
@@ -132,7 +134,7 @@ class _MultipleFormsState extends State<MultipleForms> {
                               label: 'Warnings',
                               onPressed: () {
                                 // Navigate to Warnings Page
-                               Navigator.push(
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => WarningsScreen(),

@@ -63,9 +63,11 @@ import 'package:http/http.dart' as http;
 class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   LoginModelApi? _userData;
+  String? _fcmToken; // Add this line to store the FCM token
 
   bool get isLoggedIn => _isLoggedIn;
   LoginModelApi? get userData => _userData;
+  String? get fcmToken => _fcmToken; // Add this getter
 
   AuthProvider() {
     // Initialize login state from SharedPreferences
@@ -80,6 +82,8 @@ class AuthProvider with ChangeNotifier {
       String userDataJson = prefs.getString('userData') ?? '{}';
       _userData = LoginModelApi.fromJson(json.decode(userDataJson));
       _isLoggedIn = true;
+      _fcmToken = prefs.getString('fcmToken'); // Load FCM token
+
       notifyListeners();
     }
   }
@@ -99,11 +103,18 @@ class AuthProvider with ChangeNotifier {
     String? fcmToken = await FirebaseMessaging.instance.getToken();
     print('New FCM Token: $fcmToken');
 
+    // Save the FCM token to SharedPreferences
+    _fcmToken = fcmToken;
+    prefs.setString('fcmToken', fcmToken ?? '');
+
     // Send the barcode (empNo) and FCM token to your API
     await _sendBarcodeAndFcmToken(userData.empNo, fcmToken);
+
+    // Send queued notifications
+    await _sendQueuedNotifications(userData.empNo);
   }
 
-// based uplon login empNo and fcm token stored in below method
+// based upon login empNo and fcm token stored in below method
   Future<void> _sendBarcodeAndFcmToken(String empNo, String? fcmToken) async {
     final url =
         Uri.parse('http://10.3.0.70:9042/api/HR/InsertOrUpdateItemAsync');
@@ -121,6 +132,44 @@ class AuthProvider with ChangeNotifier {
       print('Data sent successfully');
     } else {
       print('Failed to send data: ${response.body}');
+    }
+  }
+
+  // Future<void> _sendQueuedNotifications(String empNo) async {
+  //   final url =
+  //       Uri.parse('http://10.3.0.70:9042/api/HR/send-queued-notifications');
+
+  //   final response = await http.post(
+  //     url,
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: json.encode({'empNo': empNo}),
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     print('Queued notifications sent successfully');
+  //   } else {
+  //     print('Failed to send queued notifications: ${response.body}');
+  //   }
+  // }
+
+  Future<void> _sendQueuedNotifications(String empNo) async {
+    final url =
+        Uri.parse('http://10.3.0.70:9042/api/HR/send-queued-notifications');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'barcode': empNo
+      }), // Ensure 'barcode' field is present and correctly named
+    );
+    final body = json.encode({'barcode': empNo});
+    print('Request body: $body'); // Debugging line
+
+    if (response.statusCode == 200) {
+      print('Queued notifications sent successfully');
+    } else {
+      print('Failed to send queued notifications: ${response.body}');
     }
   }
 

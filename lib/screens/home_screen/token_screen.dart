@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:animated_movies_app/auth_provider.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/get_emp_details.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class TokenScreen extends StatefulWidget {
   final LoginModelApi userData; // Add this line
@@ -71,17 +73,24 @@ class _TokenScreenState extends State<TokenScreen> {
   }
 
   Future<void> submitData(String text, String barcode) async {
-    final url = Uri.parse('http://10.3.0.70:9042/api/HR/Submitdata');
+    // final url = Uri.parse('http://10.3.0.70:9042/api/HR/Submitdata');
+
+    final url = Uri.parse('http://10.3.0.70:9042/api/HR/send-notification');
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final deviceToken = authProvider.fcmToken;
     final username =
         empDetailsList.isNotEmpty ? empDetailsList[0].emPName : 'Unknown';
 
     final Map<String, dynamic> data = {
-      // 'username': username,
-      // 'text': text,
-      // 'barcode': barcode,
-      'Message': text,
-      'Barcode': barcode,
-      'UserName': username,
+      // 'Message': text,
+      // 'Barcode': barcode,
+      // 'UserName': username,
+      'Title': username, // Match with the 'Title' field
+      'Body': text, // Match with the 'Body' field
+      'DeviceToken': deviceToken, // Match with the 'DeviceToken' field
+      'Barcode': barcode, // Match with the 'Barcode' field
+      'Name': username, // Match with the 'Name' field
     };
 
     try {
@@ -158,7 +167,8 @@ class _TokenScreenState extends State<TokenScreen> {
                         color: Colors.green), // Change focused border color
                   ),
                 ),
-                style: const TextStyle(color: Colors.white), // Change text color
+                style:
+                    const TextStyle(color: Colors.white), // Change text color
               ),
               const SizedBox(height: 20),
               // Dropdown for selecting barcode
@@ -220,7 +230,8 @@ class _TokenScreenState extends State<TokenScreen> {
                 },
                 color: Colors.transparent, // Transparent background
                 elevation: 0, // Remove default shadow
-                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 16.0, horizontal: 24.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.0),
                 ),

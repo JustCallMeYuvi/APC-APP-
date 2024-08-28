@@ -305,16 +305,16 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 
-class MissPunchesScreen extends StatefulWidget {
+class PunchDetailsScreen extends StatefulWidget {
   final LoginModelApi userData;
 
-  MissPunchesScreen({Key? key, required this.userData}) : super(key: key);
+  PunchDetailsScreen({Key? key, required this.userData}) : super(key: key);
 
   @override
-  _MissPunchesScreenState createState() => _MissPunchesScreenState();
+  _PunchDetailsScreenState createState() => _PunchDetailsScreenState();
 }
 
-class _MissPunchesScreenState extends State<MissPunchesScreen> {
+class _PunchDetailsScreenState extends State<PunchDetailsScreen> {
   List<Map<String, String>> punches = [];
   DateTimeRange? dateRange;
   bool isLoading = true;

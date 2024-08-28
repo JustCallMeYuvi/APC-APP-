@@ -8,14 +8,14 @@ import 'package:http/http.dart' as http;
 class BottomNavBar extends StatefulWidget {
   final int selectedIndex;
   final ValueChanged<int> onItemTapped;
-  final NotificationService notificationService;
+  // final NotificationService notificationService;
   final LoginModelApi
       userData; // Assuming LoginModelApi is your user data model
   const BottomNavBar({
     Key? key,
     required this.selectedIndex,
     required this.onItemTapped,
-    required this.notificationService,
+    // required this.notificationService,
     required this.userData,
   }) : super(key: key);
 
@@ -38,76 +38,76 @@ class _BottomNavBarState extends State<BottomNavBar> {
     // });
 
     // Initialize notification service with a callback to navigate to notifications screen
-    widget.notificationService.initNotification((payload) {
-      _navigateToNotifications();
-    });
+    // widget.notificationService.initNotification((payload) {
+    //   _navigateToNotifications();
+    // });
   }
 
-  void _navigateToNotifications() {
-    setState(() {
-      widget.onItemTapped(1); // Set the selected index to the notifications tab
-      _showNotificationIndicator = true; // Show the indicator
-    });
-  }
+  // void _navigateToNotifications() {
+  //   setState(() {
+  //     widget.onItemTapped(1); // Set the selected index to the notifications tab
+  //     _showNotificationIndicator = true; // Show the indicator
+  //   });
+  // }
 
-  Future<void> _fetchHolidayDetails(String empNo) async {
-    try {
-      // Construct API URL
-      String apiUrl =
-          'http://10.3.0.70:9040/api/Flutter/GetAH_HOLIDAYDetailsss?empNo=$empNo';
+  // Future<void> _fetchHolidayDetails(String empNo) async {
+  //   try {
+  //     // Construct API URL
+  //     String apiUrl =
+  //         'http://10.3.0.70:9040/api/Flutter/GetAH_HOLIDAYDetailsss?empNo=$empNo';
 
-      // String apiUrl =
-      //         'http://10.3.0.70:9042/api/HR/GetAH_HOLIDAYDetailsss?empNo=$empNo';
+  //     // String apiUrl =
+  //     //         'http://10.3.0.70:9042/api/HR/GetAH_HOLIDAYDetailsss?empNo=$empNo';
 
-      // Make GET request
-      var response = await http.get(Uri.parse(apiUrl));
-      print('${apiUrl}');
+  //     // Make GET request
+  //     var response = await http.get(Uri.parse(apiUrl));
+  //     print('${apiUrl}');
 
-      // Check if request was successful
-      if (response.statusCode == 200) {
-        // Parse JSON response
-        String responseBody = response.body;
+  //     // Check if request was successful
+  //     if (response.statusCode == 200) {
+  //       // Parse JSON response
+  //       String responseBody = response.body;
 
-        // Check if responseBody is empty or contains only '[]'
-        if (responseBody.trim().isNotEmpty && responseBody.trim() != '[]') {
-          // Decode the JSON response
-          var responseJson = jsonDecode(responseBody);
+  //       // Check if responseBody is empty or contains only '[]'
+  //       if (responseBody.trim().isNotEmpty && responseBody.trim() != '[]') {
+  //         // Decode the JSON response
+  //         var responseJson = jsonDecode(responseBody);
 
-          // Check if responseJson is a list and has elements
-          if (responseJson is List && responseJson.isNotEmpty) {
-            // Extract required fields from the first object in the array
-            var startDate = responseJson[0]['START_DATE'];
-            var endDate = responseJson[0]['END_DATE'];
-            var holidayQty = responseJson[0]['HOLIDAY_QTY'];
+  //         // Check if responseJson is a list and has elements
+  //         if (responseJson is List && responseJson.isNotEmpty) {
+  //           // Extract required fields from the first object in the array
+  //           var startDate = responseJson[0]['START_DATE'];
+  //           var endDate = responseJson[0]['END_DATE'];
+  //           var holidayQty = responseJson[0]['HOLIDAY_QTY'];
 
-            // Create a formatted string with the extracted details
-            String notificationBody =
-                'Start Date: $startDate\nEnd Date: $endDate\nHoliday Qty: $holidayQty';
+  //           // Create a formatted string with the extracted details
+  //           String notificationBody =
+  //               'Start Date: $startDate\nEnd Date: $endDate\nHoliday Qty: $holidayQty';
 
-            // Show notification with fetched holiday details
-            widget.notificationService.showNotification(
-              title: 'Employee Leave Notification',
-              body: notificationBody, // Display fetched details in notification
-            );
-            setState(() {
-              _showNotificationIndicator = true;
-            });
-            print('Holiday details fetched successfully: $notificationBody');
-          } else {
-            print('Holiday details empty or not available.');
-          }
-        } else {
-          print('Holiday details empty or not available.');
-        }
-      } else {
-        // Handle other status codes (e.g., 404, 500)
-        print('Failed to fetch holiday details: ${response.statusCode}');
-      }
-    } catch (e) {
-      // Handle potential errors such as network errors
-      print('Error fetching holiday details: $e');
-    }
-  }
+  //           // Show notification with fetched holiday details
+  //           widget.notificationService.showNotification(
+  //             title: 'Employee Leave Notification',
+  //             body: notificationBody, // Display fetched details in notification
+  //           );
+  //           setState(() {
+  //             _showNotificationIndicator = true;
+  //           });
+  //           print('Holiday details fetched successfully: $notificationBody');
+  //         } else {
+  //           print('Holiday details empty or not available.');
+  //         }
+  //       } else {
+  //         print('Holiday details empty or not available.');
+  //       }
+  //     } else {
+  //       // Handle other status codes (e.g., 404, 500)
+  //       print('Failed to fetch holiday details: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     // Handle potential errors such as network errors
+  //     print('Error fetching holiday details: $e');
+  //   }
+  // }
 
   // @override
   // void dispose() {

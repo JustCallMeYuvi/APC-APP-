@@ -19,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final NotificationService _notificationService = NotificationService();
+  // final NotificationService _notificationService = NotificationService();
   int _selectedIndex = 0;
 
   late final List<Widget> _widgetOptions;
@@ -27,9 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _notificationService.initNotification((payload) {
-      _onItemTapped(1); // Navigate to notifications screen
-    });
+    // _notificationService.initNotification((payload) {
+    //   _onItemTapped(1); // Navigate to notifications screen
+    // });
     _widgetOptions = <Widget>[
       HomeContent(
         userData: widget.userData,
@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
-        notificationService: _notificationService,
+        // notificationService: _notificationService,
         userData: widget.userData,
       ),
     );
