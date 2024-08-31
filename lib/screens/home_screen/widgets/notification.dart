@@ -301,7 +301,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<List<NotificationModel>> _fetchNotifications(String empNo) async {
     final url = 'http://10.3.0.70:9042/api/HR/get-notifications/$empNo';
     final response = await http.get(Uri.parse(url));
-    print(url);
+    // print(url);
     if (response.statusCode == 200) {
       List<dynamic> jsonResponse = json.decode(response.body);
       return jsonResponse
@@ -420,28 +420,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
     );
   }
-
-  // Future<void> _deleteNotification(int id) async {
-  //   // final url = Uri.parse(
-  //   //     'http://10.3.0.70:9040/api/Flutter/DeleteNotifications?barcode=$barcode');
-  //   final url = Uri.parse(
-  //       'http://10.3.0.70:9042/api/HR/Notification_Delete/$id');
-  //   try {
-  //     final response = await http.delete(url);
-  //     if (response.statusCode == 200) {
-  //       final Map<String, dynamic> responseData = json.decode(response.body);
-  //       if (responseData['Status']) {
-  //         print('Delete successful: ${responseData['Message']}');
-  //       } else {
-  //         print('Delete failed: ${responseData['Message']}');
-  //       }
-  //     } else {
-  //       print('Request failed with status: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error deleting notification: $e');
-  //   }
-  // }
 
   Future<void> _deleteNotification(int id) async {
     final url =

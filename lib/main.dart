@@ -153,6 +153,8 @@ Future<void> main() async {
             importance: Importance.high,
             priority: Priority.high,
             ticker: 'ticker',
+            icon:
+                'drawable/ic_notification', // Correctly reference the icon here
           ),
         ),
       );

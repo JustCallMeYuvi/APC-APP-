@@ -32,6 +32,7 @@ class _TokenScreenState extends State<TokenScreen> {
     super.initState();
     // Fetch data when the screen initializes
     fetchData(widget.userData.empNo);
+    // fetchELCNotification(widget.userData.empNo);
   }
 
   Future<void> fetchData(String empNo) async {
@@ -71,6 +72,42 @@ class _TokenScreenState extends State<TokenScreen> {
       // Handle error case, show error message or retry logic
     }
   }
+
+  // Future<void> fetchELCNotification(String empNo) async {
+  //   final url =
+  //       Uri.parse('http://10.3.0.70:9042/api/HR/FirstLoginAndNotify/$empNo');
+
+  //   print('URL: $url');
+  //   try {
+  //     // Sending POST request
+  //     final response = await http.post(url);
+
+  //     if (response.statusCode == 200) {
+  //       // Assuming the response is JSON formatted
+  //       final dynamic jsonResponse = json.decode(response.body);
+
+  //       // Debug: Print the raw response body
+  //       print('Response body: ${response.body}');
+
+  //       // Handle the JSON response based on its structure
+  //       // For example, if the response is a single object or a list of notifications
+
+  //       setState(() {
+  //         // Assuming you have a model to parse the response
+  //         // notificationList = jsonResponse.map((data) => NotificationModel.fromJson(data)).toList();
+
+  //         // Debug: Print the parsed notifications
+  //         print('Notification: $jsonResponse');
+  //       });
+  //     } else {
+  //       print('Request failed with status: ${response.statusCode}');
+  //       // Handle error case, show error message or retry logic
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching data: $e');
+  //     // Handle error case, show error message or retry logic
+  //   }
+  // }
 
   Future<void> submitData(String text, String barcode) async {
     // final url = Uri.parse('http://10.3.0.70:9042/api/HR/Submitdata');
@@ -227,6 +264,12 @@ class _TokenScreenState extends State<TokenScreen> {
                   print('Token: $token, Barcode: $barcode');
                   // Perform further actions with the token and barcode
                   submitData(token, barcode); // Call submitData method
+                  // Clear the text field controller after submission
+                  _textFieldController.clear();
+                  // Clear the dropdown selection
+                  setState(() {
+                    _selectedBarcode = null;
+                  });
                 },
                 color: Colors.transparent, // Transparent background
                 elevation: 0, // Remove default shadow
