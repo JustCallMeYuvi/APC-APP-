@@ -13,12 +13,11 @@
 //   ];
 // }
 
-
-
-
 import 'package:animated_movies_app/constants/images_path.dart';
 import 'package:animated_movies_app/model/filters_model.dart';
 import 'package:animated_movies_app/screens/home_screen/charts_screen.dart';
+import 'package:animated_movies_app/screens/home_screen/graphs_sceen.dart';
+
 import 'package:animated_movies_app/screens/home_screen/shoes_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart'; // Import the model for userData
 
@@ -36,9 +35,9 @@ class FiltersData {
         screen: () => ChartsScreen(userData: userData), // Pass userData here
       ),
       FilterModel(
-        name: "Language",
-        icon: ImagePath.globeIcon,
-        screen: null,
+        name: "Reports",
+        icon: ImagePath.graphs_Icon,
+        screen: () => const GraphsScreen(),
       ),
       FilterModel(
         name: "My Cart",

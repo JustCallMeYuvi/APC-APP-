@@ -465,7 +465,7 @@ class _PunchDetailsScreenState extends State<PunchDetailsScreen> {
                                         _buildDetailRow(
                                             'Lunch After', punch['workOnB']!),
                                         _buildDetailRow(
-                                            'End Punch', punch['workOffB']!),
+                                            'Out Punch', punch['workOffB']!),
                                       ],
                                     ),
                                   ),

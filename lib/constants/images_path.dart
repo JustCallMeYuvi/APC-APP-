@@ -9,6 +9,10 @@ class ImagePath {
   static String genreIcon = 'assets/icons/genre_icon.png';
   static String starIcon = 'assets/icons/star_icon.png';
   static String globeIcon = 'assets/icons/globe_icon.png';
+  static String chartsIcon = 'assets/icons/charts.png';
+  static String graphs_Icon = 'assets/icons/graphs_icon.jpeg';
+
+
   static String movieReelIcon = 'assets/icons/movie_reel_icon.png';
 
   // Movies cover Images
