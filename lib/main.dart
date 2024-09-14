@@ -49,13 +49,16 @@
 // below  fcm token inside debug console
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:animated_movies_app/app.dart';
 import 'package:animated_movies_app/auth_provider.dart';
+import 'package:http/http.dart' as http;
 
 // Global instance for FlutterLocalNotificationsPlugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -105,6 +108,9 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
   await _setupNotificationChannel();
+
+  // Call the update check function before running the app
+  // await checkForUpdates(); // Call this to check for updates
 
   // Request notification permissions (necessary for Android 13+)
   NotificationSettings settings =
@@ -171,3 +177,43 @@ Future<void> main() async {
     ),
   );
 }
+
+// // Function to check for app updates
+// Future<void> checkForUpdates() async {
+//   // Get package info for the current app version
+//   PackageInfo packageInfo = await PackageInfo.fromPlatform();
+//   String currentVersion = packageInfo.version;
+
+//   // API endpoint to check for updates
+//   final url = Uri.parse(
+//       'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
+//   print('$url');
+//   final response = await http.get(url);
+
+//   if (response.statusCode == 200) {
+//     final data = json.decode(response.body);
+//     print('API Response: $data'); // To debug and see the full response
+
+//     if (data != null && data.containsKey('latestVersion')) {
+//       String latestVersion =
+//           data['latestVersion']; // Correct key is 'latestVersion'
+
+//       if (currentVersion != latestVersion) {
+//         // Logic to show update dialog
+//         _showUpdateDialog(latestVersion);
+//       }
+//     } else {
+//       print('Invalid response: latestVersion key not found.');
+//     }
+//   }
+
+  
+// }
+
+// // Function to show an update dialog
+// void _showUpdateDialog(String latestVersion) {
+//   // This method can be used to show a dialog asking the user to update the app.
+//   // In the real app, replace this with actual UI dialog handling.
+
+//   print('A new version ($latestVersion) is available. Please update the app.');
+// }

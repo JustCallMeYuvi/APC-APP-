@@ -59,6 +59,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 
 class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
@@ -69,9 +70,11 @@ class AuthProvider with ChangeNotifier {
   LoginModelApi? get userData => _userData;
   String? get fcmToken => _fcmToken; // Add this getter
 
+
   AuthProvider() {
     // Initialize login state from SharedPreferences
     _loadLoginState();
+    
   }
 
   Future<void> _loadLoginState() async {
@@ -83,6 +86,7 @@ class AuthProvider with ChangeNotifier {
       _userData = LoginModelApi.fromJson(json.decode(userDataJson));
       _isLoggedIn = true;
       _fcmToken = prefs.getString('fcmToken'); // Load FCM token
+
 
       notifyListeners();
     }
@@ -107,15 +111,21 @@ class AuthProvider with ChangeNotifier {
     _fcmToken = fcmToken;
     prefs.setString('fcmToken', fcmToken ?? '');
 
+ 
+
     // Send the barcode (empNo) and FCM token to your API
-    await _sendBarcodeAndFcmToken(userData.empNo, fcmToken);
+    // Send the barcode (empNo), FCM token, and app version to your API
+    await _sendBarcodeAndFcmToken(userData.empNo, fcmToken, );
 
     // Send queued notifications
     await _sendQueuedNotifications(userData.empNo);
+    // Send APK version to backend
+
   }
 
 // based upon login empNo and fcm token stored in below method
-  Future<void> _sendBarcodeAndFcmToken(String empNo, String? fcmToken) async {
+  Future<void> _sendBarcodeAndFcmToken(
+      String empNo, String? fcmToken, ) async {
     final url =
         Uri.parse('http://10.3.0.70:9042/api/HR/InsertOrUpdateItemAsync');
 
@@ -125,6 +135,7 @@ class AuthProvider with ChangeNotifier {
       body: json.encode({
         'barcode': empNo, // Send employee number
         'Token': fcmToken, // Change the key to 'Token'
+    
       }),
     );
 
@@ -172,6 +183,7 @@ class AuthProvider with ChangeNotifier {
       print('Failed to send queued notifications: ${response.body}');
     }
   }
+
 
   Future<void> logout() async {
     // Update local state

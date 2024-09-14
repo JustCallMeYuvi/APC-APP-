@@ -1235,7 +1235,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
                 onSubmitted: (text) {
                   // sendMessage(text, -1); // Use -1 for custom message
-                  _sendMessageOrFile(text: text); // Use unified method for text
+                  if (text.trim().isNotEmpty) {
+                    // Prevent empty or whitespace-only messages
+                    _sendMessageOrFile(
+                        text: text); // Use unified method for text
+                  }
                 },
                 decoration: const InputDecoration.collapsed(
                   hintText: 'Send a message',
@@ -1247,8 +1251,11 @@ class _ChatScreenState extends State<ChatScreen> {
               // onPressed: () => sendMessage(_controller.text),
               // onPressed: () => sendMessage(_controller.text, -1),
               onPressed: () {
-                _sendMessageOrFile(
-                    text: _controller.text); // Use unified method for text
+                if (_controller.text.trim().isNotEmpty) {
+                  // Prevent empty or whitespace-only messages
+                  _sendMessageOrFile(
+                      text: _controller.text); // Use unified method for text
+                }
               },
             ),
           ],
