@@ -1,5 +1,7 @@
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/screens/home_screen/efficiency_report_page.dart';
+import 'package:animated_movies_app/screens/home_screen/po_completion_page.dart';
+import 'package:animated_movies_app/screens/home_screen/rft_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/target_output_report_page.dart';
 import 'package:flutter/material.dart';
 
@@ -88,6 +90,10 @@ class _GraphsScreenState extends State<GraphsScreen> {
               icon: Icons.pie_chart,
               onTap: () {
                 // Add navigation to RftReportPage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RftReportPage()),
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -97,6 +103,10 @@ class _GraphsScreenState extends State<GraphsScreen> {
               icon: Icons.assignment_turned_in,
               onTap: () {
                 // Add navigation to PoCompletionReportPage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PoCompletionReport()),
+                );
               },
             ),
             // Divider(color: Colors.white),

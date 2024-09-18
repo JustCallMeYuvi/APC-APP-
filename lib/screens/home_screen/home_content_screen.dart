@@ -169,6 +169,7 @@ class _HomeContentState extends State<HomeContent> {
     super.initState();
     // checkForUpdates(); // Call update check on initialization
   }
+
   //   Future<void> checkForUpdates() async {
   //   // Get package info for the current app version
   //   PackageInfo packageInfo = await PackageInfo.fromPlatform();

@@ -147,7 +147,7 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
     DateTimeRange? selectedRange = await showDateRangePicker(
       context: context,
       initialDateRange: DateTimeRange(
-        start: _startDate ?? DateTime.now().subtract(Duration(days: 30)),
+        start: _startDate ?? DateTime.now().subtract(const Duration(days: 30)),
         end: _endDate ?? DateTime.now(),
       ),
       firstDate: DateTime(2000),
@@ -167,7 +167,8 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
   Future<void> _selectStartDate(BuildContext context) async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
-      initialDate: _startDate ?? DateTime.now().subtract(Duration(days: 30)),
+      initialDate:
+          _startDate ?? DateTime.now().subtract(const Duration(days: 30)),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -211,11 +212,11 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Target Output Report'),
+        title: const Text('Target Output Report'),
         backgroundColor: Colors.lightGreen,
         actions: [
           IconButton(
-            icon: Icon(Icons.calendar_today),
+            icon: const Icon(Icons.calendar_today),
             onPressed: () => _selectDateRange(context),
           ),
         ],
@@ -231,8 +232,8 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              const Padding(
+                padding: EdgeInsets.all(16.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -282,11 +283,11 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
                 ),
               ),
               _isLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator())
                   : _isDataAvailable
                       ? Card(
                           elevation: 5,
-                          margin: EdgeInsets.all(10),
+                          margin: const EdgeInsets.all(10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
@@ -300,7 +301,7 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
                                     _totalOutputQuantity),
                                 _buildTotalCard('Percentage',
                                     '${_totalPercentage.toStringAsFixed(2)}%'),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 Container(
                                   height:
                                       MediaQuery.of(context).size.height * 0.5,
@@ -339,7 +340,7 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
                                       //   ],
                                       // ),
                                       SfCartesianChart(
-                                    title: ChartTitle(
+                                    title: const ChartTitle(
                                       text: 'Work vs Output Quantity',
                                       textStyle: TextStyle(
                                         fontWeight: FontWeight.bold,
@@ -347,14 +348,14 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
                                         color: Colors.blueGrey,
                                       ),
                                     ),
-                                    legend: Legend(
+                                    legend: const Legend(
                                       isVisible: true,
                                       position: LegendPosition.bottom,
                                     ),
-                                    primaryXAxis: CategoryAxis(
+                                    primaryXAxis: const CategoryAxis(
                                       majorGridLines: MajorGridLines(width: 0),
                                     ),
-                                    primaryYAxis: NumericAxis(
+                                    primaryYAxis: const NumericAxis(
                                       axisLine: AxisLine(width: 0),
                                       majorTickLines: MajorTickLines(size: 0),
                                       title: AxisTitle(
@@ -374,7 +375,8 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
                                         name: 'Work Quantity',
                                         color: Colors.blue,
                                         dataLabelSettings:
-                                            DataLabelSettings(isVisible: true),
+                                            const DataLabelSettings(
+                                                isVisible: true),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       ColumnSeries<GetWorkTarget, String>(
@@ -387,7 +389,8 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
                                         name: 'Output Quantity',
                                         color: Colors.green,
                                         dataLabelSettings:
-                                            DataLabelSettings(isVisible: true),
+                                            const DataLabelSettings(
+                                                isVisible: true),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ],
@@ -397,7 +400,9 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
                             ),
                           ),
                         )
-                      : Center(child: Text('No data available or Please select dates')),
+                      : const Center(
+                          child:
+                              Text('No data available or Please select dates')),
             ],
           ),
         ),
@@ -412,33 +417,11 @@ List<GetWorkTarget> getWorkTargetFromJson(String str) {
   return jsonData.map((item) => GetWorkTarget.fromJson(item)).toList();
 }
 
-Widget _buildDateButton(
-    {required String label, required VoidCallback onPressed}) {
-  return ElevatedButton(
-    onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.teal[400],
-      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30),
-      ),
-    ),
-    child: Text(
-      label,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-    ),
-  );
-}
-
 Widget _buildTotalCard(String title, dynamic value) {
   return Card(
     color: Colors.white.withOpacity(0.9),
     elevation: 5,
-    margin: EdgeInsets.symmetric(vertical: 8),
+    margin: const EdgeInsets.symmetric(vertical: 8),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(15),
     ),
@@ -457,7 +440,7 @@ Widget _buildTotalCard(String title, dynamic value) {
           ),
           Text(
             value.toString(),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black,
