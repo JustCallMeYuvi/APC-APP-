@@ -34,7 +34,7 @@ class _PoCompletionReportState extends State<PoCompletionReport> {
     String? formattedFromDate = dateRange?.start.toIso8601String().substring(0, 10);
     String? formattedToDate = dateRange?.end.toIso8601String().substring(0, 10);
 
-    String url = 'http://10.3.0.70:9042/api/HR/se-order-details';
+    String url = 'http://10.3.0.70:9042/api/HR/GetSeOrderDetails';
     if (dateRange != null) {
       url += '?fromDate=$formattedFromDate&toDate=$formattedToDate';
     }

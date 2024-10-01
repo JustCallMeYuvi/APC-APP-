@@ -78,6 +78,8 @@ class EnumValues<T> {
 
 // Define the TargetOutputReportPage widget
 class TargetOutputReportPage extends StatefulWidget {
+  const TargetOutputReportPage({super.key});
+
   @override
   _TargetOutputReportPageState createState() => _TargetOutputReportPageState();
 }

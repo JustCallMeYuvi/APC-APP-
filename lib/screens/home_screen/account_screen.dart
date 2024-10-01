@@ -4,9 +4,10 @@ import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/change_password_model.dart';
 import 'package:animated_movies_app/model/get_emp_details.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
-import 'package:animated_movies_app/screens/onboarding_screen/onboarding_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../../auth_provider.dart';
@@ -29,11 +30,20 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   // bool _obscureNewPassword = true;
   bool _isOldPasswordVisible = false;
   bool _isNewPasswordVisible = false;
+  String _currentVersion = "";
 
   @override
   void initState() {
     super.initState();
     fetchData(widget.userData.empNo);
+    _fetchAppVersion();
+  }
+
+  Future<void> _fetchAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _currentVersion = packageInfo.version;
+    });
   }
 
   Future<void> fetchData(String empNo) async {
@@ -311,6 +321,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     buildAccountInfo(
                         label: 'Position',
                         value: empDetailsList.first.position),
+                    buildAccountInfo(
+                        label: 'App Version',
+                        value: _currentVersion.isNotEmpty
+                            ? _currentVersion
+                            : "Loading..."),
 
                     // Add other fields as needed
                   ],

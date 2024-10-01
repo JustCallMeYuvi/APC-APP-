@@ -178,6 +178,7 @@ class _RftReportPageState extends State<RftReportPage> {
                         dataSource: _rftPercentageData,
                         color: Colors.orange,
                       ),
+                      
                     ],
                   ],
                 ),
@@ -235,6 +236,32 @@ class _RftReportPageState extends State<RftReportPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildPyramidChart({
+    required String title,
+    required List<_ChartData> dataSource,
+    required Color color,
+  }) {
+    return GestureDetector(
+      onTap: () => _onChartTap(title),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        height: 300,
+        child: SfPyramidChart(
+          title: ChartTitle(text: title),
+          legend: Legend(isVisible: true),
+          series: PyramidSeries<_ChartData, String>(
+            dataSource: dataSource,
+            xValueMapper: (_ChartData data, _) => data.category,
+            yValueMapper: (_ChartData data, _) => data.value,
+            dataLabelSettings: DataLabelSettings(isVisible: true),
+            name: title,
+          ),
         ),
       ),
     );

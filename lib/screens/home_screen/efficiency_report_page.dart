@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class EfficiencyReportPage extends StatefulWidget {
+  const EfficiencyReportPage({super.key});
+
   @override
   _EfficiencyReportPageState createState() => _EfficiencyReportPageState();
 }

@@ -16,7 +16,7 @@ import 'package:swipe_to/swipe_to.dart';
 
 import 'dart:convert';
 import 'package:web_socket_channel/io.dart';
-import 'package:socket_io_client/socket_io_client.dart' as io;
+
 import 'package:web_socket_client/web_socket_client.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -70,13 +70,20 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _initializeWebSocket() {
+  void _initializeWebSocket() async {
     try {
       _channel = IOWebSocketChannel.connect('ws://10.3.0.70:9042/api/HR');
+
+      print('WebSocket connection initialized, attempting to connect...');
+
+      // Attempt to establish the connection
       _channel.stream.listen(
         (message) {
-          print('Received messagess: $message');
+          print('Received message: $message');
           // Handle WebSocket messages
+          // setState(() {
+          //   _messages.add(message);
+          // });
         },
         onError: (error) {
           print('WebSocket error: $error');
@@ -85,44 +92,18 @@ class _ChatScreenState extends State<ChatScreen> {
           print('WebSocket connection closed');
         },
       );
+
+      // You can add a delay to check the connection status after a few seconds
+      await Future.delayed(Duration(seconds: 2));
+      if (_channel.closeCode == null) {
+        print('WebSocket connection successful');
+      } else {
+        print('WebSocket connection failed');
+      }
     } catch (e) {
       print('WebSocket connection error: $e');
     }
   }
-
-// below web socket is using web socket client
-
-  //   void _initializeWebSocket() {
-  //   final uri = Uri.parse('ws://10.3.0.70:9042/api/HR');
-  //   final backoff = ConstantBackoff(Duration(seconds: 1));
-  //   _socket = WebSocket(uri, backoff: backoff);
-
-  //   // Listen for connection state changes
-  //   _socket.connection.listen((state) {
-  //     print('Connection state: $state');
-  //   });
-
-  //   // Listen for incoming messages
-  //   _socket.messages.listen((message) {
-  //     setState(() {
-  //       _messages.add(message);
-  //     });
-  //     print('Received message: $message');
-
-  //     // Optionally, send a response back to the server
-  //     _socket.send('ping');
-  //   });
-
-  //   // Handle errors
-  //   // _socket.errors.listen((error) {
-  //   //   print('WebSocket error: $error');
-  //   // });
-
-  //   // Handle connection closure
-  //   // _socket.close.listen((_) {
-  //   //   print('WebSocket connection closed');
-  //   // });
-  // }
 
   Future<void> fetchMessages() async {
     try {
@@ -358,102 +339,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // belwo using web socket client package
-
-// Future<void> _sendMessageOrFile({
-//   String? text,
-//   File? file,
-//   String? fileExtension,
-//   int? replyToMessageId,
-// }) async {
-//   try {
-//     final String url = 'http://10.3.0.70:9042/api/HR/AddMessageAsync';
-
-//     final request = http.MultipartRequest('POST', Uri.parse(url))
-//       ..fields['SenderId'] = widget.senderId.toString()
-//       ..fields['ReceiverId'] = widget.receiverId.toString()
-//       ..fields['MessageText'] = text ?? ''
-//       ..fields['IsUserMessage'] = 'true'
-//       ..fields['MessageTimestamp'] = DateTime.now().toIso8601String()
-//       ..fields['ReplyToMessageId'] = replyToMessageId?.toString() ?? '';
-
-//     String? fileType;
-//     String? fileBytesBase64;
-//     if (file != null) {
-//       final fileName = file.path.split('/').last;
-//       fileType = fileName.split('.').last.toLowerCase();
-
-//       final Uint8List bytes = await file.readAsBytes();
-//       fileBytesBase64 = base64.encode(bytes);
-//       print('base64: $fileBytesBase64');
-
-//       request.fields['FileBytesBase64'] = fileBytesBase64;
-//       request.files.add(await http.MultipartFile.fromPath('file', file.path, filename: fileName));
-//     }
-
-//     final response = await request.send();
-//     final responseBody = await response.stream.bytesToString();
-
-//     if (response.statusCode == 200) {
-//       print(file != null ? 'File sent successfully' : 'Message sent successfully');
-//       _controller.clear();
-
-//       // Send message or file via WebSocket
-//       if (file != null) {
-//         _socket.send(jsonEncode({
-//           'senderId': widget.senderId,
-//           'receiverId': widget.receiverId,
-//           'messageText': 'Sent a file: ${file.path.split('/').last}',
-//           'messageTimestamp': DateTime.now().toIso8601String(),
-//           'isUserMessage': true,
-//           'isFile': true,
-//           'fileType': fileType,
-//           'fileBytesBase64': fileBytesBase64,
-//         }));
-//       } else {
-//         _socket.send(jsonEncode({
-//           'senderId': widget.senderId,
-//           'receiverId': widget.receiverId,
-//           'messageText': text!,
-//           'messageTimestamp': DateTime.now().toIso8601String(),
-//           'isUserMessage': true,
-//         }));
-//       }
-
-//       setState(() {
-//         _messages.insert(
-//           0,
-//           ChatMessage(
-//             messageId: _messages.length + 1,
-//             senderId: widget.senderId,
-//             receiverId: widget.receiverId,
-//             messageText: file != null
-//                 ? 'Sent a file: ${file.path.split('/').last}'
-//                 : text!,
-//             messageTimestamp: DateTime.now(),
-//             isUserMessage: true,
-//             isFile: file != null,
-//             fileType: fileType,
-//             fileUrl: file?.path,
-//             fileBytesBase64: fileBytesBase64 ?? '',
-//             format: '',
-//             filename: '',
-//             readStatus: 0,
-//           ),
-//         );
-//         if (file != null) {
-//           buttonVisibility[0] = false;
-//         }
-//       });
-//     } else {
-//       print('Failed to send ${file != null ? 'file' : 'message'}: ${response.statusCode}');
-//       print('Response Body: $responseBody');
-//     }
-//   } catch (e) {
-//     print('Error sending ${file != null ? 'file' : 'message'}: $e');
-//   }
-// }
-
   Future<void> _pickAndSendFile() async {
     final result = await FilePicker.platform.pickFiles();
     if (result != null) {
@@ -640,35 +525,6 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     }
-  }
-
-  // Future<bool> _requestPermission(Permission permission) async {
-  //   if (await permission.isGranted) {
-  //     return true;
-  //   } else {
-  //     final status = await permission.request();
-  //     return status == PermissionStatus.granted;
-  //   }
-  // }
-
-  void _receiveMessage(String text) {
-    // Simulate receiving a message (if needed)
-    ChatMessage receivedMessage = ChatMessage(
-      messageId: _messages.length + 1, // Generate a unique ID as per your logic
-      senderId: widget.receiverId, // Sender is the receiver in this context
-      receiverId: widget.senderId, // Receiver is the sender in this context
-      messageText: text,
-      messageTimestamp: DateTime.now(), // Use appropriate timestamp
-      isUserMessage: false,
-      // fileUrl: null,
-      fileBytesBase64: '',
-      fileUrl: null, format: '',
-      filename: '', readStatus: 0, // Received messages are not user messages
-    );
-
-    setState(() {
-      _messages.insert(0, receivedMessage);
-    });
   }
 
   @override
