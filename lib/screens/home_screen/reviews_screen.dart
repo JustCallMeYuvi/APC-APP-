@@ -12,33 +12,30 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   final List<Map<String, dynamic>> reviews = [
     {
       'name': 'John Cena',
-      'profilePic': 'https://via.placeholder.com/150',
-      'rating': 4.5,
+      'profilePic':
+          'https://martech.org/wp-content/uploads/2016/04/ss-rating-review-stars.jpg',
+      'rating': 4.8,
       'review':
-          'The Apache RunBoost shoes are incredibly comfortable and great for long-distance running. Highly recommended for athletes!',
+          'This app is so easy to use! The interface is intuitive, and everything just flows smoothly. The animations are a nice touch as well.',
       'date': 'Sep 15, 2024',
-      'shoeModel': 'Apache RunBoost',
-      'shoeImage': 'https://via.placeholder.com/100',
     },
     {
       'name': 'Jane Smith',
-      'profilePic': 'https://via.placeholder.com/150',
+      'profilePic':
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0dptC1sXTv9XCytLR_lsBjFtouv6EYEFYqg&s',
       'rating': 5.0,
       'review':
-          'Amazing fit and support! I love the Apache MaxStride sneakers for my workouts. The design is top-notch too!',
+          'Absolutely love the user interface. It looks stunning, and the performance is excellent. The developers clearly paid attention to detail.',
       'date': 'Sep 10, 2024',
-      'shoeModel': 'Apache MaxStride',
-      'shoeImage': 'https://via.placeholder.com/100',
     },
     {
       'name': 'Michael Brown',
-      'profilePic': 'https://via.placeholder.com/150',
-      'rating': 4.0,
+      'profilePic':
+          'https://martech.org/wp-content/uploads/2016/04/ss-rating-review-stars.jpg',
+      'rating': 4.5,
       'review':
-          'The Apache FlexiWalk shoes are very comfortable for casual use, though I wish they had more color options.',
+          'The app is built with great technology. I appreciate how responsive it is. The design elements are modern and very attractive!',
       'date': 'Sep 5, 2024',
-      'shoeModel': 'Apache FlexiWalk',
-      'shoeImage': 'https://via.placeholder.com/100',
     },
   ];
 
@@ -47,8 +44,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Customer Reviews'),
-        backgroundColor: Colors.lightGreen,
+        title: Text('App Reviews'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Container(
         height: size.height,
@@ -61,11 +58,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             final review = reviews[index];
             return Card(
               margin: const EdgeInsets.only(bottom: 16.0),
-              elevation: 4.0,
+              elevation: 6.0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0)),
+                  borderRadius: BorderRadius.circular(15.0)),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -73,7 +70,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                       children: [
                         CircleAvatar(
                           backgroundImage: NetworkImage(review['profilePic']),
-                          radius: 24.0,
+                          radius: 30.0,
                         ),
                         SizedBox(width: 12.0),
                         Column(
@@ -82,17 +79,17 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                             Text(
                               review['name'],
                               style: TextStyle(
-                                fontSize: 16.0,
+                                fontSize: 18.0,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4.0),
+                            SizedBox(height: 6.0),
                             _buildStarRating(review['rating']),
-                            SizedBox(height: 4.0),
+                            SizedBox(height: 6.0),
                             Text(
                               review['date'],
                               style: TextStyle(
-                                fontSize: 12.0,
+                                fontSize: 13.0,
                                 color: Colors.grey,
                               ),
                             ),
@@ -101,37 +98,12 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                       ],
                     ),
                     SizedBox(height: 16.0),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Image.network(
-                          review['shoeImage'],
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                        ),
-                        SizedBox(width: 16.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                review['shoeModel'],
-                                style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orangeAccent,
-                                ),
-                              ),
-                              SizedBox(height: 8.0),
-                              Text(
-                                review['review'],
-                                style: TextStyle(fontSize: 14.0),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    Text(
+                      review['review'],
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        color: Colors.black87,
+                      ),
                     ),
                   ],
                 ),
@@ -147,11 +119,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     return Row(
       children: List.generate(5, (index) {
         if (index < rating) {
-          return Icon(Icons.star, color: Colors.amber, size: 16.0);
+          return Icon(Icons.star, color: Colors.amber, size: 20.0);
         } else if (index < rating + 0.5) {
-          return Icon(Icons.star_half, color: Colors.amber, size: 16.0);
+          return Icon(Icons.star_half, color: Colors.amber, size: 20.0);
         } else {
-          return Icon(Icons.star_border, color: Colors.amber, size: 16.0);
+          return Icon(Icons.star_border, color: Colors.amber, size: 20.0);
         }
       }),
     );
