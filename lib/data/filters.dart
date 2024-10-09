@@ -20,6 +20,7 @@ import 'package:animated_movies_app/screens/home_screen/graphs_sceen.dart';
 import 'package:animated_movies_app/screens/home_screen/reviews_screen.dart';
 
 import 'package:animated_movies_app/screens/home_screen/shoes_screen.dart';
+import 'package:animated_movies_app/screens/home_screen/skill_mapping.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart'; // Import the model for userData
 
 class FiltersData {
@@ -45,7 +46,7 @@ class FiltersData {
       FilterModel(
         name: "My Cart",
         icon: ImagePath.movieReelIcon,
-        screen: null,
+    screen: () => const SkillMapping(),
       ),
     ];
   }

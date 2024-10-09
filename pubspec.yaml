@@ -87,6 +87,8 @@ dependencies:
   package_info_plus: ^8.0.2
   font_awesome_flutter: ^10.7.0
   install_plugin: ^2.1.0
+  percent_indicator: ^4.2.3
+  dropdown_search: ^5.0.2
   
 
   
