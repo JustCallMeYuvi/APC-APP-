@@ -1,6 +1,10 @@
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/screens/home_screen/OTScreenPage.dart';
+import 'package:animated_movies_app/screens/home_screen/efficiency_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/miss_punches_screen.dart';
+import 'package:animated_movies_app/screens/home_screen/po_completion_page.dart';
+import 'package:animated_movies_app/screens/home_screen/rft_report_page.dart';
+import 'package:animated_movies_app/screens/home_screen/target_output_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/token_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/warnings_screen.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +24,7 @@ class _MultipleFormsState extends State<MultipleForms> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Forms Page'),
+        title: const Text('Forms Page'),
         backgroundColor: Colors.lightGreen,
         elevation: 0,
       ),
@@ -36,29 +40,104 @@ class _MultipleFormsState extends State<MultipleForms> {
             child: Column(
               children: [
                 // TabBar placed below AppBar
-                PreferredSize(
+                const PreferredSize(
                   preferredSize:
                       Size.fromHeight(50.0), // Adjust height as needed
-                  child: Container(
-                    child: TabBar(
-                      isScrollable: true, // Allow scrolling for wider tabs
-                      tabs: [
-                        Tab(text: "HR"),
-                        Tab(text: "Test 1"),
-                        Tab(text: "Test 2"),
-                        // Tab(text: "Test 3"),
-                        // Tab(text: "Test 4"),
-                        // Tab(text: "Test 5"),
-                      ],
-                      indicatorColor: Colors.blue,
-                      labelColor: Colors.red,
-                      unselectedLabelColor: Colors.white,
-                    ),
+                  child: TabBar(
+                    isScrollable: true, // Allow scrolling for wider tabs
+                    tabs: [
+                      Tab(text: "Production"),
+                      Tab(text: "Quality"),
+                      Tab(text: "HR"),
+                      // Tab(text: "Test 3"),
+                      // Tab(text: "Test 4"),
+                      // Tab(text: "Test 5"),
+                    ],
+                    indicatorColor: Colors.blue,
+                    labelColor: Colors.red,
+                    unselectedLabelColor: Colors.white,
                   ),
                 ),
                 Expanded(
                   child: TabBarView(
                     children: <Widget>[
+                      // Center(
+                      //   child:
+                      //       Text('Producation', style: TextStyle(fontSize: 24)),
+                      // ),
+
+                      // Production Tab with buttons
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: GridView.count(
+                          crossAxisCount: 3, // Number of columns
+                          crossAxisSpacing: 8.0,
+                          mainAxisSpacing: 8.0,
+                          shrinkWrap: true,
+                          children: [
+                            _buildGridButton(
+                              context,
+                              icon: Icons.auto_graph_sharp,
+                              label: 'Target Output',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const TargetOutputReportPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildGridButton(
+                              context,
+                              icon: Icons.graphic_eq_sharp,
+                              label: 'Efficiency Report',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const EfficiencyReportPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildGridButton(
+                              context,
+                              icon: Icons.graphic_eq_sharp,
+                              label: 'RFT Report',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const RftReportPage(),
+                                  ),
+                                ); // Navigate to OT Page
+                              },
+                            ),
+                            _buildGridButton(
+                              context,
+                              icon: Icons.ac_unit,
+                              label: 'PO Report',
+                              onPressed: () {
+                                // Navigate to Current Shift Page
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const PoCompletionReport(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      // // Content for Test 1
+                      const Center(
+                        child: Text('Quality', style: TextStyle(fontSize: 24)),
+                      ),
+                      // Content for Test 2
                       // HR Tab with buttons
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -137,23 +216,13 @@ class _MultipleFormsState extends State<MultipleForms> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => WarningsScreen(),
+                                    builder: (context) => const WarningsScreen(),
                                   ),
                                 );
                               },
                             ),
                           ],
                         ),
-                      ),
-                      // Content for Test 1
-                      Center(
-                        child: Text('Test 1 Content',
-                            style: TextStyle(fontSize: 24)),
-                      ),
-                      // Content for Test 2
-                      Center(
-                        child: Text('Test 2 Content',
-                            style: TextStyle(fontSize: 24)),
                       ),
                       // Content for Test 3
                       // Center(
@@ -192,16 +261,16 @@ class _MultipleFormsState extends State<MultipleForms> {
           // color: Colors.lightGreen,
           borderRadius: BorderRadius.circular(10),
         ),
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 40, color: Colors.white),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
               ),

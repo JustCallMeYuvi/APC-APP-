@@ -45,6 +45,14 @@ class ImagePath {
   static String person3 = 'assets/person_3.png';
   static String person4 = 'assets/person_4.png';
 
+   static String yuvi = 'assets/yuvi.png';
+   static String yuvipic = 'assets/yuvipic.png';
+   static String yuvaraj = 'assets/yuvaraj.png';
+   static String yuvarajpic = 'assets/picyuvi.png';
+
+
+
+
   // Lottie path
   static String splashPlayLottie = 'assets/lottie/splash_play_lottie.json';
   static String palyButtonLottie = 'assets/lottie/play_button_lottie.json';

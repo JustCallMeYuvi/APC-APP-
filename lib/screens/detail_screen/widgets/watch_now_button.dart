@@ -75,7 +75,7 @@ class _WatchNowButtonState extends State<WatchNowButton> {
               child: Align(
                 alignment: Alignment.center,
                 child: Text(
-                  "Watch now",
+                  "IT Staffs",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,

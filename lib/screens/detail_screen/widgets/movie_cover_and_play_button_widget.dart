@@ -79,19 +79,19 @@ class MovieCoverAndPlayButton extends StatelessWidget {
           ),
         ),
         // Play button lottie
-        Positioned.fill(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              height: 100,
-              width: 100,
-              child: Lottie.asset(
-                ImagePath.palyButtonLottie,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
+        // Positioned.fill(
+        //   child: Align(
+        //     alignment: Alignment.bottomCenter,
+        //     child: SizedBox(
+        //       height: 100,
+        //       width: 100,
+        //       child: Lottie.asset(
+        //         ImagePath.palyButtonLottie,
+        //         fit: BoxFit.cover,
+        //       ),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

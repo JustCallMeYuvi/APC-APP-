@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -204,52 +205,61 @@ class _OTScreenPageState extends State<OTScreenPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_isLoading)
-              Center(child: CircularProgressIndicator())
-            else if (_errorMessage != null)
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Colors.red, fontSize: 16),
-              )
-            else if (_filteredRecords.isNotEmpty)
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _filteredRecords.length,
-                  itemBuilder: (context, index) {
-                    final record = _filteredRecords[index];
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient:
+              UiConstants.backgroundGradient.gradient, // Add your gradient here
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_isLoading)
+                Center(child: CircularProgressIndicator())
+              else if (_errorMessage != null)
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                )
+              else if (_filteredRecords.isNotEmpty)
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _filteredRecords.length,
+                    itemBuilder: (context, index) {
+                      final record = _filteredRecords[index];
 
-                    return ListTile(
-                      contentPadding: EdgeInsets.symmetric(vertical: 8.0),
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '${record.attDate.toLocal().toString().split(' ')[0]}',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
+                      return ListTile(
+                        contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${record.attDate.toLocal().toString().split(' ')[0]}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 8.0),
-                          Text(
-                            'OT Hours: ${record.empOtHrs}',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                      onTap: () => _showRecordDetails(record),
-                    );
-                  },
-                ),
-              )
-            else
-              Center(child: Text('No records found.')),
-          ],
+                            SizedBox(width: 8.0),
+                            Text(
+                              'OT Hours: ${record.empOtHrs}',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                        onTap: () => _showRecordDetails(record),
+                      );
+                    },
+                  ),
+                )
+              else
+                Center(child: Text('No records found.')),
+            ],
+          ),
         ),
       ),
     );

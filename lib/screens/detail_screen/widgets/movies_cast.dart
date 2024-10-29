@@ -27,13 +27,13 @@ class MoviesCast extends StatelessWidget {
         Row(
           children: [
             CastWidget(
-              name: "Emily Carter",
-              role: "Martine Bancrof",
-              imgUrl: ImagePath.person1,
+              name: "Yuvaraj",
+              role: "Flutter Developer",
+              imgUrl: ImagePath.yuvarajpic,
             ),
             CastWidget(
-              name: "Ethan Bradley ",
-              role: "Simon Stroud",
+              name: "Imran",
+              role: "Mobile Team Lead",
               imgUrl: ImagePath.person2,
             ),
           ],
@@ -41,13 +41,13 @@ class MoviesCast extends StatelessWidget {
         Row(
           children: [
             CastWidget(
-              name: "Liam Thompson",
-              role: "Simon Stroud ",
+              name: "Upendra",
+              role: "Junior Developer ",
               imgUrl: ImagePath.person3,
             ),
             CastWidget(
-              name: "Sophia Williams ",
-              role: "Anna Morales ",
+              name: "Premika ",
+              role: "Full Stack Developer",
               imgUrl: ImagePath.person4,
             ),
           ],
