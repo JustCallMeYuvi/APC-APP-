@@ -125,7 +125,8 @@ class _MultipleFormsState extends State<MultipleForms> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const PoCompletionReport(),
+                                    builder: (context) =>
+                                        const PoCompletionReport(),
                                   ),
                                 );
                               },
@@ -216,7 +217,8 @@ class _MultipleFormsState extends State<MultipleForms> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const WarningsScreen(),
+                                    builder: (context) =>
+                                        const WarningsScreen(),
                                   ),
                                 );
                               },
