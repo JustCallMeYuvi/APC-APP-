@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/auth_provider.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/get_emp_details.dart';
@@ -24,7 +25,14 @@ class TokenScreen extends StatefulWidget {
 class _TokenScreenState extends State<TokenScreen> {
   final TextEditingController _textFieldController = TextEditingController();
   String? _selectedBarcode;
-  final List<String> _barcodes = ['70068', '71202', '67757', '70643'];
+  final List<String> _barcodes = [
+    '70068',
+    '71202',
+    '67757',
+    '70643',
+    '70920',
+    '59323',
+  ];
   List<GetEmpDetails> empDetailsList = []; // Declare the list here
 
   @override
@@ -46,11 +54,11 @@ class _TokenScreenState extends State<TokenScreen> {
         final List<dynamic> jsonResponse = json.decode(response.body);
 
         // Debug: Print the raw response body
-        print('Response body: ${response.body}');
+        // print('Response body: ${response.body}');
 
         // Debug: Print the parsed JSON data
         jsonResponse.forEach((data) {
-          print('Parsed JSON item: $data');
+          // print('Parsed JSON item: $data');
         });
 
         setState(() {
@@ -59,16 +67,16 @@ class _TokenScreenState extends State<TokenScreen> {
 
           // Debug: Print the list of empDetailsList
           empDetailsList.forEach((detail) {
-            print(
-                'Emp Detail: ${detail.emPNo}, ${detail.emPName}, ${detail.depTName}, ${detail.position}');
+            // print(
+            //     'Emp Detail: ${detail.emPNo}, ${detail.emPName}, ${detail.depTName}, ${detail.position}');
           });
         });
       } else {
-        print('Request failed with status: ${response.statusCode}');
+        // print('Request failed with status: ${response.statusCode}');
         // Handle error case, show error message or retry logic
       }
     } catch (e) {
-      print('Error fetching data: $e');
+      // print('Error fetching data: $e');
       // Handle error case, show error message or retry logic
     }
   }
@@ -111,9 +119,10 @@ class _TokenScreenState extends State<TokenScreen> {
 
   Future<void> submitData(String text, String barcode) async {
     // final url = Uri.parse('http://10.3.0.70:9042/api/HR/Submitdata');
-
-    final url = Uri.parse('http://10.3.0.70:9042/api/HR/send-notification');
-
+    var apiforSendNotifications = '${ApiHelper.baseUrl}send-notification';
+    final url = Uri.parse(apiforSendNotifications);
+    // final url = Uri.parse('http://10.3.0.70:9042/api/HR/send-notification');
+    print(url);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final deviceToken = authProvider.fcmToken;
     final username =
@@ -159,10 +168,10 @@ class _TokenScreenState extends State<TokenScreen> {
         empDetailsList.isNotEmpty ? empDetailsList[0].emPName : 'Loading...';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Token Screen'),
-        backgroundColor: Colors.lightGreen,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Token Screen'),
+      //   backgroundColor: Colors.lightGreen,
+      // ),
       body: Container(
         height: size.height,
         width: size.width,

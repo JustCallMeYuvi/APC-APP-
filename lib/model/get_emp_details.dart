@@ -64,7 +64,6 @@
 //     };
 // }
 
-
 // below model is 9042 host api
 
 // To parse this JSON data, do
@@ -73,44 +72,50 @@
 
 import 'dart:convert';
 
-List<GetEmpDetails> getEmpDetailsFromJson(String str) => List<GetEmpDetails>.from(json.decode(str).map((x) => GetEmpDetails.fromJson(x)));
+List<GetEmpDetails> getEmpDetailsFromJson(String str) =>
+    List<GetEmpDetails>.from(
+        json.decode(str).map((x) => GetEmpDetails.fromJson(x)));
 
-String getEmpDetailsToJson(List<GetEmpDetails> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String getEmpDetailsToJson(List<GetEmpDetails> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class GetEmpDetails {
-    int id;
-    String username;
-    dynamic email;
-    String emPNo;
-    String password;
-    dynamic message;
-    bool success;
-    String depTName;
-    String emPName;
-    String position;
-    bool status;
-    dynamic token;
+  int id;
+  String username;
+  dynamic email;
+  String emPNo;
+  String useRRole;
+  String password;
+  dynamic message;
+  bool success;
+  String depTName;
+  String emPName;
+  String position;
+  bool status;
+  dynamic token;
 
-    GetEmpDetails({
-        required this.id,
-        required this.username,
-        required this.email,
-        required this.emPNo,
-        required this.password,
-        required this.message,
-        required this.success,
-        required this.depTName,
-        required this.emPName,
-        required this.position,
-        required this.status,
-        required this.token,
-    });
+  GetEmpDetails({
+    required this.id,
+    required this.username,
+    required this.email,
+    required this.emPNo,
+    required this.useRRole,
+    required this.password,
+    required this.message,
+    required this.success,
+    required this.depTName,
+    required this.emPName,
+    required this.position,
+    required this.status,
+    required this.token,
+  });
 
-    factory GetEmpDetails.fromJson(Map<String, dynamic> json) => GetEmpDetails(
+  factory GetEmpDetails.fromJson(Map<String, dynamic> json) => GetEmpDetails(
         id: json["id"],
         username: json["username"],
         email: json["email"],
         emPNo: json["emP_NO"],
+        useRRole: json["useR_ROLE"],
         password: json["password"],
         message: json["message"],
         success: json["success"],
@@ -119,13 +124,14 @@ class GetEmpDetails {
         position: json["position"],
         status: json["status"],
         token: json["token"],
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "id": id,
         "username": username,
         "email": email,
         "emP_NO": emPNo,
+        "useR_ROLE": useRRole,
         "password": password,
         "message": message,
         "success": success,
@@ -134,5 +140,5 @@ class GetEmpDetails {
         "position": position,
         "status": status,
         "token": token,
-    };
+      };
 }

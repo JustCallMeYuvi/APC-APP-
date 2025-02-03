@@ -128,9 +128,11 @@
 //   }
 // }
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/constants/route_animation.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/data/movies_data.dart';
@@ -141,6 +143,7 @@ import 'package:animated_movies_app/screens/home_screen/widgets/header_widget.da
 import 'package:animated_movies_app/screens/home_screen/widgets/movies_cover_widget.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/search_field_widget.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:install_plugin/install_plugin.dart';
@@ -159,13 +162,84 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   bool _isLoading = false;
-
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   @override
   void initState() {
     super.initState();
     // checkForUpdates(); // Call update check on initialization
+
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
   }
 
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initConnectivity() async {
+    late List<ConnectivityResult> result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      // developer.log('Couldn\'t check connectivity status', error: e);
+      return;
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
+    setState(() {
+      _connectionStatus = result;
+    });
+    // ignore: avoid_print
+    print('Connectivity changed: $_connectionStatus');
+    // Show a Snackbar with the connection status
+    String message;
+    Color backgroundColor;
+    // if (_connectionStatus ==ConnectivityResult.none) {
+    //   message = 'No internet connection';
+    //   backgroundColor = Colors.red;
+    // } else {
+    //   message = 'Connected: ${_connectionStatus.toString()}';
+    //   backgroundColor = Colors.green;
+    // }
+
+    if (_connectionStatus.contains(ConnectivityResult.none)) {
+      message = 'No internet connection';
+      backgroundColor = Colors.red;
+    } else if (_connectionStatus.contains(ConnectivityResult.wifi)) {
+      message = 'Connected to Wi-Fi';
+      backgroundColor = Colors.green;
+    } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
+      message = 'Connected to Mobile Network';
+      backgroundColor = Colors.green;
+    } else {
+      message = 'Connected to another network type';
+      backgroundColor = Colors.blue;
+    }
+    // Show the Snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        duration: Duration(seconds: 3), // Adjust duration as needed
+      ),
+    );
+  }
 
   Future<void> checkForUpdates() async {
     setState(() {
@@ -175,9 +249,10 @@ class _HomeContentState extends State<HomeContent> {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String currentVersion = packageInfo.version;
 
-    final url = Uri.parse(
-        'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
 
+    final Uri url = ApiHelper.checkUpdateApi(currentVersion);
     try {
       final response = await http.get(url);
 
@@ -253,7 +328,6 @@ class _HomeContentState extends State<HomeContent> {
       },
     );
   }
-
 
   Future<void> _downloadAndInstallApk(String apkFileData) async {
     try {
@@ -341,7 +415,7 @@ class _HomeContentState extends State<HomeContent> {
             //         child: CircularProgressIndicator(),
             //       )
             //     :
-            SingleChildScrollView(
+            SingleChildScrollView(  
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -356,18 +430,23 @@ class _HomeContentState extends State<HomeContent> {
                       userData: widget.userData,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 28),
-                    child: SearchField(size: size),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: FiltersWidget(userData: widget.userData),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(top: 28),
+                  //   child: SearchField(size: size),
+                  // ),
+
+                  // this is our products in apache filter buttons
+                  // Padding(
+                  //   padding: const EdgeInsets.only(top: 50),
+                  //   child: FiltersWidget(userData: widget.userData),
+                  // ),
+                  SizedBox(
+                    height: 150,
                   ),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 32, top: 14),
+                      padding: const EdgeInsets.only(left: 32, top: 30),
                       child: RichText(
                         text: const TextSpan(
                           text: "Apache ",
@@ -395,32 +474,31 @@ class _HomeContentState extends State<HomeContent> {
                   //         child: CircularProgressIndicator(),
                   //       )
                   //     :
-                       Container(
-                          height: size.height * 0.4,
-                          padding: const EdgeInsets.all(38),
-                          child: AnimatedStackWidget(
-                            itemCount: MoviesData.movies.length,
-                            itemBuilder: (context, index) => GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  zoomNavigation(
-                                    DetailScreen(
-                                      movieName: MoviesData.movies[index].name,
-                                      movieTypeAndEpisode: MoviesData
-                                          .movies[index].movieTypeAndEpisode,
-                                      plot: MoviesData.movies[index].plot,
-                                      movieImage:
-                                          MoviesData.movies[index].coverImage,
-                                      rating: MoviesData.movies[index].rating,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: MagazineCoverImage(
-                                  movies: MoviesData.movies[index]),
+                  Container(
+                    height: size.height * 0.4,
+                    padding: const EdgeInsets.all(38),
+                    child: AnimatedStackWidget(
+                      itemCount: MoviesData.movies.length,
+                      itemBuilder: (context, index) => GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            zoomNavigation(
+                              DetailScreen(
+                                movieName: MoviesData.movies[index].name,
+                                movieTypeAndEpisode: MoviesData
+                                    .movies[index].movieTypeAndEpisode,
+                                plot: MoviesData.movies[index].plot,
+                                movieImage: MoviesData.movies[index].coverImage,
+                                rating: MoviesData.movies[index].rating,
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
+                        child: MagazineCoverImage(
+                            movies: MoviesData.movies[index]),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

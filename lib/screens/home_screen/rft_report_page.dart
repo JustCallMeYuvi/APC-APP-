@@ -1,5 +1,4 @@
-
-
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -31,84 +30,90 @@ class _RftReportPageState extends State<RftReportPage> {
   }
 
   Future<void> _fetchData({DateTimeRange? dateRange}) async {
-  if (!mounted) return; // Exit early if the widget is no longer mounted
+    if (!mounted) return; // Exit early if the widget is no longer mounted
 
-  setState(() {
-    _isLoading = true;
-  });
+    setState(() {
+      _isLoading = true;
+    });
 
-  String? formattedFromDate = dateRange?.start.toIso8601String().substring(0, 10);
-  String? formattedToDate = dateRange?.end.toIso8601String().substring(0, 10);
+    // String? formattedFromDate =
+    //     dateRange?.start.toIso8601String().substring(0, 10);
+    // String? formattedToDate = dateRange?.end.toIso8601String().substring(0, 10);
 
-  String url = 'http://10.3.0.70:9042/api/HR/GetProductionData';
-  if (dateRange != null) {
-    url += '?startDate=$formattedFromDate&endDate=$formattedToDate';
-  }
+    // String url = 'http://10.3.0.70:9042/api/HR/GetProductionData';
+    // if (dateRange != null) {
+    //   url += '?startDate=$formattedFromDate&endDate=$formattedToDate';
+    // }
 
-  try {
-    final response = await http.get(Uri.parse(url));
+    // Use the ApiHelper to get the URL
+    String url = ApiHelper.getRftReport(dateRange);
+    print('RFT Report Url${url}');
 
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonData = json.decode(response.body);
+    try {
+      final response = await http.get(Uri.parse(url));
 
-      if (jsonData.isEmpty) {
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+
+        if (jsonData.isEmpty) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('No data found for the selected date range')),
+            );
+            setState(() {
+              _isLoading = false;
+            });
+          }
+          return;
+        }
+
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No data found for the selected date range')),
-          );
           setState(() {
+            try {
+              _totalQuantityData = jsonData.map((item) {
+                final productionLine = item['productionLineCode'] ?? 'Unknown';
+                final totalQuantity = item['totalQuantity'] != null
+                    ? double.tryParse(item['totalQuantity'].toString()) ?? 0.0
+                    : 0.0;
+                return _ChartData(productionLine, totalQuantity);
+              }).toList();
+
+              _passQuantityData = jsonData.map((item) {
+                final productionLine = item['productionLineCode'] ?? 'Unknown';
+                final passQuantity = item['passQuantity'] != null
+                    ? double.tryParse(item['passQuantity'].toString()) ?? 0.0
+                    : 0.0;
+                return _ChartData(productionLine, passQuantity);
+              }).toList();
+
+              _rftPercentageData = jsonData.map((item) {
+                final productionLine = item['productionLineCode'] ?? 'Unknown';
+                final rftPercentage = item['rftPercentage'] != null
+                    ? double.tryParse(item['rftPercentage'].toString()) ?? 0.0
+                    : 0.0;
+                return _ChartData(productionLine, rftPercentage);
+              }).toList();
+            } catch (e) {
+              print("Error processing data: $e");
+            }
             _isLoading = false;
           });
         }
-        return;
+      } else {
+        throw Exception('Failed to load efficiency report');
       }
-
+    } catch (error) {
       if (mounted) {
         setState(() {
-          try {
-            _totalQuantityData = jsonData.map((item) {
-              final productionLine = item['productionLineCode'] ?? 'Unknown';
-              final totalQuantity = item['totalQuantity'] != null
-                  ? double.tryParse(item['totalQuantity'].toString()) ?? 0.0
-                  : 0.0;
-              return _ChartData(productionLine, totalQuantity);
-            }).toList();
-
-            _passQuantityData = jsonData.map((item) {
-              final productionLine = item['productionLineCode'] ?? 'Unknown';
-              final passQuantity = item['passQuantity'] != null
-                  ? double.tryParse(item['passQuantity'].toString()) ?? 0.0
-                  : 0.0;
-              return _ChartData(productionLine, passQuantity);
-            }).toList();
-
-            _rftPercentageData = jsonData.map((item) {
-              final productionLine = item['productionLineCode'] ?? 'Unknown';
-              final rftPercentage = item['rftPercentage'] != null
-                  ? double.tryParse(item['rftPercentage'].toString()) ?? 0.0
-                  : 0.0;
-              return _ChartData(productionLine, rftPercentage);
-            }).toList();
-          } catch (e) {
-            print("Error processing data: $e");
-          }
           _isLoading = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch data: $error')),
+        );
       }
-    } else {
-      throw Exception('Failed to load efficiency report');
-    }
-  } catch (error) {
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to fetch data: $error')),
-      );
     }
   }
-}
 
   Future<void> _selectDateRange(BuildContext context) async {
     final DateTimeRange? picked = await showDateRangePicker(
@@ -141,50 +146,129 @@ class _RftReportPageState extends State<RftReportPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('RFT Report'),
-        backgroundColor: Colors.lightGreen, // Set header color to light green
-        actions: [
-          IconButton(
-            icon: FaIcon(FontAwesomeIcons.calendarAlt), // Use Font Awesome calendar icon
-            onPressed: () => _selectDateRange(context),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    if (_isMaximized)
-                      _buildMaximizedChart()
-                    else ...[
-                      _buildChart(
-                        title: 'Total Quantity',
-                        dataSource: _totalQuantityData,
-                        color: Colors.blue,
-                      ),
-                      const SizedBox(height: 16.0),
-                      _buildChart(
-                        title: 'Pass Quantity',
-                        dataSource: _passQuantityData,
-                        color: Colors.green,
-                      ),
-                      const SizedBox(height: 16.0),
-                      _buildChart(
-                        title: 'RFT Percentage',
-                        dataSource: _rftPercentageData,
-                        color: Colors.orange,
-                      ),
-                      
-                    ],
-                  ],
+        // appBar: AppBar(
+        //   title: const Text('RFT Report'),
+        //   backgroundColor: Colors.lightGreen, // Set header color to light green
+        //   actions: [
+        //     IconButton(
+        //       icon: FaIcon(FontAwesomeIcons.calendarAlt), // Use Font Awesome calendar icon
+        //       onPressed: () => _selectDateRange(context),
+        //     ),
+        //   ],
+        // ),
+        // body: SingleChildScrollView(
+        //   child: Column(
+        //     children: [
+        //       Padding(
+        //         padding: const EdgeInsets.all(16.0),
+        //         child: Row(
+        //           mainAxisAlignment: MainAxisAlignment.center, // Center the text
+        //           children: [
+        //             GestureDetector(
+        //               onTap: () => _selectDateRange(context), // Action on tap
+        //               child: Text(
+        //                 "Select Date",
+        //                 style: TextStyle(
+        //                   color: Colors.greenAccent, // Text color
+        //                   fontSize: 16, // Font size
+        //                   fontWeight: FontWeight.bold, // Make it bold (optional)
+        //                 ),
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+        //       ),
+        //       _isLoading
+        //           ? Center(child: CircularProgressIndicator())
+        //           : SingleChildScrollView(
+        //               child: Column(
+        //                 children: [
+        //                   if (_isMaximized)
+        //                     _buildMaximizedChart()
+        //                   else ...[
+        //                     _buildChart(
+        //                       title: 'Total Quantity',
+        //                       dataSource: _totalQuantityData,
+        //                       color: Colors.blue,
+        //                     ),
+        //                     const SizedBox(height: 16.0),
+        //                     _buildChart(
+        //                       title: 'Pass Quantity',
+        //                       dataSource: _passQuantityData,
+        //                       color: Colors.green,
+        //                     ),
+        //                     const SizedBox(height: 16.0),
+        //                     _buildChart(
+        //                       title: 'RFT Percentage',
+        //                       dataSource: _rftPercentageData,
+        //                       color: Colors.orange,
+        //                     ),
+        //                   ],
+        //                 ],
+        //               ),
+        //             ),
+        //     ],
+        //   ),
+        // ),
+        body: SingleChildScrollView(
+            child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight:
+                      MediaQuery.of(context).size.height, // Ensure full height
                 ),
-              ),
-      ),
-    );
+                child: IntrinsicHeight(
+                  // Allows children to define their own height
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: GestureDetector(
+                          onTap: () =>
+                              _selectDateRange(context), // Action on tap
+                          child: Center(
+                            child: Text(
+                              "Select Date",
+                              style: TextStyle(
+                                color: Colors.greenAccent, // Text color
+                                fontSize: 16, // Font size
+                                fontWeight:
+                                    FontWeight.bold, // Make it bold (optional)
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_isLoading)
+                        Center(
+                            child: CircularProgressIndicator()) // Show loader
+                      else if (_isMaximized)
+                        _buildMaximizedChart() // Show maximized chart if needed
+                      else
+                        Column(
+                          children: [
+                            _buildChart(
+                              title: 'Total Quantity',
+                              dataSource: _totalQuantityData,
+                              color: Colors.blue,
+                            ),
+                            const SizedBox(height: 16.0),
+                            _buildChart(
+                              title: 'Pass Quantity',
+                              dataSource: _passQuantityData,
+                              color: Colors.green,
+                            ),
+                            const SizedBox(height: 16.0),
+                            _buildChart(
+                              title: 'RFT Percentage',
+                              dataSource: _rftPercentageData,
+                              color: Colors.orange,
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ))));
   }
 
   Widget _buildChart({
@@ -226,7 +310,11 @@ class _RftReportPageState extends State<RftReportPage> {
                 isVisible: true,
                 labelAlignment: ChartDataLabelAlignment.auto,
                 textStyle: const TextStyle(color: Colors.black),
-                builder: (dynamic data, ChartPoint<dynamic> point, ChartSeries<dynamic, dynamic> series, int index, int seriesIndex) {
+                builder: (dynamic data,
+                    ChartPoint<dynamic> point,
+                    ChartSeries<dynamic, dynamic> series,
+                    int index,
+                    int seriesIndex) {
                   final chartData = data as _ChartData;
                   return Text(
                     chartData.value.toStringAsFixed(1),
@@ -240,7 +328,6 @@ class _RftReportPageState extends State<RftReportPage> {
       ),
     );
   }
-
 
   Widget _buildPyramidChart({
     required String title,
@@ -292,7 +379,8 @@ class _RftReportPageState extends State<RftReportPage> {
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      height: MediaQuery.of(context).size.height - 150, // Adjust height for maximized state
+      height: MediaQuery.of(context).size.height -
+          150, // Adjust height for maximized state
       child: SfCartesianChart(
         primaryXAxis: CategoryAxis(
           labelRotation: 45, // Rotate X-axis labels to avoid overlapping
@@ -322,7 +410,11 @@ class _RftReportPageState extends State<RftReportPage> {
               isVisible: true,
               labelAlignment: ChartDataLabelAlignment.auto,
               textStyle: const TextStyle(color: Colors.black),
-              builder: (dynamic data, ChartPoint<dynamic> point, ChartSeries<dynamic, dynamic> series, int index, int seriesIndex) {
+              builder: (dynamic data,
+                  ChartPoint<dynamic> point,
+                  ChartSeries<dynamic, dynamic> series,
+                  int index,
+                  int seriesIndex) {
                 final chartData = data as _ChartData;
                 return Text(
                   chartData.value.toStringAsFixed(1),

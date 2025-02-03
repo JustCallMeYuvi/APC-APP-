@@ -1,5 +1,4 @@
-
-
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -35,13 +34,17 @@ class _EfficiencyReportPageState extends State<EfficiencyReportPage> {
       _isLoading = true;
     });
 
-    String? formattedFromDate = dateRange?.start.toIso8601String().substring(0, 10);
-    String? formattedToDate = dateRange?.end.toIso8601String().substring(0, 10);
+    // String? formattedFromDate =
+    //     dateRange?.start.toIso8601String().substring(0, 10);
+    // String? formattedToDate = dateRange?.end.toIso8601String().substring(0, 10);
 
-    String url = 'http://10.3.0.70:9042/api/HR/efficiency-report';
-    if (dateRange != null) {
-      url += '?fromDate=$formattedFromDate&toDate=$formattedToDate';
-    }
+    // String url = 'http://10.3.0.70:9042/api/HR/efficiency-report';
+    // if (dateRange != null) {
+    //   url += '?fromDate=$formattedFromDate&toDate=$formattedToDate';
+    // }
+
+    // Use the ApiHelper to get the URL
+  String url = ApiHelper.getEfficiencyReport(dateRange);
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -53,7 +56,8 @@ class _EfficiencyReportPageState extends State<EfficiencyReportPage> {
 
         if (jsonData.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No data found for the selected date range')),
+            const SnackBar(
+                content: Text('No data found for the selected date range')),
           );
         }
 
@@ -126,20 +130,39 @@ class _EfficiencyReportPageState extends State<EfficiencyReportPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Efficiency Report'),
-        backgroundColor: Colors.lightGreen, // Set header color to light green
-        actions: [
-          IconButton(
-            icon: FaIcon(FontAwesomeIcons.calendarAlt), // Use Font Awesome calendar icon
-            onPressed: () => _selectDateRange(context),
-          ),
-        ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Efficiency Report'),
+      //   backgroundColor: Colors.lightGreen, // Set header color to light green
+      //   actions: [
+      //     IconButton(
+      //       icon: FaIcon(FontAwesomeIcons.calendarAlt), // Use Font Awesome calendar icon
+      //       onPressed: () => _selectDateRange(context),
+      //     ),
+      //   ],
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center, // Center the text
+                children: [
+                  GestureDetector(
+                    onTap: () => _selectDateRange(context), // Action on tap
+                    child: Text(
+                      "Select Date",
+                      style: TextStyle(
+                        color: Colors.greenAccent, // Text color
+                        fontSize: 16, // Font size
+                        fontWeight: FontWeight.bold, // Make it bold (optional)
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Expanded(
@@ -209,7 +232,11 @@ class _EfficiencyReportPageState extends State<EfficiencyReportPage> {
                 isVisible: true,
                 labelAlignment: ChartDataLabelAlignment.auto,
                 textStyle: const TextStyle(color: Colors.black),
-                builder: (dynamic data, ChartPoint<dynamic> point, ChartSeries<dynamic, dynamic> series, int index, int seriesIndex) {
+                builder: (dynamic data,
+                    ChartPoint<dynamic> point,
+                    ChartSeries<dynamic, dynamic> series,
+                    int index,
+                    int seriesIndex) {
                   final chartData = data as _ChartData;
                   return Text(
                     chartData.value.toStringAsFixed(1),
@@ -270,7 +297,11 @@ class _EfficiencyReportPageState extends State<EfficiencyReportPage> {
                 isVisible: true,
                 labelAlignment: ChartDataLabelAlignment.auto,
                 textStyle: const TextStyle(color: Colors.black),
-                builder: (dynamic data, ChartPoint<dynamic> point, ChartSeries<dynamic, dynamic> series, int index, int seriesIndex) {
+                builder: (dynamic data,
+                    ChartPoint<dynamic> point,
+                    ChartSeries<dynamic, dynamic> series,
+                    int index,
+                    int seriesIndex) {
                   final chartData = data as _ChartData;
                   return Text(
                     chartData.value.toStringAsFixed(1),
@@ -292,6 +323,3 @@ class _ChartData {
   final String category;
   final double value;
 }
-
-
-

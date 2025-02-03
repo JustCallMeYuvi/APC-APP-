@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -102,9 +103,14 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
       return;
     }
 
-    final url = 'http://10.3.0.70:9042/api/HR/GetWorkTargets'
-        '?fromDate=${_startDate!.toIso8601String().split('T')[0]}'
-        '&toDate=${_endDate!.toIso8601String().split('T')[0]}';
+    // final url = 'http://10.3.0.70:9042/api/HR/GetWorkTargets'
+    //     '?fromDate=${_startDate!.toIso8601String().split('T')[0]}'
+    //     '&toDate=${_endDate!.toIso8601String().split('T')[0]}';
+
+// Use ApiHelper to construct the URL
+    final fromDate = _startDate!.toIso8601String().split('T')[0];
+    final toDate = _endDate!.toIso8601String().split('T')[0];
+    final url = ApiHelper.getWorkTargets(fromDate, toDate);
     print('Fetching data from URL: $url');
 
     setState(() {
@@ -213,16 +219,16 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Target Output Report'),
-        backgroundColor: Colors.lightGreen,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () => _selectDateRange(context),
-          ),
-        ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Target Output Report'),
+      //   backgroundColor: Colors.lightGreen,
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.calendar_today),
+      //       onPressed: () => _selectDateRange(context),
+      //     ),
+      //   ],
+      // ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -234,52 +240,71 @@ class _TargetOutputReportPageState extends State<TargetOutputReportPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
+                    children: [
+                      // ElevatedButton(
+                      //   onPressed: () => _selectStartDate(context),
+                      //   child: Text(
+                      //     _startDate == null
+                      //         ? 'Select Start Date'
+                      //         : 'Start Date: ${DateFormat('yyyy-MM-dd').format(_startDate!)}',
+                      //     style: TextStyle(fontSize: 16),
+                      //   ),
+                      // ),
+                      // // _buildDateButton(
+                      // //   label: _startDate == null
+                      // //       ? 'Select Start Date'
+                      // //       : 'Start Date: ${DateFormat('yyyy-MM-dd').format(_startDate!)}',
+                      // //   onPressed: () => _selectStartDate(context),
+                      // // ),
+                      // // SizedBox(width: 20),
+                      // ElevatedButton(
+                      //   onPressed: () => _selectEndDate(context),
+                      //   child: Text(
+                      //     _endDate == null
+                      //         ? 'Select End Date'
+                      //         : 'End Date: ${DateFormat('yyyy-MM-dd').format(_endDate!)}',
+                      //     style: TextStyle(fontSize: 16),
+                      //   ),
+                      // ),
+
+                      // // _buildDateButton(
+                      // //   label: _endDate == null
+                      // //       ? 'Select End Date'
+                      // //       : 'End Date: ${DateFormat('yyyy-MM-dd').format(_endDate!)}',
+                      // //   onPressed: () => _selectEndDate(context),
+                      // // ),
+
+                      // SizedBox(height: 10),
+                      // ElevatedButton(
+                      //   onPressed: _onFetchData,
+                      //   child: Text('Fetch Data'),
+                      // ),
+                    ],
+                  ),
+                ],
+              ),
+              // Add the IconButton inside the body
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment:
+                      MainAxisAlignment.center, // Center the text
                   children: [
-                    Column(
-                      children: [
-                        // ElevatedButton(
-                        //   onPressed: () => _selectStartDate(context),
-                        //   child: Text(
-                        //     _startDate == null
-                        //         ? 'Select Start Date'
-                        //         : 'Start Date: ${DateFormat('yyyy-MM-dd').format(_startDate!)}',
-                        //     style: TextStyle(fontSize: 16),
-                        //   ),
-                        // ),
-                        // // _buildDateButton(
-                        // //   label: _startDate == null
-                        // //       ? 'Select Start Date'
-                        // //       : 'Start Date: ${DateFormat('yyyy-MM-dd').format(_startDate!)}',
-                        // //   onPressed: () => _selectStartDate(context),
-                        // // ),
-                        // // SizedBox(width: 20),
-                        // ElevatedButton(
-                        //   onPressed: () => _selectEndDate(context),
-                        //   child: Text(
-                        //     _endDate == null
-                        //         ? 'Select End Date'
-                        //         : 'End Date: ${DateFormat('yyyy-MM-dd').format(_endDate!)}',
-                        //     style: TextStyle(fontSize: 16),
-                        //   ),
-                        // ),
-
-                        // // _buildDateButton(
-                        // //   label: _endDate == null
-                        // //       ? 'Select End Date'
-                        // //       : 'End Date: ${DateFormat('yyyy-MM-dd').format(_endDate!)}',
-                        // //   onPressed: () => _selectEndDate(context),
-                        // // ),
-
-                        // SizedBox(height: 10),
-                        // ElevatedButton(
-                        //   onPressed: _onFetchData,
-                        //   child: Text('Fetch Data'),
-                        // ),
-                      ],
+                    GestureDetector(
+                      onTap: () => _selectDateRange(context), // Action on tap
+                      child: Text(
+                        "Select Date",
+                        style: TextStyle(
+                          color: Colors.greenAccent, // Text color
+                          fontSize: 16, // Font size
+                          fontWeight:
+                              FontWeight.bold, // Make it bold (optional)
+                        ),
+                      ),
                     ),
                   ],
                 ),

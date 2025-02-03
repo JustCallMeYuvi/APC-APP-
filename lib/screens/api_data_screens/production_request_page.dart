@@ -1,27 +1,77 @@
+// import 'package:flutter/material.dart';
+
+// class AdminPage extends StatefulWidget {
+//   const AdminPage({Key? key}) : super(key: key);
+
+//   @override
+//   State<AdminPage> createState() => _AdminPageState();
+// }
+
+// class _AdminPageState extends State<AdminPage> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       mainAxisSize: MainAxisSize.min,
+//       children: [
+//         Text(
+//           'Welcome to the Admin Page!',
+//           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+//         ),
+//         SizedBox(height: 16),
+//         Text(
+//           'Here are some important details:',
+//           style: TextStyle(fontSize: 20),
+//         ),
+//         ListTile(
+//           leading: Icon(Icons.info),
+//           title: Text('Detail 1: Important information'),
+//         ),
+//         ListTile(
+//           leading: Icon(Icons.check),
+//           title: Text('Detail 2: Another key point'),
+//         ),
+//         ListTile(
+//           leading: Icon(Icons.star),
+//           title: Text('Detail 3: Some additional info'),
+//         ),
+//       ],
+//     );
+//   }
+// }
+
 import 'dart:convert';
+import 'package:animated_movies_app/api/apis_page.dart';
+import 'package:animated_movies_app/constants/ui_constant.dart';
+import 'package:animated_movies_app/screens/home_screen/api_data_screen.dart';
+import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 //import 'package:intl/intl.dart';
 
-class ProductionRequestPage extends StatefulWidget {
-  final String userCode;
-  final String userName;
+//import 'package:uni_links/uni_links.dart';
 
-  const ProductionRequestPage({
+class SkillMappingRequestPage extends StatefulWidget {
+  // final String userData;
+  // final String userName;
+  final LoginModelApi userData; // Use userData directly
+
+  const SkillMappingRequestPage({
     super.key,
-    required this.userCode,
-    required this.userName,
+    required this.userData,
+    // required this.userName,
   });
 
   @override
-  _ProductionRequestPageState createState() => _ProductionRequestPageState();
+  _SkillMappingRequestPageState createState() =>
+      _SkillMappingRequestPageState();
 }
 
-class _ProductionRequestPageState extends State<ProductionRequestPage>
+class _SkillMappingRequestPageState extends State<SkillMappingRequestPage>
     with SingleTickerProviderStateMixin {
   // Controllers for text fields
   final TextEditingController barcodeController = TextEditingController();
@@ -31,6 +81,8 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
   late AnimationController _animationController;
   double approvalPercent = 0.0;
   // Variables for state management
+  final FocusNode _focusNode = FocusNode();
+  final TextEditingController _controller = TextEditingController();
   String selectedPlant = '';
   String selectedDept = '';
   String selectedProcessType = '';
@@ -53,7 +105,9 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
   bool text = false;
   bool flow = false;
   bool approvedplant = false;
+  bool statusConfirmed = false;
   bool frstplant = true;
+  bool _isLoading = false;
   // Sample data lists
   List<String> plants = ['Plant A', 'Plant B'];
   List<String> departments = ['Dept X', 'Dept Y'];
@@ -90,7 +144,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300),
     );
     _fetchPlants();
     _fetchEmployeesData();
@@ -103,54 +157,99 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
     super.dispose();
   }
 
-  void _notifyStatus(String role) {
-    setState(() {});
+  Future<void> _notifyStatus(String role) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      // String url =
+      //     'http://10.3.0.70:9060/api/HR/Notify?Role=$role&plant=$selectedPlant';
+
+      String url = ApiHelper.notifyApiforLeaveRequest(role, selectedPlant);
+
+      final response = await http.post(Uri.parse(url));
+      if (response.statusCode == 200) {
+        // Handle successful response
+        String responseBody = response.body;
+        _showSnackBar('Success: $responseBody', Colors.green);
+      } else if (response.statusCode == 404) {
+        // Handle not found error
+        _showSnackBar('Not Found: ${response.body}', Colors.red);
+      } else {
+        // Handle other errors
+        _showSnackBar('Failed to Notify: ${response.body}', Colors.red);
+      }
+    } catch (e) {
+      _showSnackBar('An error occurred: $e', Colors.red);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<List<Map<String, String>>> _plantAbsentData() async {
     List<Map<String, String>> absentList = [];
-
     try {
+      // String url =
+      //     'http://10.3.0.70:9060/api/HR/GetAbsentList?Plant=$selectedPlant';
       String url =
-          'http://10.3.0.70:9060/api/HR/GetAbsentList?Plant=$selectedPlant';
+          'http://10.3.0.208:8084/api/HR/GetAbsentList?Plant=$selectedPlant';
+      // String url = ApiHelper.getAbsentListApi(selectedPlant);
+
       final response = await http.get(Uri.parse(url));
 
       // Check for successful response
       if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body) as List<dynamic>;
+        // Parse the response body as a list
+        final List<dynamic> responseData = jsonDecode(response.body);
 
-        absentList = responseData.map<Map<String, String>>((e) {
-          // Split the string by comma and trim whitespace
-          final parts = e.split(',').map((part) => part.trim()).toList();
-          // Create a map from the split parts
-          return {
-            'barcode': parts[1], // Adjust index if necessary
-            'empName': parts[2],
-            'plant': parts[0],
-            'departmentCode': parts[3],
-            'skillType': parts[4],
-          };
-        }).toList();
+        // Check if the first element indicates confirmation
+        if (responseData.isNotEmpty &&
+            responseData[0].contains("Already Confirmed")) {
+          statusConfirmed = true; // Update the status
+        }
 
-        //print(absentList);
+        // Process all entries for the absent list
+        for (int i = 0; i < responseData.length; i++) {
+          String entry = responseData[i];
+
+          // Split each entry by comma and trim whitespace
+          final parts = entry.split(',').map((part) => part.trim()).toList();
+
+          // Ensure the parts list has the expected number of elements
+          if (parts.length == 5) {
+            absentList.add({
+              'plant': parts[0],
+              'barcode': parts[1],
+              'empName': parts[2],
+              'departmentCode': parts[3],
+              'skillType': parts[4],
+            });
+          }
+        }
       } else if (response.statusCode == 400) {
-        String responseMessage = response.body; // Capture the response body
+        // Handle bad requests
+        String responseMessage = response.body;
 
-        // Check if the response body matches the no records message
         if (responseMessage.contains('No records found')) {
-          _showNotification('Please add employees.', Colors.red);
-          //Navigator.of(context).pop(false);
+          _showSnackBar('Please add employees.', Colors.red);
         } else {
-          _showNotification('Bad request. Please check the input.', Colors.red);
+          //_showNotification('Bad request. Please check the input.', Colors.red);
         }
       } else {
-        _showNotification(
-            'Failed to load Employees. Status code: ${response.statusCode}',
-            Colors.red);
+        // Handle other unsuccessful response statuses
+        _showSnackBar(
+          'Failed to load Employees. Status code: ${response.statusCode}',
+          Colors.red,
+        );
       }
     } catch (e) {
-      _showNotification(
-          'An error occurred while fetching Employees: $e', Colors.red);
+      // Handle any errors during the request
+      _showSnackBar(
+        'An error occurred while fetching Employees: $e',
+        Colors.red,
+      );
     }
 
     // Return the processed absent list
@@ -185,100 +284,102 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
     });
   }
 
-  void showSuggestions(String text) {
-    // Filter the suggestions based on the input text
-    final filteredSuggestions = suggestions.where((employee) {
-      final empName = employee['empName']?.toLowerCase() ?? '';
-      final barcode = employee['barcode']?.toLowerCase() ?? '';
-      final plant = employee['plant']?.toLowerCase() ?? '';
-      final searchText = text.toLowerCase();
+  // void showSuggestions(String text) {
+  //   // Filter the suggestions based on the input text
+  //   final filteredSuggestions = suggestions.where((employee) {
+  //     final empName = employee['empName']?.toLowerCase() ?? '';
+  //     final barcode = employee['barcode']?.toLowerCase() ?? '';
+  //     final plant = employee['plant']?.toLowerCase() ?? '';
+  //     final searchText = text.toLowerCase();
 
-      // Check if any of the fields contain the search text
-      return empName.contains(searchText) ||
-          barcode.contains(searchText) ||
-          plant.contains(searchText);
-    }).toList();
+  //     // Check if any of the fields contain the search text
+  //     return empName.contains(searchText) ||
+  //         barcode.contains(searchText) ||
+  //         plant.contains(searchText);
+  //   }).toList();
 
-    if (filteredSuggestions.isEmpty) return;
+  //   if (filteredSuggestions.isEmpty) return;
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled:
-          true, // This allows the bottom sheet to adjust its height based on content
-      builder: (context) {
-        return Container(
-          color: Colors.white,
-          child: Wrap(
-            children: [
-              Container(
-                color: Colors.grey[200],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        'Select Employee',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.0,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height *
-                          0.42, // Adjusts the height to 3/4 of the screen
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        itemCount: filteredSuggestions.length,
-                        itemBuilder: (context, index) {
-                          final employee = filteredSuggestions[index];
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 12.0),
-                            title: Text(
-                              employee['empName'] ?? '',
-                              style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text(
-                              'Barcode: ${employee['barcode'] ?? ''} | Plant: ${employee['plant'] ?? ''}',
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                            tileColor: Colors.grey[200],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            onTap: () {
-                              setState(() {
-                                barcodeController.text =
-                                    employee['barcode'] ?? '';
-                                empNameController.text =
-                                    employee['empName'] ?? '';
-                                isBarcodeReadOnly = true;
-                                isEmpNameReadOnly = true;
-                              });
-                              Navigator.pop(context); // Close the modal
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled:
+  //         true, // This allows the bottom sheet to adjust its height based on content
+  //     builder: (context) {
+  //       return Container(
+  //         color: Colors.white,
+  //         child: Wrap(
+  //           children: [
+  //             Container(
+  //               color: Colors.grey[200],
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   const Padding(
+  //                     padding: EdgeInsets.all(8.0),
+  //                     child: Text(
+  //                       'Select Employee',
+  //                       style: TextStyle(
+  //                         color: Colors.blue,
+  //                         fontWeight: FontWeight.bold,
+  //                         fontSize: 18.0,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   SizedBox(
+  //                     height: MediaQuery.of(context).size.height *
+  //                         0.42, // Adjusts the height to 3/4 of the screen
+  //                     child: ListView.builder(
+  //                       padding: const EdgeInsets.symmetric(vertical: 8.0),
+  //                       itemCount: filteredSuggestions.length,
+  //                       itemBuilder: (context, index) {
+  //                         final employee = filteredSuggestions[index];
+  //                         return ListTile(
+  //                           contentPadding: const EdgeInsets.symmetric(
+  //                               vertical: 8.0, horizontal: 12.0),
+  //                           title: Text(
+  //                             employee['empName'] ?? '',
+  //                             style: const TextStyle(
+  //                                 color: Colors.blue,
+  //                                 fontWeight: FontWeight.bold),
+  //                           ),
+  //                           subtitle: Text(
+  //                             'Barcode: ${employee['barcode'] ?? ''} | Plant: ${employee['plant'] ?? ''}',
+  //                             style: const TextStyle(color: Colors.grey),
+  //                           ),
+  //                           tileColor: Colors.grey[200],
+  //                           shape: RoundedRectangleBorder(
+  //                             borderRadius: BorderRadius.circular(8.0),
+  //                           ),
+  //                           onTap: () {
+  //                             setState(() {
+  //                               barcodeController.text =
+  //                                   employee['barcode'] ?? '';
+  //                               empNameController.text =
+  //                                   employee['empName'] ?? '';
+  //                               isBarcodeReadOnly = true;
+  //                               isEmpNameReadOnly = true;
+  //                             });
+  //                             Navigator.pop(context); // Close the modal
+  //                           },
+  //                         );
+  //                       },
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   Future<void> _fetchEmployeesData() async {
     try {
-      String url = 'http://10.3.0.70:9060/api/HR/GetEmployeeList';
+      // String url = 'http://10.3.0.70:9060/api/HR/GetEmployeeList';
+      // String url = 'http://10.3.0.70:9042/api/HR/GetEmployeeList';
+      String url = ApiHelper.getEmployeeListApi();
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -296,22 +397,26 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
             }).toList();
           });
         } else {
-          _showNotification(
+          _showSnackBar(
               'Unexpected data format: Expected a list under "retData1".',
               Colors.red);
         }
       } else {
-        _showNotification('Failed to load Employees', Colors.red);
+        _showSnackBar('Failed to load Employees', Colors.red);
       }
     } catch (e) {
-      _showNotification(
+      _showSnackBar(
           'An error occurred while fetching Employees: $e', Colors.red);
     }
   }
 
   Future<void> _fetchPlants() async {
+    //getLinks();
     try {
-      String url = 'http://10.3.0.70:9060/api/HR/GetPlants';
+      // String url = 'http://10.3.0.70:9060/api/HR/GetPlants';
+      // String url = 'http://10.3.0.70:9042/api/HR/GetPlants';
+      String url = ApiHelper.getPlantsforLeaves();
+
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body) as List<dynamic>;
@@ -319,17 +424,19 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           plants = responseData.cast<String>();
         });
       } else {
-        _showNotification('Failed to load plants', Colors.red);
+        _showSnackBar('Failed to load plants', Colors.red);
       }
     } catch (e) {
-      _showNotification(
-          'An error occurred while fetching plants: $e', Colors.red);
+      _showSnackBar('An error occurred while fetching plants: $e', Colors.red);
     }
   }
 
   Future<void> _fetchProcessTypes() async {
     try {
-      String url = 'http://10.3.0.70:9060/api/HR/GetProcessType';
+      // String url = 'http://10.3.0.70:9060/api/HR/GetProcessType';
+      // String url = 'http://10.3.0.70:9042/api/HR/GetProcessType';
+      String url = ApiHelper.getProcessTypes();
+
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body) as List<dynamic>;
@@ -337,18 +444,23 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           processTypes = responseData.cast<String>();
         });
       } else {
-        _showNotification('Failed to load process Types', Colors.red);
+        _showSnackBar('Failed to load process Types', Colors.red);
       }
     } catch (e) {
-      _showNotification(
+      _showSnackBar(
           'An error occurred while fetching process Types: $e', Colors.red);
     }
   }
 
   Future<void> _fetchDepartments(String plant) async {
     try {
-      String url =
-          'http://10.3.0.70:9060/api/HR/GetProductionLines?plant=$plant';
+      statusConfirmed = false;
+      // String url =
+      //     'http://10.3.0.70:9060/api/HR/GetProductionLines?plant=$plant';
+      // String url =
+      //     'http://10.3.0.70:9042/api/HR/GetProductionLines?plant=$plant';
+
+      String url = ApiHelper.getProductionLinesApi(plant);
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body) as List<dynamic>;
@@ -359,19 +471,25 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           headCountController.clear();
         });
       } else {
-        _showNotification('Failed to load departments', Colors.red);
+        _showSnackBar('Failed to load departments', Colors.red);
       }
     } catch (e) {
-      _showNotification(
+      _showSnackBar(
           'An error occurred while fetching departments: $e', Colors.red);
     }
   }
 
   Future<void> _fetchskill(String process) async {
     try {
-      String url =
-          'http://10.3.0.70:9060/api/HR/GetSkillNames?processType=$process';
-      final response = await http.get(Uri.parse(url));
+      // String url =
+      //     'http://10.3.0.70:9060/api/HR/GetSkillNames?processType=$process';
+      // String url =
+      //     'http://10.3.0.70:9042/api/HR/GetSkillNames?processType=$process';
+
+      String apiUrl = ApiHelper.getSkillNamesApi(process);
+      // final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(apiUrl));
+
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body) as List<dynamic>;
         setState(() {
@@ -379,18 +497,23 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           //selectedSkill = '';
         });
       } else {
-        _showNotification('Failed to load departments', Colors.red);
+        _showSnackBar('Failed to load departments', Colors.red);
       }
     } catch (e) {
-      _showNotification(
+      _showSnackBar(
           'An error occurred while fetching departments: $e', Colors.red);
     }
   }
 
   Future<void> _checkData() async {
     try {
-      final url =
-          'http://10.3.0.70:9060/api/HR/CheckDept?plant=$selectedPlant&deptCode=$selectedDept';
+      // final url =
+      //     'http://10.3.0.70:9060/api/HR/CheckDept?plant=$selectedPlant&deptCode=$selectedDept';
+      // final url =
+      //     'http://10.3.0.70:9042/api/HR/CheckDept?plant=$selectedPlant&deptCode=$selectedDept';
+
+      // Generate the  URL
+      String url = ApiHelper.checkDeptApi(selectedPlant, selectedDept);
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -432,17 +555,17 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                 });
               } else {
                 absenties = [];
-                _showNotification('No absentee data found.', Colors.orange);
+                _showSnackBar('No absentee data found.', Colors.orange);
               }
             } else {
               absenties = [];
-              _showNotification("Unexpected response: $resultData", Colors.red);
+              _showSnackBar("Unexpected response: $resultData", Colors.red);
             }
           } else {
             // Handle failure
             if (data['errMsg'] != null &&
                 data['errMsg'].contains('No records found')) {
-              _showNotification("Please Submit Data", Colors.orange);
+              // _showSnackBar("Please Submit Data", Colors.orange);
               setState(() {
                 absenties = [];
                 showEmployeeDetails = false;
@@ -452,7 +575,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
             } else if (data['errMsg'] != null &&
                 data['errMsg']
                     .contains('No data found for the specified criteria.')) {
-              _showNotification("Please Add Absenties Data", Colors.orange);
+              // _showSnackBar("Please Add Absenties Data", Colors.orange);
               setState(() {
                 absenties = [];
                 showEmployeeDetails = true;
@@ -460,7 +583,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                 submitButton = false;
               });
             } else {
-              _showNotification(
+              _showSnackBar(
                   "Error: ${data['errMsg'] ?? 'An unknown error occurred'}",
                   Colors.red);
               setState(() {
@@ -472,40 +595,43 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           }
         }
       } else {
-        _showNotification(
+        _showSnackBar(
             'Submission failed with status code ${response.statusCode}',
             Colors.red);
       }
     } catch (e) {
-      _showNotification(
-          'An error occurred while fetching data: $e', Colors.red);
+      _showSnackBar('An error occurred while fetching data: $e', Colors.red);
     }
   }
 
   void _handleSubmit() async {
     if (selectedPlant.isEmpty) {
-      _showNotification("Please select a plant.", Colors.red);
+      _showSnackBar("Please select a plant.", Colors.red);
       return;
     }
     if (selectedDept.isEmpty) {
-      _showNotification("Please select a department.", Colors.red);
+      _showSnackBar("Please select a department.", Colors.red);
       return;
     }
     if (headCount.isEmpty || int.tryParse(headCount) == null) {
       // Ensure headCount is a valid number
-      _showNotification("Please enter a head count.", Colors.red);
+      _showSnackBar("Please enter a head count.", Colors.red);
       return;
     }
 
     try {
-      const url = 'http://10.3.0.70:9060/api/HR/SubmitPlantData';
+      // const url = 'http://10.3.0.70:9060/api/HR/SubmitPlantData';
+      // const url = 'http://10.3.0.70:9042/api/HR/SubmitPlantData';
+      // Generate the API URL for SubmitPlantData
+      String url = ApiHelper.submitPlantDataApi();
 
       // Preparing data for submission
       final data = {
         'plant': selectedPlant,
         'deptCode': selectedDept,
         'headCount': headCount, // headCount is sent as a string
-        'username': widget.userName,
+        'username': widget.userData.empNo,
+        // 'username': widget.userName,
       };
 
       final response = await http.post(
@@ -522,22 +648,22 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
       // Handling different status codes and response messages
       if (response.statusCode == 200) {
         if (result.contains("Submission is not allowed after 2:00 PM")) {
-          _showNotification(
+          _showSnackBar(
               "Submission is not allowed after 2:00 PM.", Colors.orange);
         } else if (result.contains("The record already exists.")) {
-          _showNotification("The record already exists.", Colors.orange);
+          _showSnackBar("The record already exists.", Colors.orange);
           setState(() {
             showEmployeeDetails = true;
             isHeadReadOnly = true;
             submitButton = false;
           });
         } else if (result.contains("Already confirmed")) {
-          _showNotification("Already confirmed.", Colors.orange);
+          _showSnackBar("Already confirmed.", Colors.orange);
           setState(() {
             submitButton = false;
           });
         } else if (result.contains("Data submitted successfully")) {
-          _showNotification('Data submitted successfully.', Colors.green);
+          _showSnackBar('Data submitted successfully.', Colors.green);
           setState(() {
             isUpdateButtonVisible = false;
             showEmployeeDetails = true;
@@ -546,23 +672,28 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
             showAddButton = true;
           });
         } else {
-          _showNotification("Unexpected response: $result", Colors.red);
+          _showSnackBar("Unexpected response: $result", Colors.red);
         }
       } else {
-        _showNotification(
+        _showSnackBar(
             'Submission failed with status code ${response.statusCode}',
             Colors.red);
       }
     } catch (e) {
-      _showNotification(
-          'An error occurred while submitting data: $e', Colors.red);
+      _showSnackBar('An error occurred while submitting data: $e', Colors.red);
     }
   }
 
   Future<void> _fetchHeadCount() async {
     try {
-      String url =
-          'http://10.3.0.70:9060/api/HR/GetHeadCount?plant=$selectedPlant&departmentCode=$selectedDept';
+      // String url =
+      //     'http://10.3.0.70:9060/api/HR/GetHeadCount?plant=$selectedPlant&departmentCode=$selectedDept';
+
+      // String url =
+      //     'http://10.3.0.70:9042/api/HR/GetHeadCount?plant=$selectedPlant&departmentCode=$selectedDept';
+      // Generate the API URL for GetHeadCount
+      String url = ApiHelper.getHeadCountApi(selectedPlant, selectedDept);
+
       final response = await http.post(Uri.parse(url));
       if (response.statusCode == 200) {
         final responseBody = response.body;
@@ -581,29 +712,35 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           //_showNotification('Enter head count', Colors.red);
         }
       } else {
-        _showNotification(
+        _showSnackBar(
             'Failed to load head count (Status Code: ${response.statusCode})',
             Colors.red);
       }
     } catch (e) {
-      _showNotification(
+      _showSnackBar(
           'An error occurred while fetching head count: $e', Colors.red);
     }
   }
 
-  void _showNotification(String message, Color color) {
+  void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: color,
+        duration: const Duration(seconds: 1),
       ),
     );
   }
 
   Future<void> _getApprovalStatus(String plant) async {
     try {
-      String url =
-          'http://10.3.0.70:9060/api/HR/GetApprovedStatus?plant=$plant';
+      // String url =
+      //     'http://10.3.0.70:9060/api/HR/GetApprovedStatus?plant=$plant';
+      // String url =
+      //     'http://10.3.0.70:9042/api/HR/GetApprovedStatus?plant=$plant';
+
+      // Generate the API URL for GetApprovedStatus
+      String url = ApiHelper.getApprovedStatusApi(selectedPlant);
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -621,7 +758,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
               approvedplant = false;
               frstplant = true;
             });
-            _showNotification('Please submit data', Colors.orange);
+            // _showSnackBar('Please submit data', Colors.orange);
           } else {
             // Parse the Retdata which contains the status and signatures
             final retData = jsonDecode(responseData['retdata']);
@@ -659,7 +796,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                 frstplant = false;
               });
             } else {
-              _showNotification('Approval not confirmed', Colors.orange);
+              // _showSnackBar('Approval not confirmed', Colors.orange);
               setState(() {
                 showdepthead = true;
                 showEmployeeDetails = false;
@@ -678,19 +815,19 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
         } else {
           // Handle the error message from the response
           if (responseData['ErrMsg'] != null) {
-            _showNotification('Error: ${responseData['ErrMsg']}', Colors.red);
+            _showSnackBar('Error: ${responseData['ErrMsg']}', Colors.red);
           } else {
-            _showNotification('Unknown error occurred', Colors.red);
+            _showSnackBar('Unknown error occurred', Colors.red);
           }
         }
       } else {
         // Handle the case where the response status code is not 200
-        _showNotification(
+        _showSnackBar(
             'Failed to load, status code: ${response.statusCode}', Colors.red);
       }
     } catch (e) {
       // Handle general exceptions
-      _showNotification('An error occurred: $e', Colors.red);
+      _showSnackBar('An error occurred: $e', Colors.red);
     }
   }
 
@@ -767,7 +904,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           selectedSkill.isEmpty ||
           leaveDateController.text.isEmpty ||
           barcodeController.text.isEmpty) {
-        _showNotification(
+        _showSnackBar(
           'Please fill in all required fields.',
           Colors.orange,
         );
@@ -775,9 +912,11 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
       }
 
       bool isSuccess = false;
-
+// Generate the API URL for InsertAbsentList
+      String url = ApiHelper.insertAbsentListApi();
       try {
-        const url = 'http://10.3.0.70:9060/api/HR/InsertAbsentList';
+        // const url = 'http://10.3.0.70:9060/api/HR/InsertAbsentList';
+        // const url = 'http://10.3.0.70:9042/api/HR/InsertAbsentList';
 
         // Preparing data for submission
         final data = {
@@ -788,7 +927,8 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           'processType': selectedProcessType,
           'skillName': selectedSkill,
           'leaveDate': leaveDateController.text,
-          'user': widget.userName,
+          'user': widget.userData.empNo,
+          // 'user': widget.userName,
         };
 
         // Sending POST request
@@ -831,37 +971,37 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                   isHeadReadOnly = true;
                   submitButton = false;
                 });
-                _showNotification('Employee Added successfully.', Colors.green);
+                _showSnackBar('Employee Added successfully.', Colors.green);
               } else {
-                _showNotification('No absentee data found.', Colors.orange);
+                _showSnackBar('No absentee data found.', Colors.orange);
               }
             } else if (resultData['RetData1'] != null &&
                 resultData['RetData1']
                     .contains('Data submitted successfully')) {
-              _showNotification('Employee Added successfully.', Colors.green);
+              _showSnackBar('Employee Added successfully.', Colors.green);
             } else {
-              _showNotification("Unexpected response: $resultData", Colors.red);
+              _showSnackBar("Unexpected response: $resultData", Colors.red);
             }
           } else {
             // Handle failure case (e.g., unique constraint error)
             if (resultData['ErrMsg'] != null &&
                 resultData['ErrMsg'].contains('ORA-00001')) {
-              _showNotification('The record already exists.', Colors.orange);
+              _showSnackBar('The record already exists.', Colors.orange);
             } else {
-              _showNotification(
+              _showSnackBar(
                 "Error: ${resultData['ErrMsg'] ?? 'An unknown error occurred'}",
                 Colors.red,
               );
             }
           }
         } else {
-          _showNotification(
+          _showSnackBar(
             'Submission failed with status code ${response.statusCode}',
             Colors.red,
           );
         }
       } catch (e) {
-        _showNotification(
+        _showSnackBar(
           'An error occurred while submitting data: $e',
           Colors.red,
         );
@@ -879,7 +1019,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
         if (!isSuccess) {}
       }
     } else {
-      _showNotification(
+      _showSnackBar(
         'Absenties count should be lessthan or equal to headcount',
         Colors.red,
       );
@@ -988,18 +1128,24 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
 
     if (confirmed == true) {
       // Construct the URL with dynamic values
-      final String url =
-          'http://10.3.0.70:9060/api/HR/DeleteData?plant=$selectedPlant&deptCode=$selectedDept&barcode=${employee['BARCODE']}';
+      // final String url =
+      //     'http://10.3.0.70:9060/api/HR/DeleteData?plant=$selectedPlant&deptCode=$selectedDept&barcode=${employee['BARCODE']}';
+      // final String url =
+      //     'http://10.3.0.70:9042/api/HR/DeleteData?plant=$selectedPlant&deptCode=$selectedDept&barcode=${employee['BARCODE']}';
+
+// Construct the URL by accessing _baseUrl from the ApiHelper class
+      String deleteLeaveEmployeeUrl =
+          '${ApiHelper.baseUrl}DeleteData?plant=$selectedPlant&deptCode=$selectedDept&barcode=${employee['BARCODE']}';
 
       try {
         // Make the delete request
-        final response = await http.delete(Uri.parse(url));
+        final response = await http.delete(Uri.parse(deleteLeaveEmployeeUrl));
 
         if (response.statusCode == 200) {
           // Check for specific response messages in the body
           if (response.body.contains("Deletes cannot be made after 2:00 PM.")) {
             // Show notification when delete is not allowed after 2:00 PM
-            _showNotification(
+            _showSnackBar(
               'Deletes cannot be made after 2:00 PM.',
               Colors.orange,
             );
@@ -1010,13 +1156,13 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
             });
 
             // Show a success notification
-            _showNotification(
+            _showSnackBar(
               'Employee ${employee['EMP_NAME']} deleted successfully',
               Colors.green,
             );
           }
         } else {
-          _showNotification(
+          _showSnackBar(
             'Failed to delete employee',
             Colors.red,
           );
@@ -1024,8 +1170,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
       } catch (e) {
         // Handle network errors or exceptions
         // print('Error occurred while deleting employee: $e');
-        _showNotification(
-            'Error occurred while removing ${employee['EMP_NAME']}',
+        _showSnackBar('Error occurred while removing ${employee['EMP_NAME']}',
             Colors.red);
       }
     } else {
@@ -1042,7 +1187,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
         selectedSkill.isEmpty ||
         leaveDateController.text.isEmpty ||
         barcodeController.text.isEmpty) {
-      _showNotification(
+      _showSnackBar(
         'Please fill in all required fields.',
         Colors.orange,
       );
@@ -1052,7 +1197,9 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
     bool isSuccess = false;
 
     try {
-      const url = 'http://10.3.0.70:9060/api/HR/UpdateAbsentList';
+      // const url = 'http://10.3.0.70:9060/api/HR/UpdateAbsentList';
+      // const url = 'http://10.3.0.70:9042/api/HR/UpdateAbsentList';
+      String url = '${ApiHelper.baseUrl}UpdateAbsentList';
 
       // Preparing data for submission
       final data = {
@@ -1063,7 +1210,8 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
         'processType': selectedProcessType,
         'skillName': selectedSkill,
         'leaveDate': leaveDateController.text,
-        'user': widget.userName,
+        'user': widget.userData.empNo,
+        // 'user': widget.userName,
       };
 
       // Sending POST request
@@ -1109,11 +1257,11 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                 submitButton = false;
               });
             } else {
-              _showNotification('No absentee data found.', Colors.orange);
+              _showSnackBar('No absentee data found.', Colors.orange);
             }
           } else if (resultData['RetData1'] != null &&
               resultData['RetData1'].contains('Data submitted successfully')) {
-            _showNotification('Employee Updated successfully.', Colors.green);
+            _showSnackBar('Employee Updated successfully.', Colors.green);
             // _PlantAbsentData();
             // absentList = _getAbsentList(plantAbsentList);
             setState(() {
@@ -1122,30 +1270,30 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
               isBarcodeReadOnly = false;
             });
           } else {
-            _showNotification("Unexpected response: $resultData", Colors.red);
+            _showSnackBar("Unexpected response: $resultData", Colors.red);
           }
         } else {
           // Handle failure case (e.g., unique constraint error)
           if (resultData['ErrMsg'] != null &&
               resultData['ErrMsg']
                   .contains('Updates cannot be made after 2:00 PM.')) {
-            _showNotification(
+            _showSnackBar(
                 'Updates cannot be made after 2:00 PM.', Colors.orange);
           } else {
-            _showNotification(
+            _showSnackBar(
               "Error: ${resultData['ErrMsg'] ?? 'An unknown error occurred'}",
               Colors.red,
             );
           }
         }
       } else {
-        _showNotification(
+        _showSnackBar(
           'Update failed with status code ${response.statusCode}',
           Colors.red,
         );
       }
     } catch (e) {
-      _showNotification(
+      _showSnackBar(
         'An error occurred while submitting data: $e',
         Colors.red,
       );
@@ -1185,7 +1333,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
   void deleteSelectedEmployees() async {
     // Check if any employees are selected
     if (selectedBarcodes.isEmpty) {
-      _showNotification('No employees selected for deletion.', Colors.orange);
+      _showSnackBar('No employees selected for deletion.', Colors.orange);
       return;
     }
 
@@ -1248,7 +1396,10 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
     try {
       // Send DELETE request
       final response = await http.delete(
-        Uri.parse('http://10.3.0.70:9060/api/HR/DeleteSelectedData'),
+        // Uri.parse('http://10.3.0.70:9060/api/HR/DeleteSelectedData'),
+        // Uri.parse('http://10.3.0.70:9042/api/HR/DeleteSelectedData'),
+        Uri.parse('${ApiHelper.baseUrl}DeleteSelectedData'),
+
         headers: {'Content-Type': 'application/json'},
         body: json.encode(data),
       );
@@ -1257,7 +1408,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
 
         // Check response structure and content
         if (response.body == 'Deleted successfully.') {
-          _showNotification('Employees deleted successfully!', Colors.green);
+          _showSnackBar('Employees deleted successfully!', Colors.green);
 
           // Update the employee list and clear selected barcodes
           setState(() {
@@ -1267,20 +1418,20 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           });
         } else {
           // Display error message if any
-          _showNotification(response.body, Colors.red);
+          _showSnackBar(response.body, Colors.red);
         }
       } else {
-        _showNotification(
+        _showSnackBar(
             'Failed to delete employees. Status: ${response.statusCode}',
             Colors.red);
       }
     } catch (e) {
       // Catch any error that occurs during the request
-      _showNotification('Error: ${e.toString()}', Colors.red);
+      _showSnackBar('Error: ${e.toString()}', Colors.red);
     }
   }
 
-// Function to get the list of selected employees formatted for display
+  // Function to get the list of selected employees formatted for display
   String _getSelectedEmployeesList() {
     // Build a formatted string from the selected barcodes
     return absenties
@@ -1300,207 +1451,35 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
     });
   }
 
-//   void confirmdata(String PlantdataabsentList) async {
-//     // Check if all required fields are filled
-//     if (selectedPlant.isEmpty) {
-//       _showNotification('Please select the plant', Colors.orange);
-//       return;
-//     }
-//     plantAbsentList = _PlantAbsentData() as List<Map<String, String>>;
-//     absentList = _getAbsentList(plantAbsentList);
-//     // Show confirmation dialog
-//     bool isConfirmed = await showDialog(
-//       context: context,
-//       builder: (BuildContext context) {
-//         return AlertDialog(
-//           title: const Text('Confirm Submission'),
-//           content: SingleChildScrollView(
-//             // Enable scrolling when content exceeds size
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 Text(
-//                   'Plant: $selectedPlant',
-//                   style: const TextStyle(fontWeight: FontWeight.bold),
-//                 ),
-//                 const Text(
-//                   'Absent List:',
-//                   style: TextStyle(fontWeight: FontWeight.bold),
-//                 ),
-//                 const SizedBox(height: 10),
-//                 Text(
-//                   absentList, // Display the properly formatted absent list
-//                   style: const TextStyle(color: Colors.blue),
-//                 ),
-//               ],
-//             ),
-//           ),
-//           actions: [
-//             TextButton(
-//               child: const Text('Cancel'),
-//               onPressed: () {
-//                 Navigator.of(context)
-//                     .pop(false); // Dismiss the dialog, return false
-//               },
-//             ),
-//             ElevatedButton(
-//               child: const Text('Confirm'),
-//               onPressed: () {
-//                 Navigator.of(context)
-//                     .pop(true); // Confirm the action, return true
-//               },
-//             ),
-//           ],
-//         );
-//       },
-//     );
-
-//     // If the user did not confirm, exit the function
-//     if (!isConfirmed) {
-//       return;
-//     }
-
-//     const url = 'http://10.3.0.70:9060/api/HR/ConfirmData';
-
-//     // Prepare data for the API request
-//     final data = {
-//       'plant': selectedPlant,
-//       'username': widget.userName,
-//     };
-
-//     try {
-//       // Send POST request
-//       final response = await http.post(
-//         Uri.parse(url),
-//         headers: {'Content-Type': 'application/json'},
-//         body: json.encode(data),
-//       );
-
-//       // Check for success response (status code 200)
-//       if (response.statusCode == 200) {
-//         final resultData = json.decode(response.body);
-
-//         /// Check response structure and content
-//         if (resultData['IsSuccess'] == true) {
-//           if (resultData['ErrMsg'] == "Data confirmed successfully.") {
-//             _showNotification('Data confirmed successfully!', Colors.green);
-//             // Update plant Assistant status to 'Approved'
-//             // _approvalStatus['plant Assistant'] = 'Approved';
-//             //  _approvalTime['plant assistant'] = "${DateTime.now().toLocal().toString().substring(11, 16)} ${DateTime.now().toLocal().toString().substring(0, 10)}";
-//             //_updateApprovalPercent();
-//             _getApprovalStatus(selectedPlant);
-//             // Update the state or UI with the approval status and percentage
-//             setState(() {
-//               absenties = [];
-//               showEmployeeDetails = false;
-//               //showAddButton = true;
-//               submitButton = false;
-//               showdepthead = false;
-//               isApproveStatus = true;
-//               flow = true;
-//               text = true;
-//               approvedplant = true;
-//               frstplant = false;
-//               // Update approvalPercent
-//             });
-//           }
-//         } else {
-//           if (resultData['ErrMsg'] == "Already confirmed.") {
-//             _showNotification('Data confirmed Already!', Colors.orange);
-//             // Update plant Assistant status to 'Approved'
-//             //_approvalStatus['plant Assistant'] = 'Approved';
-//             _getApprovalStatus(selectedPlant);
-//             //_updateApprovalPercent();
-//             setState(() {
-//               absenties = [];
-//               showEmployeeDetails = false;
-//               showAddButton = false;
-//               submitButton = false;
-//               showdepthead = false;
-//               isApproveStatus = true;
-//               text = true;
-//               // approvalPercent = approvalPercentage;
-//               flow = true;
-//               approvedplant = true;
-//               frstplant = false;
-//             });
-//           } else if (resultData['ErrMsg'] ==
-//               "Submission is not allowed after 2:00 PM.") {
-//             _showNotification(
-//                 'Submission is not allowed after 2:00 PM!', Colors.orange);
-//             setState(() {
-//               showdepthead = false;
-//               absenties = [];
-//               showEmployeeDetails = false;
-//               submitButton = false;
-//             });
-//           } else if (resultData['ErrMsg'] == "No plant data submitted.") {
-//             _showNotification('No plant data submitted.', Colors.orange);
-//             setState(() {
-//               showdepthead = true;
-//               absenties = [];
-//               showEmployeeDetails = false;
-//               submitButton = true;
-//             });
-//           } else if (resultData['ErrMsg'] == "No employees added.") {
-//             _showNotification('Please Add Employee', Colors.orange);
-//             setState(() {
-//               showdepthead = true;
-//               absenties = [];
-//               showEmployeeDetails = true;
-//               submitButton = false;
-//             });
-//           } else {
-//             // Check if ErrMsg exists and is not null or empty
-//             String errorMessage = resultData['ErrMsg'] ?? 'Submission failed.';
-//             _showNotification(errorMessage, Colors.red);
-//             setState(() {
-//               showdepthead = false;
-//               absenties = [];
-//               showEmployeeDetails = false;
-//               submitButton = false;
-//             });
-//           }
-//         }
-//       } else {
-//         _showNotification(
-//             'Failed to confirm data. Status: ${response.statusCode}',
-//             Colors.red);
-//       }
-//     } catch (e) {
-//       // Catch any error that occurs during the request
-//       _showNotification('Error: ${e.toString()}', Colors.red);
-//     }
-//   }
-
+  // Function to confirm the Data
   void confirmdata(String PlantdataabsentList) async {
     // Check if a plant has been selected
     if (selectedPlant.isEmpty) {
-      _showNotification('Please select the plant', Colors.orange);
+      _showSnackBar('Please select the plant', Colors.orange);
       return;
     }
 
+    // setState((){
+    //  _isLoading = true;
+    // });
     // Await the absent list from the API
     List<Map<String, String>> plantAbsentList = await _plantAbsentData();
 
     // If the list is empty, show a notification and return
     if (plantAbsentList.isEmpty) {
-     //_showNotification('No absent employees to display.', Colors.orange);
+      //_showNotification('', Colors.orange);
       return;
     }
 
     // Format absent list for displaying
     String absentList = _getAbsentList(plantAbsentList);
 
-    // Show confirmation dialog
-    bool isConfirmed = await showDialog(
+    bool? isConfirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Submission'),
           content: SingleChildScrollView(
-            // Enable scrolling when content exceeds size
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -1515,9 +1494,14 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  absentList, // Display the properly formatted absent list
+                  absentList,
                   style: const TextStyle(color: Colors.blue),
                 ),
+                if (statusConfirmed == true)
+                  const Text(
+                    'Already confirmed',
+                    style: TextStyle(color: Colors.red),
+                  ),
               ],
             ),
           ),
@@ -1525,32 +1509,37 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
             TextButton(
               child: const Text('Cancel'),
               onPressed: () {
-                Navigator.of(context)
-                    .pop(false); // Dismiss the dialog, return false
+                Navigator.of(context).pop(false); // Return false on cancel
               },
             ),
-            ElevatedButton(
-              child: const Text('Confirm'),
-              onPressed: () {
-                Navigator.of(context)
-                    .pop(true); // Confirm the action, return true
-              },
-            ),
+            if (statusConfirmed == false) // Show button only if not confirmed
+              ElevatedButton(
+                child: const Text('Confirm'),
+                onPressed: () {
+                  Navigator.of(context).pop(true); // Return true on confirm
+                },
+              ),
           ],
         );
       },
     );
 
     // Exit if user didn't confirm the action
-    if (!isConfirmed) {
+    if (isConfirmed == false) {
       return;
     }
-
+    setState(() {
+      _isLoading = true;
+    });
     // Prepare data for submission to API
-    const url = 'http://10.3.0.70:9060/api/HR/ConfirmData';
+    // const url = 'http://10.3.0.70:9060/api/HR/ConfirmData';
+    // const url = 'http://10.3.0.70:9042/api/HR/ConfirmData';
+    String url = '${ApiHelper.baseUrl}ConfirmData';
+
     final data = {
       'plant': selectedPlant,
-      'username': widget.userName,
+      'username': widget.userData.empNo,
+      // 'username': widget.userName,
     };
 
     try {
@@ -1567,7 +1556,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
 
         if (resultData['IsSuccess'] == true) {
           if (resultData['ErrMsg'] == "Data confirmed successfully.") {
-            _showNotification('Data confirmed successfully!', Colors.green);
+            _showSnackBar('Data confirmed successfully!', Colors.green);
             _getApprovalStatus(selectedPlant); // Refresh the approval status
             setState(() {
               absenties = [];
@@ -1581,7 +1570,7 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
               frstplant = false;
             });
           } else if (resultData['ErrMsg'] == "Already confirmed.") {
-            _showNotification('Data confirmed already!', Colors.orange);
+            _showSnackBar('Data confirmed already!', Colors.orange);
             _getApprovalStatus(selectedPlant);
             setState(() {
               absenties = [];
@@ -1599,33 +1588,51 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
           // Handle specific error messages
           String errorMessage = resultData['ErrMsg'] ?? 'Submission failed.';
           if (errorMessage == "Submission is not allowed after 2:00 PM.") {
-            _showNotification(
+            _showSnackBar(
                 'Confirmation not allowed after 2:00 PM!', Colors.orange);
           } else if (errorMessage == "No plant data submitted.") {
-            _showNotification('No plant data submitted.', Colors.orange);
+            _showSnackBar('No plant data submitted.', Colors.orange);
             setState(() {
               showdepthead = true;
               submitButton = true;
             });
           } else if (errorMessage == "No employees added.") {
-            _showNotification('Please add employee(s).', Colors.orange);
+            _showSnackBar('Please add employee(s).', Colors.orange);
             setState(() {
               showEmployeeDetails = true;
               submitButton = false;
             });
+          } else if (errorMessage ==
+              "An error occurred: ORA-02289: sequence does not exist") {
+            _showSnackBar('Notified User Not Login.', Colors.orange);
+            _getApprovalStatus(selectedPlant); // Refresh the approval status
+            setState(() {
+              absenties = [];
+              showEmployeeDetails = false;
+              submitButton = false;
+              showdepthead = false;
+              isApproveStatus = true;
+              flow = true;
+              text = true;
+              approvedplant = true;
+              frstplant = false;
+            });
           } else {
-            _showNotification(errorMessage, Colors.red);
+            _showSnackBar(errorMessage, Colors.red);
           }
         }
       } else {
         // If response is not 200, show error notification
-        _showNotification(
-            'Failed to confirm data. Status: ${response.statusCode}',
+        _showSnackBar('Failed to confirm data. Status: ${response.statusCode}',
             Colors.red);
       }
     } catch (e) {
       // Handle any exceptions during the API request
-      _showNotification('Error: ${e.toString()}', Colors.red);
+      _showSnackBar('Error: ${e.toString()}', Colors.red);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -1662,36 +1669,6 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
   Widget build(BuildContext context) {
     String count = absenties.length.toString();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Production Request'),
-        backgroundColor: Colors.teal,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back),
-        //   onPressed: () {
-        //     Navigator.push(
-        //       context,
-        //       MaterialPageRoute(
-        //         builder: (context) => HomePage(
-        //           userCode: widget.userCode,
-        //           userName: widget.userName,
-        //           UserName: widget.userName,
-        //         ),
-        //       ),
-        //     );
-        //   },
-        // ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            tooltip: 'Confirm Data',
-            onPressed: () {
-              _plantAbsentData();
-              absentList = _getAbsentList(plantAbsentList);
-              confirmdata(absentList);
-            },
-          ),
-        ],
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -1700,286 +1677,289 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
             children: [
               // Plant Selection Dropdown
               SingleChildScrollView(
-                child: Container(
-                  //padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: <Widget>[
-                      if (frstplant)
-                        DropdownSearch<String>(
-                          selectedItem:
-                              selectedPlant.isEmpty ? null : selectedPlant,
-                          dropdownDecoratorProps: const DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                              labelText: 'Plant',
-                              hintText: 'Select Plant',
-                              border: OutlineInputBorder(),
+                child: Column(
+                  children: <Widget>[
+                    // if (frstplant)
+                    //   DropdownSearch<String>(
+                    //     selectedItem:
+                    //         selectedPlant.isEmpty ? null : selectedPlant,
+                    //     dropdownDecoratorProps: const DropDownDecoratorProps(
+                    //       dropdownSearchDecoration: InputDecoration(
+                    //         labelText: 'Plantss',
+                    //         hintText: 'Select Plant',
+                    //         border: OutlineInputBorder(),
+                    //       ),
+                    //     ),
+                    //     onChanged: (value) {
+                    //       setState(() {
+                    //         selectedPlant = value ?? '';
+                    //       });
+                    //       _fetchDepartments(selectedPlant);
+                    //       _getApprovalStatus(selectedPlant);
+                    //     },
+                    //     items: plants,
+                    //     popupProps: const PopupProps.menu(
+                    //       showSearchBox: true,
+                    //       searchFieldProps: TextFieldProps(
+                    //         decoration: InputDecoration(
+                    //           hintText: 'Search Plantss',
+                    //           border: OutlineInputBorder(),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+
+                    // using TypeAheadField for inside texfield search box and dropdown
+
+                    TypeAheadField<String>(
+                      suggestionsCallback: (pattern) {
+                        // Perform the search for matching plants based on the entered pattern
+                        return plants
+                            .where((plant) => plant
+                                .toLowerCase()
+                                .contains(pattern.toLowerCase()))
+                            .toList();
+                      },
+                      builder: (context, controller, focusNode) {
+                        // Update the controller with the initial selectedPlant if needed
+                        controller.text =
+                            selectedPlant; // Ensures the TextField shows the selected value
+                        return TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: InputDecoration(
+                            labelText: 'Plants',
+                            hintText: 'Select Plant',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedPlant = value ?? '';
-                            });
-                            _fetchDepartments(selectedPlant);
-                            _getApprovalStatus(selectedPlant);
-                          },
-                          items: plants,
-                          popupProps: const PopupProps.menu(
-                            showSearchBox: true,
-                            searchFieldProps: TextFieldProps(
-                              decoration: InputDecoration(
-                                hintText: 'Search Plants',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (approvedplant)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Plant Dropdown
-                            SizedBox(
-                              width: 200.0,
-                              child: DropdownSearch<String>(
-                                items: plants,
-                                dropdownDecoratorProps: DropDownDecoratorProps(
-                                  dropdownSearchDecoration: InputDecoration(
-                                    hintText: "Plant",
-                                    labelText: "Select Plant",
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 10.0, vertical: 5.0),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                  ),
-                                ),
-                                onChanged: (String? newValue) {
-                                  if (newValue != null) {
-                                    setState(() {
-                                      selectedPlant =
-                                          newValue; // Update the selected plant
-                                    });
-                                    _fetchDepartments(selectedPlant);
-                                    _getApprovalStatus(
-                                        newValue); // Call function with selected plant
-                                  }
-                                },
-                                selectedItem: selectedPlant,
-                                popupProps: const PopupProps.menu(
-                                  showSearchBox: true,
-                                  searchFieldProps: TextFieldProps(
-                                    decoration: InputDecoration(
-                                      hintText: 'Search Plant',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // Percentage Indicator Column
-                            if (isApproveStatus)
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      CircularPercentIndicator(
-                                        radius: 31.0,
-                                        lineWidth: 8.0,
-                                        percent: approvalPercent,
-                                        backgroundColor: Colors.grey[300]!,
-                                        progressColor: approvalPercent == 1.0
-                                            ? Colors.green
-                                            : Colors.orange,
-                                        circularStrokeCap:
-                                            CircularStrokeCap.round,
-                                        center: approvalPercent < 1.0
-                                            ? const Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(Icons.hourglass_empty,
-                                                      color: Colors.blueGrey,
-                                                      size: 16),
-                                                  SizedBox(height: 5),
-                                                  // Text('Pending',
-                                                  //     style: TextStyle(
-                                                  //         color:
-                                                  //             Colors.blueGrey,
-                                                  //         fontSize: 8.0)),
-                                                ],
-                                              )
-                                            : const Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(Icons.check_circle,
-                                                      color: Colors.green,
-                                                      size: 18),
-                                                  SizedBox(height: 5),
-                                                  Text('Approved',
-                                                      style: TextStyle(
-                                                          color: Colors.green,
-                                                          fontSize: 7.0)),
-                                                ],
-                                              ),
+                          // onTap: () {
+                          //   // Open or close the dropdown when the TextField is tapped
+                          //   if (_focusNode.hasFocus) {
+                          //     _focusNode
+                          //         .unfocus(); // Close dropdown if tapped again
+                          //   } else {
+                          //     _focusNode
+                          //         .requestFocus(); // Open dropdown if tapped
+                          //   }
+                          // },
+                        );
+                      },
+                      hideOnSelect:
+                          false, // Ensures the dropdown closes on selection
+                      itemBuilder: (context, plant) {
+                        // Build the suggestion widget to display plant name
+                        return ListTile(
+                          title: Text(plant),
+                        );
+                      },
+                      constraints: BoxConstraints(maxHeight: 200),
+                      onSelected: (plant) {
+                        setState(() {
+                          selectedPlant = plant; // Update the selectedPlant
+                          _controller.text = plant; // Update the TextField
+                        });
+
+                        _focusNode
+                            .unfocus(); // Close dropdown when tapped again
+
+                        // Update the controller with the selected value
+                        _fetchDepartments(selectedPlant);
+                        _getApprovalStatus(selectedPlant);
+
+                        // Close the dropdown by unfocusing the text field
+                        FocusScope.of(context).requestFocus(FocusNode());
+                      },
+                    ),
+
+                    const SizedBox(height: 20.0),
+                    if (flow)
+                      Column(
+                        children: <Widget>[
+                          for (var role in [
+                            'plant assistant',
+                            'plant incharge',
+                            'production manager',
+                            'rita'
+                          ])
+                            Visibility(
+                              visible: _approvalStatus[role] != null,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Container(
+                                  padding: const EdgeInsets.all(16.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 5.0,
+                                        offset: Offset(0, 2),
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            // Percentage text
-                            if (text)
-                              Text(
-                                '${(approvalPercent * 100).toStringAsFixed(1)}%',
-                                style: const TextStyle(
-                                    fontSize: 14.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                          ],
-                        ),
-                      const SizedBox(height: 20.0),
-                      if (flow)
-                        Column(
-                          children: <Widget>[
-                            for (var role in [
-                              'plant assistant',
-                              'plant incharge',
-                              'production manager',
-                              'rita'
-                            ])
-                              Visibility(
-                                visible: _approvalStatus[role] != null,
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16.0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Colors.black26,
-                                          blurRadius: 5.0,
-                                          offset: Offset(0, 2),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Role: ${role.replaceAll(RegExp(r'([A-Z])'), ' ').trim()}',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Role: ${role.replaceAll(RegExp(r'([A-Z])'), ' ').trim()}',
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                      ),
+                                      const SizedBox(height: 8.0),
+                                      Text(
+                                        'Status: ${_approvalStatus[role] == 'Approved' ? 'Approved' : 'Pending'}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: _approvalStatus[role] ==
+                                                  'Approved'
+                                              ? Colors.green
+                                              : Colors.orange,
+                                        ),
+                                      ),
+                                      if (_approvalStatus[role] == 'Approved')
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                FontAwesomeIcons.circleCheck,
+                                                color: Colors.green,
+                                                size: 20.0,
+                                              ),
+                                              const SizedBox(width: 10),
+                                              // Displaying the approval time
+                                              Text(
+                                                _approvalTime[role] != null &&
+                                                        _approvalTime[role] !=
+                                                            'null'
+                                                    ? 'Approved at ${_approvalTime[role]}'
+                                                    : 'Not Approved',
+                                                style: const TextStyle(
+                                                    fontSize: 14),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        const SizedBox(height: 8.0),
-                                        Text(
-                                          'Status: ${_approvalStatus[role] == 'Approved' ? 'Approved' : 'Pending'}',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: _approvalStatus[role] ==
-                                                    'Approved'
-                                                ? Colors.green
-                                                : Colors.orange,
-                                          ),
+                                      if (_approvalStatus[role] == 'Pending')
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: _showSendNotifyButtons[role] ==
+                                                  true
+                                              ? ElevatedButton(
+                                                  onPressed: () =>
+                                                      _notifyStatus(role),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.teal,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 8.0,
+                                                        horizontal: 16.0),
+                                                  ),
+                                                  child: const Text('Notify'),
+                                                )
+                                              : Container(),
                                         ),
-                                        if (_approvalStatus[role] == 'Approved')
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 8.0),
-                                            child: Row(
-                                              children: [
-                                                const Icon(
-                                                  FontAwesomeIcons.circleCheck,
-                                                  color: Colors.green,
-                                                  size: 20.0,
-                                                ),
-                                                const SizedBox(width: 10),
-                                                // Displaying the approval time
-                                                Text(
-                                                  _approvalTime[role] != null &&
-                                                          _approvalTime[role] !=
-                                                              'null'
-                                                      ? 'Approved at ${_approvalTime[role]}'
-                                                      : 'Not Approved',
-                                                  style: const TextStyle(
-                                                      fontSize: 14),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        if (_approvalStatus[role] == 'Pending')
-                                          Align(
-                                            alignment: Alignment.centerRight,
-                                            child: _showSendNotifyButtons[
-                                                        role] ==
-                                                    true
-                                                ? ElevatedButton(
-                                                    onPressed: () =>
-                                                        _notifyStatus(role),
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          Colors.teal,
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          vertical: 8.0,
-                                                          horizontal: 16.0),
-                                                    ),
-                                                    child: const Text('Notify'),
-                                                  )
-                                                : Container(),
-                                          ),
-                                      ],
-                                    ),
+                                    ],
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
-                    ],
-                  ),
+                            ),
+                        ],
+                      ),
+                  ],
                 ),
               ),
               if (showdepthead) ...[
                 // Department Selection Dropdown
-                DropdownSearch<String>(
-                  selectedItem: selectedDept.isEmpty ? null : selectedDept,
-                  dropdownDecoratorProps: const DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      labelText: 'Department',
-                      hintText:
-                          'Select Department', // Use hintText instead of hint
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedDept = value ?? ''; // Update selected department
-                    });
-                    _fetchHeadCount(); // Fetch headcount based on department
-                    _checkData(); // Check additional data if required
+                // DropdownSearch<String>(
+                //   selectedItem: selectedDept.isEmpty ? null : selectedDept,
+                //   dropdownDecoratorProps: const DropDownDecoratorProps(
+                //     dropdownSearchDecoration: InputDecoration(
+                //       labelText: 'Department',
+                //       hintText:
+                //           'Select Department', // Use hintText instead of hint
+                //       border: OutlineInputBorder(),
+                //     ),
+                //   ),
+                //   onChanged: (value) {
+                //     setState(() {
+                //       selectedDept = value ?? ''; // Update selected department
+                //     });
+                //     _fetchHeadCount(); // Fetch headcount based on department
+                //     _checkData(); // Check additional data if required
+                //   },
+                //   items: departments,
+                //   popupProps: const PopupProps.menu(
+                //     showSearchBox: true, // Explicitly enable search box
+                //     searchFieldProps: TextFieldProps(
+                //       decoration: InputDecoration(
+                //         hintText: 'Search Departments',
+                //         border: OutlineInputBorder(),
+                //       ),
+                //     ),
+                //   ),
+                // )
+                // ,
+
+                TypeAheadField<String>(
+                  suggestionsCallback: (pattern) {
+                    // Perform the search for matching plants based on the entered pattern
+                    return departments
+                        .where((dept) =>
+                            dept.toLowerCase().contains(pattern.toLowerCase()))
+                        .toList();
                   },
-                  items: departments,
-                  popupProps: const PopupProps.menu(
-                    showSearchBox: true, // Explicitly enable search box
-                    searchFieldProps: TextFieldProps(
+                  builder: (context, controller, focusNode) {
+                    // Update the controller with the initial selectedPlant if needed
+                    controller.text =
+                        selectedDept; // Ensures the TextField shows the selected value
+                    return TextField(
+                      controller: controller,
+                      focusNode: focusNode,
                       decoration: InputDecoration(
-                        hintText: 'Search Departments',
-                        border: OutlineInputBorder(),
+                        labelText: 'Department',
+                        hintText: 'Select Dept',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
+                  hideOnSelect:
+                      false, // Ensures the dropdown closes on selection
+                  itemBuilder: (context, dept) {
+                    // Build the suggestion widget to display plant name
+                    return ListTile(
+                      title: Text(dept),
+                    );
+                  },
+                  constraints: BoxConstraints(maxHeight: 200),
+                  onSelected: (dept) {
+                    setState(() {
+                      selectedDept = dept;
+                    });
+
+                    _focusNode.unfocus(); // Close dropdown when tapped again
+
+                    // Update the controller with the selected value
+                    _fetchHeadCount(); // Fetch headcount based on the selected department
+                    _checkData(); // Perform additional data checks
+
+                    // Close the dropdown by unfocusing the text field
+                    FocusScope.of(context).requestFocus(FocusNode());
+                  },
                 ),
 
                 const SizedBox(height: 20),
@@ -2003,6 +1983,13 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
 
                 const SizedBox(height: 20),
               ],
+
+              if (_isLoading)
+                const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.blueGrey, // Customize the color
+                  ),
+                ),
               if (submitButton) ...[
                 ElevatedButton(
                   onPressed: () {
@@ -2012,21 +1999,131 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                 ),
                 const SizedBox(height: 20),
               ],
+
               if (showEmployeeDetails) ...[
                 // Barcode Input
-                TextFormField(
+                // TextFormField(
+                //   controller: barcodeController,
+                //   decoration: const InputDecoration(
+                //     labelText: 'Barcodess',
+                //     border: OutlineInputBorder(),
+                //   ),
+                //   keyboardType: TextInputType.number,
+                //   // readOnly: isBarcodeReadOnly,
+                //   onChanged: (text) {
+                //     // bottom model sheet for barcodes
+                //     filterSuggestions(text);
+                //     showSuggestions(text);
+                //   },
+                // ),
+
+                // SizedBox(
+                //   height: 10,
+                // ),
+                // TypeAheadField(
+                //   builder: (context, controller, focusNode) {
+                //     return TextField(
+                //       controller: controller,
+                //       focusNode: focusNode,
+                //       obscureText:
+                //           false, // You can set obscureText to false for barcode input
+                //       decoration: InputDecoration(
+                //         border: OutlineInputBorder(
+                //           borderRadius: BorderRadius.circular(8),
+                //         ),
+                //         labelText: 'Barcode', // Adjust the label
+                //       ),
+                //     );
+                //   },
+                //   onSelected: (value) {
+                //     // Handle selection here
+                //     print('Selected: $value');
+                //   },
+                //   suggestionsCallback: (String search) async {
+                //     // Use the filterSuggestions method to get the filtered suggestions
+                //     filterSuggestions(search);
+                //     // showSuggestions(search);
+                //   },
+                //   itemBuilder: (context, employee) {
+                //     // Display employee name and barcode
+                //     return ListTile(
+                //       title: Text('No name'),
+                //       // subtitle: Text(
+                //       //     'Barcode: ${employee['barcode'] ?? 'No barcode'}'),
+                //     );
+                //   },
+                // ),
+
+                TypeAheadField<Map<String, String>>(
                   controller: barcodeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Barcode',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  readOnly: isBarcodeReadOnly,
-                  onChanged: (text) {
-                    filterSuggestions(text);
-                    showSuggestions(text);
+                  builder: (context, controller, focusNode) {
+                    return TextField(
+                      controller: barcodeController,
+                      // controller: controller,
+
+                      focusNode: focusNode,
+                      obscureText:
+                          false, // You can set obscureText to false for barcode input
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        labelText: 'Barcode', // Adjust the label
+                      ),
+                    );
                   },
+                  suggestionsCallback: (String search) async {
+                    // Filter suggestions based on input text
+                    filterSuggestions(
+                        search); // Ensure it updates the `suggestions` list
+                    return suggestions; // Return the filtered list
+                  },
+                  itemBuilder: (context, Map<String, String> employee) {
+                    // Replicate modal UI for each suggestion
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 12.0,
+                        ),
+                        title: Text(
+                          employee['empName'] ?? 'No Name',
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Barcode: ${employee['barcode'] ?? ''} | Plant: ${employee['plant'] ?? ''}',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        tileColor: Colors.grey[200],
+                      ),
+                    );
+                  },
+                  onSelected: (Map<String, String> selectedEmployee) {
+                    // Handle selection and update controllers
+                    setState(() {
+                      barcodeController.text =
+                          selectedEmployee['barcode'] ?? '';
+                      empNameController.text =
+                          selectedEmployee['empName'] ?? '';
+                      isBarcodeReadOnly = true;
+                      isEmpNameReadOnly = true;
+                    });
+                  },
+                  hideOnSelect: true,
+                  // hideOnEmpty: true, // Hides the dropdown if no suggestions
+                  hideOnLoading:
+                      false, // Optionally show loading indicator if needed
                 ),
+
                 const SizedBox(height: 20),
                 // Employee Name Input
                 TextFormField(
@@ -2061,33 +2158,82 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                 ),
                 const SizedBox(height: 20),
                 // Skill Name Picker
-                DropdownSearch<String>(
-                  selectedItem: selectedSkill.isEmpty ? null : selectedSkill,
-                  dropdownDecoratorProps: const DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      labelText: 'Skill Name',
-                      hintText: 'Select Skill', // Use hintText instead of hint
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedSkill = value ?? '';
-                    });
-                    // Add any additional logic if needed
+                // DropdownSearch<String>(
+                //   selectedItem: selectedSkill.isEmpty ? null : selectedSkill,
+                //   dropdownDecoratorProps: const DropDownDecoratorProps(
+                //     dropdownSearchDecoration: InputDecoration(
+                //       labelText: 'Skill Name',
+                //       hintText: 'Select Skill', // Use hintText instead of hint
+                //       border: OutlineInputBorder(),
+                //     ),
+                //   ),
+                //   onChanged: (value) {
+                //     setState(() {
+                //       selectedSkill = value ?? '';
+                //     });
+                //     // Add any additional logic if needed
+                //   },
+                //   items: skillNames,
+                //   popupProps: const PopupProps.menu(
+                //     showSearchBox: true, // Explicitly enable search box
+                //     searchFieldProps: TextFieldProps(
+                //       decoration: InputDecoration(
+                //         hintText: 'Search Skill',
+                //         border: OutlineInputBorder(),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+
+                TypeAheadField<String>(
+                  suggestionsCallback: (pattern) {
+                    // Filter the skill names based on the entered pattern (search)
+                    return skillNames
+                        .where((skill) =>
+                            skill.toLowerCase().contains(pattern.toLowerCase()))
+                        .toList();
                   },
-                  items: skillNames,
-                  popupProps: const PopupProps.menu(
-                    showSearchBox: true, // Explicitly enable search box
-                    searchFieldProps: TextFieldProps(
+                  builder: (context, controller, focusNode) {
+                    // Update the controller with the initial selectedSkill value
+                    controller.text =
+                        selectedSkill.isEmpty ? '' : selectedSkill;
+
+                    return TextField(
+                      controller: controller,
+                      focusNode: focusNode,
                       decoration: InputDecoration(
-                        hintText: 'Search Skill',
-                        border: OutlineInputBorder(),
+                        labelText: 'Skill Name',
+                        hintText: 'Select Skill',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
+                  hideOnSelect:
+                      true, // Ensures the dropdown closes on selection
+                  itemBuilder: (context, skill) {
+                    return ListTile(
+                      title: Text(skill),
+                    );
+                  },
+                  constraints: BoxConstraints(maxHeight: 200),
+                  onSelected: (skill) {
+                    setState(() {
+                      selectedSkill = skill; // Update selected skill
+                    });
+
+                    // Optionally, perform additional logic when a skill is selected
+                    _fetchHeadCount(); // Fetch headcount based on selected skill
+                    _checkData(); // Perform additional data checks
+
+                    // Close the dropdown by unfocusing the text field
+                    FocusScope.of(context).requestFocus(FocusNode());
+                  },
                 ),
+
                 const SizedBox(height: 20),
+
                 // Date Picker for Leave Date
                 TextFormField(
                   controller: leaveDateController,
@@ -2104,10 +2250,37 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                 ),
                 const SizedBox(height: 20),
                 // Add and Update Buttons
+                // if (showAddButton)
+                //   ElevatedButton(
+                //     onPressed: addEmployee,
+                //     child: const Text('Add Employee'),
+                //   ),
+                // Add and Update Buttons
                 if (showAddButton)
                   ElevatedButton(
-                    onPressed: addEmployee,
-                    child: const Text('Add'),
+                    onPressed: _isLoading
+                        ? null // Disable button when loading
+                        : () async {
+                            setState(() {
+                              _isLoading = true; // Start the loading indicator
+                            });
+
+                            addEmployee(); // Execute the async function
+
+                            setState(() {
+                              _isLoading = false; // Stop the loading indicator
+                            });
+                          },
+                    child: _isLoading
+                        ? SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              color: Colors.red,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Add Employee'),
                   ),
                 if (isUpdateButtonVisible)
                   Row(
@@ -2127,6 +2300,13 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                     ],
                   ),
               ],
+              // ElevatedButton(
+              //     onPressed: () async {
+              //       plantAbsentList = await _plantAbsentData();
+              //       absentList = _getAbsentList(plantAbsentList);
+              //       confirmdata(absentList);
+              //     },
+              //     child: Text('Confirm Leave Data')),
               const SizedBox(height: 20),
               if (absenties.isNotEmpty && absentieslist)
                 Column(
@@ -2189,6 +2369,13 @@ class _ProductionRequestPageState extends State<ProductionRequestPage>
                     ),
                   ],
                 ),
+              ElevatedButton(
+                  onPressed: () async {
+                    plantAbsentList = await _plantAbsentData();
+                    absentList = _getAbsentList(plantAbsentList);
+                    confirmdata(absentList);
+                  },
+                  child: const Text('Confirm Leave Data')),
             ],
           ),
         ),

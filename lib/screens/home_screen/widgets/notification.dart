@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
@@ -299,7 +300,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   // }
 
   Future<List<NotificationModel>> _fetchNotifications(String empNo) async {
-    final url = 'http://10.3.0.70:9042/api/HR/get-notifications/$empNo';
+    // final url = 'http://10.3.0.70:9042/api/HR/get-notifications/$empNo';
+      final url = ApiHelper.getNotifications(empNo); // Use ApiHelper to construct the URL
     final response = await http.get(Uri.parse(url));
     // print(url);
     if (response.statusCode == 200) {

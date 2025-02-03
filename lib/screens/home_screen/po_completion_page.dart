@@ -1,5 +1,6 @@
 
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -31,13 +32,15 @@ class _PoCompletionReportState extends State<PoCompletionReport> {
       _isLoading = true;
     });
 
-    String? formattedFromDate = dateRange?.start.toIso8601String().substring(0, 10);
-    String? formattedToDate = dateRange?.end.toIso8601String().substring(0, 10);
+    // String? formattedFromDate = dateRange?.start.toIso8601String().substring(0, 10);
+    // String? formattedToDate = dateRange?.end.toIso8601String().substring(0, 10);
 
-    String url = 'http://10.3.0.70:9042/api/HR/GetSeOrderDetails';
-    if (dateRange != null) {
-      url += '?fromDate=$formattedFromDate&toDate=$formattedToDate';
-    }
+    // String url = 'http://10.3.0.70:9042/api/HR/GetSeOrderDetails';
+    // if (dateRange != null) {
+    //   url += '?fromDate=$formattedFromDate&toDate=$formattedToDate';
+    // }
+
+     String url = ApiHelper.getSeOrderDetailsApi(dateRange);
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -94,35 +97,59 @@ class _PoCompletionReportState extends State<PoCompletionReport> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PO Completion Report'),
-        backgroundColor: Colors.lightGreen,
-        actions: [
-          IconButton(
-            icon: FaIcon(FontAwesomeIcons.calendarAlt),
-            onPressed: () => _selectDateRange(context),
+      // appBar: AppBar(
+      //   title: const Text('PO Completion Report'),
+      //   backgroundColor: Colors.lightGreen,
+      //   actions: [
+      //     IconButton(
+      //       icon: FaIcon(FontAwesomeIcons.calendarAlt),
+      //       onPressed: () => _selectDateRange(context),
+      //     ),
+      //   ],
+      // ),
+      body: Column(
+        children: [
+          Padding(
+  padding: const EdgeInsets.all(16.0),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center, // Center the text
+    children: [
+      GestureDetector(
+        onTap: () => _selectDateRange(context), // Action on tap
+        child: Text(
+          "Select Date",
+          style: TextStyle(
+            color: Colors.greenAccent, // Text color
+            fontSize: 16, // Font size
+            fontWeight: FontWeight.bold, // Make it bold (optional)
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Charts",
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 16),
+                        _buildAreaChart(),
+                        SizedBox(height: 16),
+                        _buildBarChart(),
+                      ],
+                    ),
+                  ),
           ),
         ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Charts",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 16),
-                    _buildAreaChart(),
-                    SizedBox(height: 16),
-                    _buildBarChart(),
-                  ],
-                ),
-              ),
       ),
     );
   }

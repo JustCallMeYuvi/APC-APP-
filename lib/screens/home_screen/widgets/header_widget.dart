@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/constants/images_path.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/get_emp_details.dart';
@@ -71,9 +72,12 @@ class _HeaderWidgetState extends State<HeaderWidget> {
     // final url = Uri.parse(
     //     'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
 
-    final url = Uri.parse(
-        'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
 
+// Get the URL dynamically using ApiHelper
+    final String urlString = ApiHelper.getEmpDetails(empNo);
+    final Uri url = Uri.parse(urlString); // Convert the URL to Uri
     print('URL ${url}');
     try {
       final response = await http.get(url);

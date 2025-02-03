@@ -33,7 +33,7 @@ class MoviesCast extends StatelessWidget {
             ),
             CastWidget(
               name: "Imran",
-              role: "Mobile Team Lead",
+              role: "Mobility Team Lead",
               imgUrl: ImagePath.person2,
             ),
           ],

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/change_password_model.dart';
 import 'package:animated_movies_app/model/get_emp_details.dart';
@@ -50,9 +51,12 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     // final url = Uri.parse(
     //     'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
 
-    final url = Uri.parse(
-        'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
-
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
+    // Get the URL dynamically using ApiHelper
+    final String urlString = ApiHelper.getEmpDetails(empNo);
+    final Uri url = Uri.parse(urlString); // Convert the URL to Uri
+// print(object)
     print('URL ${url}');
     try {
       final response = await http.get(url);
@@ -60,11 +64,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         final List<dynamic> jsonResponse = json.decode(response.body);
 
         // Debug: Print the raw response body
-        print('Response body: ${response.body}');
+        // print('Response body: ${response.body}');
 
         // Debug: Print the parsed JSON data
         jsonResponse.forEach((data) {
-          print('Parsed JSON item: $data');
+          // print('Parsed JSON item: $data');
         });
 
         setState(() {
@@ -75,16 +79,16 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           empDetailsList.forEach((detail) {
             // print(
             //     'Emp Detail: ${detail.empNo}, ${detail.empName}, ${detail.deptName}, ${detail.position}');
-            print(
-                'Emp Detail: ${detail.emPNo}, ${detail.emPName}, ${detail.depTName}, ${detail.position}');
+            // print(
+            //     'Emp Detail: ${detail.emPNo}, ${detail.emPName}, ${detail.depTName}, ${detail.position}');
           });
         });
       } else {
-        print('Request failed with status: ${response.statusCode}');
+        // print('Request failed with status: ${response.statusCode}');
         // Handle error case, show error message or retry logic
       }
     } catch (e) {
-      print('Error fetching data: $e');
+      // print('Error fetching data: $e');
       // Handle error case, show error message or retry logic
     }
   }
@@ -94,8 +98,14 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     // final url = Uri.parse(
     //     'http://10.3.0.70:9040/api/Flutter/UpdatePassword?empNo=$empNo&oldPassword=$oldPassword&newPassword=$newPassword');
 
-    final url = Uri.parse(
-        'http://10.3.0.70:9042/api/HR/UpdatePassword?empNo=$empNo&oldPassword=$oldPassword&newPassword=$newPassword');
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9042/api/HR/UpdatePassword?empNo=$empNo&oldPassword=$oldPassword&newPassword=$newPassword');
+    // Get the URL string from ApiHelper
+    String urlString =
+        ApiHelper.updatePasswordApi(empNo, oldPassword, newPassword);
+    // Convert the URL string to a Uri
+    Uri url = Uri.parse(urlString);
+
     print('Change passwor $url');
     try {
       final response = await http.post(url);
@@ -331,19 +341,19 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   ],
                 ),
               SizedBox(height: 20),
-              Text(
-                'Account Settings',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 10),
-              buildAccountSetting(
-                icon: Icons.lock,
-                label: 'Change Password',
-              ),
+              // Text(
+              //   'Account Settings',
+              //   style: TextStyle(
+              //     color: Colors.white,
+              //     fontSize: 24,
+              //     fontWeight: FontWeight.bold,
+              //   ),
+              // ),
+              // SizedBox(height: 10),
+              // buildAccountSetting(
+              //   icon: Icons.lock,
+              //   label: 'Change Password',
+              // ),
               // buildAccountSetting(
               //   icon: Icons.notifications,
               //   label: 'Notification Settings',
@@ -502,130 +512,130 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   //   );
   // }
 
-  Widget buildAccountSetting({required IconData icon, required String label}) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: Colors.white,
-        size: 24,
-      ),
-      title: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-        ),
-      ),
-      onTap: () {
-        if (label == 'Change Password') {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              String oldPassword = '';
-              String newPassword = '';
+  // Widget buildAccountSetting({required IconData icon, required String label}) {
+  //   return ListTile(
+  //     leading: Icon(
+  //       icon,
+  //       color: Colors.white,
+  //       size: 24,
+  //     ),
+  //     title: Text(
+  //       label,
+  //       style: TextStyle(
+  //         color: Colors.white,
+  //         fontSize: 16,
+  //       ),
+  //     ),
+  //     onTap: () {
+  //       if (label == 'Change Password') {
+  //         showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             String oldPassword = '';
+  //             String newPassword = '';
 
-              return StatefulBuilder(
-                builder: (BuildContext context, StateSetter setState) {
-                  return AlertDialog(
-                    title: Text('Change Password'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextField(
-                          controller: oldPasswordController,
-                          decoration: InputDecoration(
-                            labelText: 'Old Password',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _isOldPasswordVisible
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isOldPasswordVisible =
-                                      !_isOldPasswordVisible;
-                                });
-                              },
-                            ),
-                          ),
-                          onChanged: (value) {
-                            oldPassword = value;
-                          },
-                          obscureText: !_isOldPasswordVisible,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                        TextField(
-                          controller: newPasswordController,
-                          decoration: InputDecoration(
-                            labelText: 'New Password',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _isNewPasswordVisible
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isNewPasswordVisible =
-                                      !_isNewPasswordVisible;
-                                });
-                              },
-                            ),
-                          ),
-                          onChanged: (value) {
-                            newPassword = value;
-                          },
-                          obscureText: !_isNewPasswordVisible,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          if (oldPassword.isNotEmpty &&
-                              newPassword.isNotEmpty) {
-                            if (oldPassword != newPassword) {
-                              Navigator.of(context).pop();
-                              changePassword(widget.userData.empNo, oldPassword,
-                                  newPassword, context);
-                              oldPasswordController.clear();
-                              newPasswordController.clear();
-                            } else {
-                              // oldPasswordController.clear();
-                              // newPasswordController.clear();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      'Old and new passwords cannot be the same.'),
-                                ),
-                              );
-                            }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Please fill out all fields.'),
-                              ),
-                            );
-                          }
-                        },
-                        child: Text('Change'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          );
-        }
-      },
-    );
-  }
+  //             return StatefulBuilder(
+  //               builder: (BuildContext context, StateSetter setState) {
+  //                 return AlertDialog(
+  //                   title: Text('Change Password'),
+  //                   content: Column(
+  //                     mainAxisSize: MainAxisSize.min,
+  //                     children: [
+  //                       TextField(
+  //                         controller: oldPasswordController,
+  //                         decoration: InputDecoration(
+  //                           labelText: 'Old Password',
+  //                           suffixIcon: IconButton(
+  //                             icon: Icon(
+  //                               _isOldPasswordVisible
+  //                                   ? Icons.visibility
+  //                                   : Icons.visibility_off,
+  //                             ),
+  //                             onPressed: () {
+  //                               setState(() {
+  //                                 _isOldPasswordVisible =
+  //                                     !_isOldPasswordVisible;
+  //                               });
+  //                             },
+  //                           ),
+  //                         ),
+  //                         onChanged: (value) {
+  //                           oldPassword = value;
+  //                         },
+  //                         obscureText: !_isOldPasswordVisible,
+  //                         style: const TextStyle(color: Colors.red),
+  //                       ),
+  //                       TextField(
+  //                         controller: newPasswordController,
+  //                         decoration: InputDecoration(
+  //                           labelText: 'New Password',
+  //                           suffixIcon: IconButton(
+  //                             icon: Icon(
+  //                               _isNewPasswordVisible
+  //                                   ? Icons.visibility
+  //                                   : Icons.visibility_off,
+  //                             ),
+  //                             onPressed: () {
+  //                               setState(() {
+  //                                 _isNewPasswordVisible =
+  //                                     !_isNewPasswordVisible;
+  //                               });
+  //                             },
+  //                           ),
+  //                         ),
+  //                         onChanged: (value) {
+  //                           newPassword = value;
+  //                         },
+  //                         obscureText: !_isNewPasswordVisible,
+  //                         style: const TextStyle(color: Colors.red),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                   actions: [
+  //                     TextButton(
+  //                       onPressed: () {
+  //                         Navigator.of(context).pop();
+  //                       },
+  //                       child: Text('Cancel'),
+  //                     ),
+  //                     TextButton(
+  //                       onPressed: () {
+  //                         if (oldPassword.isNotEmpty &&
+  //                             newPassword.isNotEmpty) {
+  //                           if (oldPassword != newPassword) {
+  //                             Navigator.of(context).pop();
+  //                             changePassword(widget.userData.empNo, oldPassword,
+  //                                 newPassword, context);
+  //                             oldPasswordController.clear();
+  //                             newPasswordController.clear();
+  //                           } else {
+  //                             // oldPasswordController.clear();
+  //                             // newPasswordController.clear();
+  //                             ScaffoldMessenger.of(context).showSnackBar(
+  //                               SnackBar(
+  //                                 content: Text(
+  //                                     'Old and new passwords cannot be the same.'),
+  //                               ),
+  //                             );
+  //                           }
+  //                         } else {
+  //                           ScaffoldMessenger.of(context).showSnackBar(
+  //                             SnackBar(
+  //                               content: Text('Please fill out all fields.'),
+  //                             ),
+  //                           );
+  //                         }
+  //                       },
+  //                       child: Text('Change'),
+  //                     ),
+  //                   ],
+  //                 );
+  //               },
+  //             );
+  //           },
+  //         );
+  //       }
+  //     },
+  //   );
+  // }
 }

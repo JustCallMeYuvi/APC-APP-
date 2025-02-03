@@ -1,3 +1,4 @@
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -31,9 +32,9 @@ class _ContactsPageState extends State<ContactsPage> {
     // final url =
     //     'http://10.3.0.70:9040/api/Flutter/GetUserDetails?empNo=${widget.userData.empNo}';
 
-    final url =
-        'http://10.3.0.70:9042/api/HR/GetUserDetails?empNo=${widget.userData.empNo}';
-
+    // final url =
+    //     'http://10.3.0.70:9042/api/HR/GetUserDetails?empNo=${widget.userData.empNo}';
+    final url = ApiHelper.getUserDetailsApi(widget.userData.empNo);
     print('Fetching contacts from: $url');
 
     try {

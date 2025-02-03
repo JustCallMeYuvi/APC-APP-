@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/auth_provider.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/screens/home_screen/home_screen.dart';
@@ -17,6 +20,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  bool _isLoginLoading = false;
+  Timer? _loadingTimer;
+
   final TextEditingController _empNoController = TextEditingController();
   final TextEditingController _barcodeController = TextEditingController();
 
@@ -24,27 +30,139 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
+  // Future<void> loginApiBarcode() async {
+  //   final barcode = _barcodeController.text;
+  //   final password = _passwordController.text;
+  //   // Check if barcode or password is empty
+  //   if (barcode.isEmpty || password.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Barcode and password cannot be empty.'),
+  //       ),
+  //     );
+  //     return; // Exit the function early if barcode or password is empty
+  //   }
+
+  //   // final url = Uri.parse(
+  //   //     'http://10.3.0.70:9040/api/Flutter/LoginApi?empNo=$barcode&password=$password');
+
+  //   final url = Uri.parse(
+  //       'http://10.3.0.70:9042/api/HR/LoginApi?empNo=$barcode&password=$password');
+
+  //   print('URL $url');
+
+  //   try {
+  //     final response = await http.post(
+  //       url,
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: jsonEncode({
+  //         'barcode': barcode,
+  //         'password': password,
+  //       }),
+  //     );
+
+  //     print('Response status: ${response.statusCode}');
+  //     // print('Response body: ${response.body}');
+
+  //     if (response.statusCode == 200) {
+  //       final List<dynamic> jsonResponse = json.decode(response.body);
+
+  //       if (jsonResponse.isNotEmpty) {
+  //         final data = jsonResponse[0];
+  //         final loginData = LoginModelApi.fromJson(data);
+  //         // print('Login Data: $loginData');
+
+  //         // Use Provider to update login state
+  //         Provider.of<AuthProvider>(context, listen: false).login(loginData);
+  //         // Navigate to HomeScreen with loginData
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(
+  //               builder: (context) => HomeScreen(userData: loginData)),
+  //         );
+  //       } else {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: Text('Invalid barcode or password.'),
+  //           ),
+  //         );
+  //       }
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text('Invalid barcode or password.'),
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text(
+  //             'Barcode and Password is not correct or Invalid Credientials'),
+  //       ),
+  //     );
+  //   }
+  // }
+
+  void _showLoadingAlert() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Contact Support"),
+          content: const Text(
+            "The operation is taking longer than expected. Please contact IT support.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> loginApiBarcode() async {
     final barcode = _barcodeController.text;
     final password = _passwordController.text;
-    // Check if barcode or password is empty
+
+    setState(() {
+      _isLoginLoading = true; // Show loading indicator
+    });
+
+    // await ApiHelper.initializeBaseUrl();
+
+    // await ApiHelper.initializeUrls();
+
     if (barcode.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Barcode and password cannot be empty.'),
         ),
       );
-      return; // Exit the function early if barcode or password is empty
+      return;
     }
 
     // final url = Uri.parse(
-    //     'http://10.3.0.70:9040/api/Flutter/LoginApi?empNo=$barcode&password=$password');
+    //     'http://10.3.0.70:9042/api/HR/LoginApi?empNo=$barcode&password=$password');
 
-    final url = Uri.parse(
-        'http://10.3.0.70:9042/api/HR/LoginApi?empNo=$barcode&password=$password');
+    // Use the ApiHelper to get the URL
+    final url = Uri.parse(ApiHelper.login(barcode, password));
+    print('URL: $url');
 
-    print('URL $url');
-
+    // Start a timer to show an alert if loading exceeds 2 minutes
+    Timer? _loadingTimer = Timer(const Duration(minutes: 1), () {
+      if (_isLoginLoading) {
+        _showLoadingAlert();
+      }
+    });
     try {
       final response = await http.post(
         url,
@@ -58,47 +176,70 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       print('Response status: ${response.statusCode}');
-      // print('Response body: ${response.body}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonResponse = json.decode(response.body);
+        // Parse the JSON response
+        final List<LoginModelApi> loginResponse =
+            loginModelApiFromJson(response.body);
 
-        if (jsonResponse.isNotEmpty) {
-          final data = jsonResponse[0];
-          final loginData = LoginModelApi.fromJson(data);
-          // print('Login Data: $loginData');
+        if (loginResponse.isNotEmpty) {
+          final loginData = loginResponse.first;
 
-          // Use Provider to update login state
-          Provider.of<AuthProvider>(context, listen: false).login(loginData);
-          // Navigate to HomeScreen with loginData
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => HomeScreen(userData: loginData)),
-          );
+          if (loginData.success) {
+            // Display success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(loginData.message)),
+            );
+
+            if (loginData.token != null && loginData.token!.isNotEmpty) {
+              // Use Provider to update login state
+              Provider.of<AuthProvider>(context, listen: false)
+                  .login(loginData);
+
+              // Navigate to HomeScreen with loginData
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HomeScreen(userData: loginData),
+                ),
+              );
+            }
+          } else {
+            // Handle unsuccessful login
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(loginData.message)),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid barcode or password.'),
-            ),
+            const SnackBar(content: Text('Invalid barcode or password.')),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid barcode or password.'),
-          ),
+          const SnackBar(content: Text('An error occurred. Please try again.')),
         );
       }
     } catch (e) {
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-              'Barcode and Password is not correct or Invalid Credientials'),
+          content: Text('Something went wrong,Please Contact IT'),
         ),
       );
+    } finally {
+      _loadingTimer?.cancel();
+      setState(() {
+        _isLoginLoading = false; // Hide loading indicator
+      });
     }
+  }
+
+  @override
+  void dispose() {
+    _loadingTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -195,10 +336,12 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   // Login Button
                   ElevatedButton(
-                    onPressed: () async {
-                      // await login();
-                      await loginApiBarcode();
-                    },
+                    onPressed: _isLoginLoading // Disable button while loading
+                        ? null
+                        : () async {
+                            // await login();
+                            await loginApiBarcode();
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white.withOpacity(0.9),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -218,32 +361,38 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   // Sign Up Text
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SignUpPage()),
-                          );
-                        },
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Align(
+                  //   alignment: Alignment.topRight,
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.only(top: 8),
+                  //     child: TextButton(
+                  //       onPressed: () {
+                  //         Navigator.push(
+                  //           context,
+                  //           MaterialPageRoute(
+                  //               builder: (context) => const SignUpPage()),
+                  //         );
+                  //       },
+                  //       child: const Text(
+                  //         'Sign Up',
+                  //         style: TextStyle(
+                  //           color: Colors.white,
+                  //           fontSize: 14,
+                  //           fontWeight: FontWeight.bold,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
+            if (_isLoginLoading)
+              const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
           ],
         ),
       ),
@@ -396,16 +545,54 @@ List<LoginModelApi> loginModelApiFromJson(String str) =>
 String loginModelApiToJson(List<LoginModelApi> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
+// class LoginModelApi {
+//   String empNo;
+//   dynamic useRRole;
+//   String password;
+//   String message;
+//   bool success;
+
+//   String? token;
+
+//   LoginModelApi({
+//     required this.empNo,
+//     required this.useRRole,
+//     required this.password,
+//     required this.message,
+//     required this.success,
+//     this.token,
+//   });
+
+//   factory LoginModelApi.fromJson(Map<String, dynamic> json) => LoginModelApi(
+//         empNo: json["emP_NO"],
+//         useRRole: json["useR_ROLE"],
+//         password: json["password"],
+//         message: json["message"],
+//         success: json["success"],
+//         token: json["token"],
+//       );
+
+//   Map<String, dynamic> toJson() => {
+//         "emP_NO": empNo,
+//         "useR_ROLE": useRRole,
+//         "password": password,
+//         "message": message,
+//         "success": success,
+//         "token": token,
+//       };
+// }
+
 class LoginModelApi {
   String empNo;
+  dynamic useRRole;
   String password;
   String message;
   bool success;
-
   String? token;
 
   LoginModelApi({
     required this.empNo,
+    required this.useRRole,
     required this.password,
     required this.message,
     required this.success,
@@ -413,15 +600,17 @@ class LoginModelApi {
   });
 
   factory LoginModelApi.fromJson(Map<String, dynamic> json) => LoginModelApi(
-        empNo: json["emP_NO"],
-        password: json["password"],
-        message: json["message"],
-        success: json["success"],
-        token: json["token"],
+        empNo: json["emP_NO"] ?? "", // Provide a default empty string
+        useRRole: json["useR_ROLE"], // Allow dynamic to remain as is
+        password: json["password"] ?? "", // Provide a default empty string
+        message: json["message"] ?? "No message", // Provide a default message
+        success: json["success"] ?? false, // Provide a default false value
+        token: json["token"], // Token is nullable, no default needed
       );
 
   Map<String, dynamic> toJson() => {
         "emP_NO": empNo,
+        "useR_ROLE": useRRole,
         "password": password,
         "message": message,
         "success": success,

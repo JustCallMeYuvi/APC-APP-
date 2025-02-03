@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/home_screen/about_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/account_screen.dart';
 
@@ -49,13 +50,13 @@ class _HomeScreenState extends State<HomeScreen> {
         userData: widget.userData,
       ),
       // ChatScreen(),
-      ContactsPage(
-        userData: widget.userData,
-      ),
+      // ContactsPage(
+      //   userData: widget.userData,
+      // ),
       MultipleForms(
         userData: widget.userData,
       ),
-      AboutScreen(),
+      // AboutScreen(),
       AccountDetailsScreen(userData: widget.userData), // Pass userData here
     ];
   }
@@ -74,9 +75,9 @@ class _HomeScreenState extends State<HomeScreen> {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String currentVersion = packageInfo.version;
 
-    final url = Uri.parse(
-        'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
-
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
+    final Uri url = ApiHelper.checkUpdateApi(currentVersion);
     try {
       final response = await http.get(url);
 
@@ -122,32 +123,38 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showUpdateDialog(String latestVersion, String apkFileData) {
     showDialog(
       context: context,
+      barrierDismissible:
+          false, // Prevent dismissing the dialog by tapping outside
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Update Available"),
-          content: Text(
-              "A new version ($latestVersion) is available. Please update the app."),
-          actions: <Widget>[
-            TextButton(
-              child: Text("Later"),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-            TextButton(
-              child: Text("Update Now"),
-              onPressed: () async {
-                Navigator.of(context).pop(); // Close the dialog
+        return WillPopScope(
+          // Prevent the dialog from closing using the back button
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: Text("Update Available"),
+            content: Text(
+                "A new version ($latestVersion) is available. Please update the app."),
+            actions: <Widget>[
+              // TextButton(
+              //   child: Text("Later"),
+              //   onPressed: () {
+              //     Navigator.of(context).pop(); // Close the dialog
+              //   },
+              // ),
+              TextButton(
+                child: Text("Update Now"),
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Close the dialog
 
-                try {
-                  // Start downloading the APK file
-                  await _downloadAndInstallApk(apkFileData);
-                } catch (e) {
-                  print('Failed to download or install APK: $e');
-                }
-              },
-            ),
-          ],
+                  try {
+                    // Start downloading the APK file
+                    await _downloadAndInstallApk(apkFileData);
+                  } catch (e) {
+                    print('Failed to download or install APK: $e');
+                  }
+                },
+              ),
+            ],
+          ),
         );
       },
     );
