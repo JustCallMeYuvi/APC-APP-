@@ -46,6 +46,12 @@ class ApiHelper {
 
   //  static const String _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
   static const String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
+  static const String _gmsUrlExportApproval = 'http://10.3.0.70:83/api/Student/ExportArrovals';
+  static const String _gmsvehicleApproval='http://10.3.0.70:83/api/Student/Approve';
+  static const String _gmsUrlExportVehicles = 'http://10.3.0.70:83/api/Student/';
+
+
+// http://10.3.0.70:83/api/Student/GMS_ExportVehicles
 
 // class ApiHelper {
 //   // Base URLs
@@ -108,6 +114,14 @@ class ApiHelper {
   static String get baseUrl => _baseUrl; // Public getter
 
   static String get gmsUrl => _gmsUrl;
+  static String get gmsUrlExportApproval => _gmsUrlExportApproval;
+  static String get gmsUrlVehicleApproval => _gmsvehicleApproval;
+  static String get gmsUrlExportVehicles=>_gmsUrlExportVehicles;
+
+
+
+
+  
   // Login Page
   static String login(String empNo, String password) =>
       '${_baseUrl}LoginApi?empNo=$empNo&password=$password';

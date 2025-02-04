@@ -2323,8 +2323,34 @@ class _GmsExportPageState extends State<GmsExportPage> {
   }
 
   // Method to show alert when both fields are empty
+  // void _showAlertforManifestChasisAndEngineNo(BuildContext context) {
+  //   if (_manifestEngineNumber.isEmpty && _manifestChasisNumber.isEmpty) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: Text('Input Required'),
+  //           content: Text(
+  //               'Both fields (Engine Number and Chasis Number) are required.'),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () {
+  //                 Navigator.of(context).pop(); // Close the alert
+  //               },
+  //               child: Text('OK'),
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
+
+  // Method to show alert when both fields are empty in fire gate out
   void _showAlertforManifestChasisAndEngineNo(BuildContext context) {
-    if (_manifestEngineNumber.isEmpty && _manifestChasisNumber.isEmpty) {
+    if (_gateType == "Fire Gate OUT" &&
+        _manifestEngineNumber.isEmpty &&
+        _manifestChasisNumber.isEmpty) {
       showDialog(
         context: context,
         builder: (BuildContext context) {

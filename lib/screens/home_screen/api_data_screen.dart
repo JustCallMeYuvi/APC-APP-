@@ -41,6 +41,7 @@
 
 import 'package:animated_movies_app/screens/api_data_screens/production_request_page.dart';
 import 'package:animated_movies_app/screens/api_data_screens/user_approval_page.dart';
+import 'package:animated_movies_app/screens/gms_screens/export_tracking.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
@@ -129,6 +130,10 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                     )
                                 : widget.pageRoute == 'GmsCharts'
                                     ? GmsCharts(
+                                        // userData: widget.userData,
+                                        )
+                                         : widget.pageRoute == 'ExportTracking'
+                                    ? ExportTracking(title: widget.pageName,
                                         // userData: widget.userData,
                                         )
                                     : widget.pageRoute == 'TargetOutputReport'
