@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
 
     // Use the ApiHelper to get the URL
     final url = Uri.parse(ApiHelper.login(barcode, password));
-    print('URL: $url');
+    print('Login URL: $url');
 
     // Start a timer to show an alert if loading exceeds 2 minutes
     Timer? _loadingTimer = Timer(const Duration(minutes: 1), () {

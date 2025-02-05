@@ -209,6 +209,7 @@
 // // }
 
 // below is filter data
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'dart:convert';
@@ -254,8 +255,9 @@ import 'package:http/http.dart' as http;
 
 List<dynamic> globalRawData = []; // Global storage for response data
 Future<List<StatusReport>> fetchVehicleTracking() async {
-  const String apiUrl = 'http://10.3.0.208:8084/api/GMS/status-report';
-
+  // const String apiUrl = 'http://10.3.0.208:8084/api/GMS/status-report';
+  var apiUrl = '${ApiHelper.gmsUrl}status-report';
+  print(apiUrl);
   try {
     final response = await http.get(Uri.parse(apiUrl));
 

@@ -10,6 +10,7 @@ import 'package:animated_movies_app/screens/gms_screens/loading_points_widget.da
 import 'package:animated_movies_app/screens/gms_screens/manifest_input_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/video_player_widget.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -17,9 +18,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 import 'package:mime/mime.dart'; // Import the mime package for MediaType
+import 'package:path_provider/path_provider.dart'; // ✅ Import for storage handling
 
 class GmsExportPage extends StatefulWidget {
   final LoginModelApi userData;
@@ -44,6 +48,10 @@ class _GmsExportPageState extends State<GmsExportPage> {
   bool _hideUI = false; // Flag to control UI visibility
   String _selectedInspectedBarcode =
       ''; // this is for fire gate out search barcode
+
+  String _previousResult = ""; // To track the previous inspection result
+  bool _isInitialCheckDoneForInspectionResultAlert =
+      false; // Ensure no alert on first load
 
   final Map<String, String> _inspectionPointsRadioButtons = {
     "Bumper": "",
@@ -109,19 +117,24 @@ class _GmsExportPageState extends State<GmsExportPage> {
   final TextEditingController _chassisNoController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
 
-  final List<Map<String, String>> _submittedDetails =
-      []; // State for submitted details
-  final List<Map<String, String>> _submitPostMethod = [];
-
   String getInspectionResult() {
-    // Check if all inspection points are filled with "Ok"
-    bool isInspectionPointsValid =
-        _inspectionPointsRadioButtons.values.every((value) => value == "Ok");
+    // // Check if all inspection points are filled with "Ok"
+    // bool isInspectionPointsValid =
+    //     _inspectionPointsRadioButtons.values.every((value) => value == "Ok");
 
-    // Check if all agriculture inspection points are filled with "Ok"
+    // Check if all inspection points are filled with "Ok" or "N/A"
+    bool isInspectionPointsValid = _inspectionPointsRadioButtons.values
+        .every((value) => value == "Ok" || value == "N/A");
+
+    // // Check if all agriculture inspection points are filled with "Ok"
+    // bool isAgricultureInspectionValid = _agricultureInspectionRadioButtons
+    //     .values
+    //     .every((value) => value == "Ok");
+
+    // Check if all agriculture inspection are filled with "Ok" or "N/A"
     bool isAgricultureInspectionValid = _agricultureInspectionRadioButtons
         .values
-        .every((value) => value == "Ok");
+        .every((value) => value == "Ok" || value == "N/A");
 
     // Check the condition for agriculture checklist validation
     bool areAllChecklistNotPresent = _agricultureCheckListRadioButtons.values
@@ -143,9 +156,58 @@ class _GmsExportPageState extends State<GmsExportPage> {
     }
   }
 
+  void _checkInspectionResult() {
+    String currentResult = getInspectionResult(); // Get latest result
+    Color resultColor = currentResult == "Pass" ? Colors.green : Colors.red;
+    // If it's the first check, just store the result and don't show alert
+    if (!_isInitialCheckDoneForInspectionResultAlert) {
+      _previousResult = currentResult;
+      _isInitialCheckDoneForInspectionResultAlert = true;
+      return; // Prevent popup on first load
+    }
+    if (_previousResult != currentResult) {
+      // Detect if result changed
+      _previousResult = currentResult; // Update the previous result
+
+      // Show the alert dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Inspection Result"),
+            content: RichText(
+              textAlign: TextAlign.center, // Center align text
+              text: TextSpan(
+                text: currentResult,
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  color: resultColor,
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the alert box
+                },
+                child: Text("Check Again"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   Widget buildInspectionResult() {
     // Get the inspection result
     String inspectionResult = getInspectionResult();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkInspectionResult(); // Check for changes in result
+    });
+
     // Set _truckRefused based on inspection result
     _truckRefused = inspectionResult ==
         "Fail"; // If "Fail", set _truckRefused to true; else false
@@ -323,10 +385,123 @@ class _GmsExportPageState extends State<GmsExportPage> {
   //     _currentlyPlayingVideo; // Store the path of the currently playing video
   File? _currentlyPlayingVideo; // Track the currently playing video
 
-// the below is ui shows without scroll
+// // the below is ui shows without scroll
+// this pick media is not capture image and videos not saved in local device but works image and video saved in db perfect
+//   Future<void> _pickMedia(String type) async {
+//     if (type == 'image') {
+//       // Show dialog to choose between camera and file picker
+//       await showModalBottomSheet(
+//         context: context,
+//         builder: (context) => Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             ListTile(
+//               leading: Icon(Icons.camera_alt),
+//               title: Text('Take a Picture'),
+//               onTap: () async {
+//                 Navigator.of(context).pop(); // Close the bottom sheet
+//                 final pickedFile = await _imagePicker.pickImage(
+//                   source: ImageSource.camera,
+//                   imageQuality: 80, // Adjust image quality
+//                 );
+//                 if (pickedFile != null) {
+//                   setState(() {
+//                     // _selectedImages.add(File(pickedFile.path));
+//                     _mediaFiles
+//                         .add(File(pickedFile.path)); // Add to _mediaFiles
+//                   });
+//                 } else {
+//                   _showSnackBar('No image captured.');
+//                 }
+//               },
+//             ),
+//             ListTile(
+//               leading: Icon(Icons.photo_library),
+//               title: Text('Choose from Gallery'),
+//               onTap: () async {
+//                 Navigator.of(context).pop(); // Close the bottom sheet
+//                 final result = await FilePicker.platform.pickFiles(
+//                   type: FileType.custom,
+//                   allowedExtensions: [
+//                     'jpeg',
+//                     'jpg',
+//                     'png'
+//                   ], // JPEG and PNG only
+//                   allowMultiple: true,
+//                 );
+//                 if (result != null) {
+//                   setState(() {
+//                     // _selectedImages
+//                     //     .addAll(result.paths.map((path) => File(path!)));
+//                     _mediaFiles.addAll(result.paths
+//                         .map((path) => File(path!))); // Add to _mediaFiles
+//                   });
+//                   print(_mainGateFromInController.text);
+//                 } else {
+//                   _showSnackBar('No images selected.');
+//                 }
+//               },
+//             ),
+//           ],
+//         ),
+//       );
+//     } else if (type == 'video') {
+//       // Show dialog to choose between video capture and file picker
+//       await showModalBottomSheet(
+//         context: context,
+//         builder: (context) => Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             ListTile(
+//               leading: Icon(Icons.videocam),
+//               title: Text('Capture Video'),
+//               onTap: () async {
+//                 Navigator.of(context).pop(); // Close the bottom sheet
+//                 final pickedFile = await _imagePicker.pickVideo(
+//                   source: ImageSource.camera,
+//                   maxDuration: const Duration(seconds: 60), // Set max duration
+//                 );
+//                 if (pickedFile != null) {
+//                   setState(() {
+//                     // _selectedVideos.add(File(pickedFile.path));
+//                     _mediaFiles
+//                         .add(File(pickedFile.path)); // Add to _mediaFiles
+//                   });
+//                 } else {
+//                   _showSnackBar('No video captured.');
+//                 }
+//               },
+//             ),
+//             ListTile(
+//               leading: Icon(Icons.video_library),
+//               title: Text('Choose from Gallery'),
+//               onTap: () async {
+//                 Navigator.of(context).pop(); // Close the bottom sheet
+//                 final result = await FilePicker.platform.pickFiles(
+//                   type: FileType.video,
+//                   allowMultiple: true,
+//                 );
+//                 if (result != null) {
+//                   setState(() {
+//                     // _selectedVideos
+//                     //     .addAll(result.paths.map((path) => File(path!)));
+//                     _mediaFiles.addAll(result.paths
+//                         .map((path) => File(path!))); // Add to _mediaFiles
+//                   });
+//                 } else {
+//                   _showSnackBar('No videos selected.');
+//                 }
+//               },
+//             ),
+//           ],
+//         ),
+//       );
+//     }
+//   }
+
+// below pick medis is images and videos saved in local device now testing db saved or not
   Future<void> _pickMedia(String type) async {
     if (type == 'image') {
-      // Show dialog to choose between camera and file picker
       await showModalBottomSheet(
         context: context,
         builder: (context) => Column(
@@ -336,16 +511,26 @@ class _GmsExportPageState extends State<GmsExportPage> {
               leading: Icon(Icons.camera_alt),
               title: Text('Take a Picture'),
               onTap: () async {
-                Navigator.of(context).pop(); // Close the bottom sheet
+                Navigator.of(context).pop();
                 final pickedFile = await _imagePicker.pickImage(
                   source: ImageSource.camera,
-                  imageQuality: 80, // Adjust image quality
+                  imageQuality: 80,
                 );
                 if (pickedFile != null) {
+                  File newFile = File(pickedFile.path);
+
+                  // ✅ Request permission before saving
+                  if (await _requestPermission('image')) {
+                    final result =
+                        await ImageGallerySaver.saveFile(newFile.path);
+                    print("Image Saved: $result");
+                    _showSnackBar('Image saved to gallery!');
+                  } else {
+                    _showSnackBar('Permission denied.');
+                  }
+
                   setState(() {
-                    // _selectedImages.add(File(pickedFile.path));
-                    _mediaFiles
-                        .add(File(pickedFile.path)); // Add to _mediaFiles
+                    _mediaFiles.add(newFile);
                   });
                 } else {
                   _showSnackBar('No image captured.');
@@ -356,24 +541,15 @@ class _GmsExportPageState extends State<GmsExportPage> {
               leading: Icon(Icons.photo_library),
               title: Text('Choose from Gallery'),
               onTap: () async {
-                Navigator.of(context).pop(); // Close the bottom sheet
+                Navigator.of(context).pop();
                 final result = await FilePicker.platform.pickFiles(
-                  type: FileType.custom,
-                  allowedExtensions: [
-                    'jpeg',
-                    'jpg',
-                    'png'
-                  ], // JPEG and PNG only
+                  type: FileType.image,
                   allowMultiple: true,
                 );
                 if (result != null) {
                   setState(() {
-                    // _selectedImages
-                    //     .addAll(result.paths.map((path) => File(path!)));
-                    _mediaFiles.addAll(result.paths
-                        .map((path) => File(path!))); // Add to _mediaFiles
+                    _mediaFiles.addAll(result.paths.map((path) => File(path!)));
                   });
-                  print(_mainGateFromInController.text);
                 } else {
                   _showSnackBar('No images selected.');
                 }
@@ -383,7 +559,6 @@ class _GmsExportPageState extends State<GmsExportPage> {
         ),
       );
     } else if (type == 'video') {
-      // Show dialog to choose between video capture and file picker
       await showModalBottomSheet(
         context: context,
         builder: (context) => Column(
@@ -393,16 +568,26 @@ class _GmsExportPageState extends State<GmsExportPage> {
               leading: Icon(Icons.videocam),
               title: Text('Capture Video'),
               onTap: () async {
-                Navigator.of(context).pop(); // Close the bottom sheet
+                Navigator.of(context).pop();
                 final pickedFile = await _imagePicker.pickVideo(
                   source: ImageSource.camera,
-                  maxDuration: const Duration(seconds: 60), // Set max duration
+                  maxDuration: const Duration(seconds: 60),
                 );
                 if (pickedFile != null) {
+                  File newFile = File(pickedFile.path);
+
+                  // ✅ Request permission before saving
+                  if (await _requestPermission('video')) {
+                    final result =
+                        await ImageGallerySaver.saveFile(newFile.path);
+                    print("Video Saved: $result");
+                    _showSnackBar('Video saved to gallery!');
+                  } else {
+                    _showSnackBar('Permission denied.');
+                  }
+
                   setState(() {
-                    // _selectedVideos.add(File(pickedFile.path));
-                    _mediaFiles
-                        .add(File(pickedFile.path)); // Add to _mediaFiles
+                    _mediaFiles.add(newFile);
                   });
                 } else {
                   _showSnackBar('No video captured.');
@@ -413,17 +598,14 @@ class _GmsExportPageState extends State<GmsExportPage> {
               leading: Icon(Icons.video_library),
               title: Text('Choose from Gallery'),
               onTap: () async {
-                Navigator.of(context).pop(); // Close the bottom sheet
+                Navigator.of(context).pop();
                 final result = await FilePicker.platform.pickFiles(
                   type: FileType.video,
                   allowMultiple: true,
                 );
                 if (result != null) {
                   setState(() {
-                    // _selectedVideos
-                    //     .addAll(result.paths.map((path) => File(path!)));
-                    _mediaFiles.addAll(result.paths
-                        .map((path) => File(path!))); // Add to _mediaFiles
+                    _mediaFiles.addAll(result.paths.map((path) => File(path!)));
                   });
                 } else {
                   _showSnackBar('No videos selected.');
@@ -433,6 +615,63 @@ class _GmsExportPageState extends State<GmsExportPage> {
           ],
         ),
       );
+    }
+  }
+
+// // ✅ Request Storage Permission
+// Future<bool> _requestPermission() async {
+//   var status = await Permission.storage.request();
+//   if (status.isGranted) {
+//     return true;
+//   }
+//   return false;
+// }
+
+  Future<bool> _requestPermission(String mediaType) async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    int sdkInt = androidInfo.version.sdkInt;
+
+    PermissionStatus permissionStatus;
+
+    if (sdkInt < 33) {
+      // ✅ For Android 12 and below, request full storage access
+      permissionStatus = await Permission.storage.request();
+    } else if (sdkInt == 33) {
+      // ✅ For Android 13 (API 33), request specific permissions
+      if (mediaType == 'image') {
+        permissionStatus = await Permission.photos.request();
+      } else if (mediaType == 'video') {
+        permissionStatus = await Permission.videos.request();
+      } else {
+        permissionStatus = await Permission.storage.request();
+      }
+    } else {
+      // ✅ For Android 14+ (API 34), use READ_MEDIA_IMAGES & READ_MEDIA_VIDEO
+      List<Permission> permissions = [];
+
+      if (mediaType == 'image') {
+        permissions.add(Permission.photos);
+        permissions.add(Permission.mediaLibrary);
+      } else if (mediaType == 'video') {
+        permissions.add(Permission.videos);
+        permissions.add(Permission.mediaLibrary);
+      }
+
+      Map<Permission, PermissionStatus> statuses = await permissions.request();
+      permissionStatus = statuses.values.contains(PermissionStatus.granted)
+          ? PermissionStatus.granted
+          : PermissionStatus.denied;
+    }
+
+    if (permissionStatus == PermissionStatus.granted) {
+      return true;
+    } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
+      // 🚀 Open app settings if permission is permanently denied
+      await openAppSettings();
+      return false;
+    } else {
+      return false;
     }
   }
 
@@ -896,11 +1135,12 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
 // Method to fetch the manifest details from the API
   Future<void> _fetchManifestDetails(String vehicleNumber) async {
-    final String apiUrl =
-        'http://203.153.32.85:54329/api/GMS/ManifestReport?vehicleNo=$vehicleNumber';
-
+    // final String apiUrl =
+    //     'http://203.153.32.85:54329/api/GMS/ManifestReport?vehicleNo=$vehicleNumber';
+    final url = '${ApiHelper.gmsUrl}ManifestReport?vehicleNo=$vehicleNumber';
+    print('Manifest$url');
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         // Parse the response if the API call is successful
@@ -1116,7 +1356,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                             },
                                           ),
                                           Text("Ok",
-                                              style: TextStyle(fontSize: 14)),
+                                              style: TextStyle(fontSize: 10)),
                                         ],
                                       ),
                                       // "Reject" Radio Button with Label
@@ -1135,7 +1375,29 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                             },
                                           ),
                                           Text("Reject",
-                                              style: TextStyle(fontSize: 14)),
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      10)), // "N/A" Radio Button (Only for Refrigeration_Unit)
+                                          if (point == "Refrigeration_Unit")
+                                            Row(
+                                              children: [
+                                                Radio<String>(
+                                                  value: "N/A",
+                                                  groupValue:
+                                                      _inspectionPointsRadioButtons[
+                                                          point],
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      _inspectionPointsRadioButtons[
+                                                          point] = value!;
+                                                    });
+                                                  },
+                                                ),
+                                                Text("N/A",
+                                                    style: TextStyle(
+                                                        fontSize: 10)),
+                                              ],
+                                            ),
                                         ],
                                       ),
                                     ],
@@ -1146,6 +1408,9 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           ),
                         );
                       }).toList(),
+                      SizedBox(
+                        height: 10,
+                      ),
                       InspectedBarcodesWidget(
                         onBarcodeSelected: (selectedBarcode) {
                           setState(() {
@@ -1205,7 +1470,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                             },
                                           ),
                                           Text("Ok",
-                                              style: TextStyle(fontSize: 14)),
+                                              style: TextStyle(fontSize: 10)),
                                         ],
                                       ),
                                       // "Reject" Radio Button with Label
@@ -1224,7 +1489,27 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                             },
                                           ),
                                           Text("Reject",
-                                              style: TextStyle(fontSize: 14)),
+                                              style: TextStyle(fontSize: 10)),
+                                          if (point == "Measures")
+                                            Row(
+                                              children: [
+                                                Radio<String>(
+                                                  value: "N/A",
+                                                  groupValue:
+                                                      _agricultureInspectionRadioButtons[
+                                                          point],
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      _agricultureInspectionRadioButtons[
+                                                          point] = value!;
+                                                    });
+                                                  },
+                                                ),
+                                                Text("N/A",
+                                                    style: TextStyle(
+                                                        fontSize: 10)),
+                                              ],
+                                            ),
                                         ],
                                       ),
                                     ],
@@ -2172,6 +2457,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                             // Your submit logic here for FG IN, Fire Gate OUT, or Main Gate OUT
                             _validateAndSubmit();
                             _showAlertforManifestChasisAndEngineNo(context);
+                            _validateCheckList();
                             // _clearGateControllers();
                             // await submitData(
                             //     // _mainGateFromInController.text,
@@ -2372,6 +2658,43 @@ class _GmsExportPageState extends State<GmsExportPage> {
     }
   }
 
+  void _validateAgricultureCheckList(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Validation Error"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _validateCheckList() {
+    if (_gateType == "Fire Gate") {
+      bool isAgricultureCheckListValid = _agricultureCheckListRadioButtons
+          .values
+          .every((value) => value.isNotEmpty);
+
+      if (!isAgricultureCheckListValid) {
+        _showErrorDialogInGms(
+            "Please select 'Present' or 'Not Present' for all Agriculture Checklist items.");
+        return;
+      }
+    }
+
+    // If everything is valid, proceed with submission
+    print("Form is valid! Proceeding...");
+  }
+
   Future<void> _validateAndSubmit() async {
     // Define validation rules for each gate type
     final validationRules = {
@@ -2410,44 +2733,46 @@ class _GmsExportPageState extends State<GmsExportPage> {
     };
     if (_gateType == "Main Gate") {
       if (_mainGateFromInController.text.trim().isEmpty) {
-        _showErrorDialogInGms("Please Select Main gate From IN.");
+        _validateAgricultureCheckList("Please Select Main gate From IN.");
         return;
       }
       if (_mainGateStageInController.text.trim().isEmpty) {
-        _showErrorDialogInGms("Please enter Main Gate Stage IN.");
+        _validateAgricultureCheckList("Please enter Main Gate Stage IN.");
         return;
       }
       if (_mainGatePurposeController.text.trim().isEmpty) {
-        _showErrorDialogInGms("Please enter Main Gate Purpose.");
+        _validateAgricultureCheckList("Please enter Main Gate Purpose.");
         return;
       }
     }
 
     if (_gateType == "Fire Gate") {
       if (_fireGateDriverPassController.text.trim().isEmpty) {
-        _showErrorDialogInGms("Please Select Fire gate Driver Pass.");
+        _validateAgricultureCheckList("Please Select Fire gate Driver Pass.");
         return;
       }
       if (_fireGateLockNumberController.text.trim().isEmpty) {
-        _showErrorDialogInGms("Please enter Fire Gate Lock .");
+        _validateAgricultureCheckList("Please enter Fire Gate Lock .");
         return;
       }
       if (_mainGatePurposeController.text.trim().isEmpty) {
-        _showErrorDialogInGms("Please enter Fire Gate Purpose .");
+        _validateAgricultureCheckList("Please enter Fire Gate Purpose .");
         return;
       }
       if (_fireGateTruckLicenseController.text.trim().isEmpty) {
-        _showErrorDialogInGms("Please enter Fire Gate License Number.");
+        _validateAgricultureCheckList("Please enter Fire Gate License Number.");
         return;
       }
       if (_fireGateDestinyController.text.trim().isEmpty) {
-        _showErrorDialogInGms("Please enter Fire Gate Destiny .");
+        _validateAgricultureCheckList("Please enter Fire Gate Destiny .");
         return;
       }
-
+      if (_agricultureCheckListRadioButtons.isEmpty) {
+        _validateAgricultureCheckList("Please Select Agriculture Checklist .");
+      }
       // Check if barcode is selected
       if (_selectedInspectedBarcode.isEmpty) {
-        _showErrorDialogInGms("Please Select Barcode.");
+        _validateAgricultureCheckList("Please Select Barcode.");
         return; // Exit the function if no barcode is selected
       }
       // Check if all mandatory fields are selected and validated
@@ -2505,7 +2830,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
             // (_gateType == "FG OUT" && !_enableToggleButton)) &&
             (_gateType == "FG OUT")) &&
         _mediaFiles.isEmpty) {
-      _showErrorDialogInGms(
+      _validateAgricultureCheckList(
           "Picking image is mandatory. Please select an image.");
       return;
     }
@@ -2525,7 +2850,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
     if (_gateType == "FG OUT") {
       {
         if (_selectedInspectedBarcode.isEmpty) {
-          _showErrorDialogInGms("Please Select Barcode.");
+          _validateAgricultureCheckList("Please Select Barcode.");
           return;
         }
         // if(_mediaFiles.isEmpty){
@@ -2544,7 +2869,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
         //   const SnackBar(
         //       content: Text("Please select a loading point for FG IN.")),
         // );
-        _showErrorDialogInGms("Please select a loading point for FG IN.");
+        _validateAgricultureCheckList(
+            "Please select a loading point for FG IN.");
 
         return; // Exit the method to prevent form submission
       }
@@ -2558,7 +2884,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
         //   ),
 
         // );
-        _showErrorDialogInGms("Please select a barcode for FG IN.");
+        _validateAgricultureCheckList("Please select a barcode for FG IN.");
         return; // Exit the method to prevent further execution
       }
     }
@@ -2569,7 +2895,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
         //   const SnackBar(
         //       content: Text("Please select a loading point for FG OUT.")),
         // );
-        _showErrorDialogInGms("Please select a loading point for FG OUT.");
+        _validateAgricultureCheckList(
+            "Please select a loading point for FG OUT.");
         return; // Exit the method to prevent form submission
       }
     }
@@ -2611,7 +2938,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
             _highlightedControllers = emptyControllers;
           });
 
-          _showErrorDialogInGms(
+          _validateAgricultureCheckList(
               "All fields are mandatory for 'Fire Gate OUT' when inspection is 'Pass'. Please fill in all fields.");
           return;
         }
