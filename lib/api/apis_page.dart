@@ -7,9 +7,9 @@ import 'package:http/http.dart' as http;
 class ApiHelper {
   // static const String _baseUrl = 'http://10.3.0.70:9042/api/HR/';
   // static const String _baseUrl = 'http://10.3.0.208:8084/api/HR/';
-  static const String _baseUrl = 'http://203.153.32.85:54329/api/HR/';
+  // static const String _baseUrl = 'http://203.153.32.85:54329/api/HR/';
 
-  // static const String _baseUrl = 'http://10.3.0.70:9042/api/HR/';
+  static const String _baseUrl = 'http://10.3.0.70:9042/api/HR/';
 
   // static String _baseUrlInternal = 'http://10.3.0.208:8084/api/HR/';
   // static String _baseUrlExternal = 'http://203.153.32.85:54329/api/HR/';
@@ -48,9 +48,9 @@ class ApiHelper {
 
   //  static const String _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
 
-  static const String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
+  // static const String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
 
-  // static const String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
+  static const String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
 
   // static const String _gmsUrlExportApproval =
   //     'http://10.3.0.70:83/api/Student/ExportArrovals';

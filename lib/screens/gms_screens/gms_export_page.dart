@@ -627,50 +627,97 @@ class _GmsExportPageState extends State<GmsExportPage> {
 //   return false;
 // }
 
+  // below code is not working android version 13
+
+  // Future<bool> _requestPermission(String mediaType) async {
+  //   DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  //   AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+  //   int sdkInt = androidInfo.version.sdkInt;
+
+  //   PermissionStatus permissionStatus;
+
+  //   if (sdkInt < 33) {
+  //     // ✅ For Android 12 and below, request full storage access
+  //     permissionStatus = await Permission.storage.request();
+  //   } else if (sdkInt == 33) {
+  //     // ✅ For Android 13 (API 33), request specific permissions
+  //     if (mediaType == 'image') {
+  //       permissionStatus = await Permission.photos.request();
+  //     } else if (mediaType == 'video') {
+  //       permissionStatus = await Permission.videos.request();
+  //     } else {
+  //       permissionStatus = await Permission.storage.request();
+  //     }
+  //   } else {
+  //     // ✅ For Android 14+ (API 34), use READ_MEDIA_IMAGES & READ_MEDIA_VIDEO
+  //     List<Permission> permissions = [];
+
+  //     if (mediaType == 'image') {
+  //       permissions.add(Permission.photos);
+  //       permissions.add(Permission.mediaLibrary);
+  //     } else if (mediaType == 'video') {
+  //       permissions.add(Permission.videos);
+  //       permissions.add(Permission.mediaLibrary);
+  //     }
+
+  //     Map<Permission, PermissionStatus> statuses = await permissions.request();
+  //     permissionStatus = statuses.values.contains(PermissionStatus.granted)
+  //         ? PermissionStatus.granted
+  //         : PermissionStatus.denied;
+  //   }
+
+  //   if (permissionStatus == PermissionStatus.granted) {
+  //     return true;
+  //   } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
+  //     // 🚀 Open app settings if permission is permanently denied
+  //     await openAppSettings();
+  //     return false;
+  //   } else {
+  //     return false;
+  //   }
+  // }
+
+  // belwo code is working all android versions
   Future<bool> _requestPermission(String mediaType) async {
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-    int sdkInt = androidInfo.version.sdkInt;
+    try {
+      PermissionStatus permissionStatus;
 
-    PermissionStatus permissionStatus;
+      if (Platform.isAndroid) {
+        final deviceInfo = DeviceInfoPlugin();
+        final androidInfo =
+            await deviceInfo.androidInfo; // ✅ Only call this on Android
+        final sdkInt = androidInfo.version.sdkInt;
 
-    if (sdkInt < 33) {
-      // ✅ For Android 12 and below, request full storage access
-      permissionStatus = await Permission.storage.request();
-    } else if (sdkInt == 33) {
-      // ✅ For Android 13 (API 33), request specific permissions
-      if (mediaType == 'image') {
-        permissionStatus = await Permission.photos.request();
-      } else if (mediaType == 'video') {
-        permissionStatus = await Permission.videos.request();
+        if (sdkInt < 33) {
+          permissionStatus = await Permission.storage.request();
+        } else {
+          permissionStatus =
+              PermissionStatus.granted; // Android 13+ auto-grants permission
+        }
+      } else if (Platform.isIOS) {
+        permissionStatus =
+            await Permission.photos.request(); // ✅ iOS-specific permission
+      } else if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+        // ✅ Skip permission checks for Web, Linux, Windows, and macOS
+        print("⚠️ Skipping permission request on non-mobile platforms");
+        return true;
       } else {
-        permissionStatus = await Permission.storage.request();
-      }
-    } else {
-      // ✅ For Android 14+ (API 34), use READ_MEDIA_IMAGES & READ_MEDIA_VIDEO
-      List<Permission> permissions = [];
-
-      if (mediaType == 'image') {
-        permissions.add(Permission.photos);
-        permissions.add(Permission.mediaLibrary);
-      } else if (mediaType == 'video') {
-        permissions.add(Permission.videos);
-        permissions.add(Permission.mediaLibrary);
+        print("❌ Unsupported platform");
+        return false;
       }
 
-      Map<Permission, PermissionStatus> statuses = await permissions.request();
-      permissionStatus = statuses.values.contains(PermissionStatus.granted)
-          ? PermissionStatus.granted
-          : PermissionStatus.denied;
-    }
-
-    if (permissionStatus == PermissionStatus.granted) {
-      return true;
-    } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
-      // 🚀 Open app settings if permission is permanently denied
-      await openAppSettings();
-      return false;
-    } else {
+      if (permissionStatus == PermissionStatus.granted) {
+        return true;
+      } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
+        print("🚨 Permission permanently denied, opening settings...");
+        await openAppSettings();
+        return false;
+      } else {
+        print("❌ Permission denied");
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error checking permission: $e');
       return false;
     }
   }

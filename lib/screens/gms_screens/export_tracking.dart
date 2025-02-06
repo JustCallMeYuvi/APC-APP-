@@ -25,7 +25,8 @@ class _ExportTrackingState extends State<ExportTracking> {
   @override
   void initState() {
     super.initState();
-
+    // _allVehicles = [];
+    // _filteredVehicles = [];
     fetchVehiclesFromAPI();
     _searchController.addListener(() {
       setState(() {
@@ -43,113 +44,6 @@ class _ExportTrackingState extends State<ExportTracking> {
       });
     });
   }
-
-  // Future<void> fetchVehiclesFromAPI() async {
-  //   try {
-  //     final url = '${ApiHelper.gmsUrlExportVehicles}GMS_ExportVehicles';
-
-  //     List<Vehicle> vehicles = await apiHandler.fetchVehicles();
-  //     setState(() {
-  //       _allVehicles = vehicles;
-  //       _filteredVehicles = _allVehicles;
-  //       _isLoading = false;
-  //     });
-  //   } catch (e) {
-  //     print('Error fetching vehicles: $e');
-  //   }
-  // }
-
-  // Future<void> fetchVehiclesFromAPI() async {
-  //   setState(() {
-  //     _isLoading = true; // Show loading state
-  //   });
-
-  //   try {
-  //     // final uri = Uri.parse('${ApiHelper.gmsUrlExportApproval}?id=$vehicleID');
-
-  //     final url = Uri.parse(
-  //         '${ApiHelper.gmsUrl}GMS_ExportVehicles'); // Ensure valid URL
-  //     print('vehicles api $url');
-  //     // http://10.3.0.70:83/api/Student/GMS_ExportVehicles
-  //     final response = await http.get(
-  //       url,
-  //       headers: {'Content-Type': 'application/json'},
-  //     );
-
-  //     print('Response Status: ${response.statusCode}');
-  //     print('Response Body: ${response.body}'); // Debugging output
-
-  //     if (response.statusCode == 200) {
-  //       final List<dynamic> jsonResponse = json.decode(response.body);
-
-  //       List<Vehicle> vehicles =
-  //           jsonResponse.map((data) => Vehicle.fromJson(data)).toList();
-
-  //       setState(() {
-  //         _allVehicles = vehicles;
-  //         _filteredVehicles = _allVehicles;
-  //         _isLoading = false;
-  //       });
-  //     } else {
-  //       throw Exception(
-  //           'Failed to load vehicles. Status Code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching vehicles: $e');
-  //     setState(() {
-  //       _isLoading = false;
-  //     });
-  //   }
-  // }
-
-  // Future<void> fetchVehiclesFromAPI() async {
-  //   setState(() {
-  //     _isLoading = true; // Show loading state
-  //   });
-
-  //   try {
-  //     final url = Uri.parse('${ApiHelper.gmsUrl}GMS_ExportVehicles');
-  //     print('vehicles api $url');
-
-  //     final response = await http.get(
-  //       url,
-  //       headers: {'Content-Type': 'application/json'},
-  //     );
-
-  //     print('Response Status: ${response.statusCode}');
-  //     print('Response Body: ${response.body}'); // Debugging output
-
-  //     if (response.statusCode == 200) {
-  //       final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-  //       // Extract the list of vehicles
-  //       if (jsonResponse.containsKey('vehicles') &&
-  //           jsonResponse['vehicles'] is List) {
-  //         final List<dynamic> vehiclesJson = jsonResponse['vehicles'];
-
-  //         List<Vehicle> vehicles =
-  //             vehiclesJson.map((data) => Vehicle.fromJson(data)).toList();
-  //         print('vehicles List$vehicles');
-
-  //         setState(() {
-  //           _allVehicles = vehicles;
-  //           _filteredVehicles = _allVehicles;
-  //           _isLoading = false;
-  //         });
-  //       } else {
-  //         throw Exception('Key "vehicles" not found or is not a list');
-  //       }
-  //     } else {
-  //       throw Exception(
-  //           'Failed to load vehicles. Status Code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching vehicles: $e');
-  //     setState(() {
-  //       _isLoading = false;
-  //     });
-  //   }
-  // }
 
   Future<void> fetchVehiclesFromAPI() async {
     setState(() {
@@ -185,9 +79,19 @@ class _ExportTrackingState extends State<ExportTracking> {
             _filteredVehicles = _allVehicles;
             _isLoading = false;
           });
-        } else {
-          throw Exception('Key "vehicles" not found or is not a list');
-        }
+        } 
+        else if (response.body.contains("No vehicles found")) {
+          // Handle case where no vehicles are found
+          setState(() {
+            _allVehicles = [];
+            _filteredVehicles = [];
+            _isLoading = false;
+          });
+          // Optionally show a message that no vehicles are found (using a snackbar, alert, etc.)
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("No vehicles found.")),
+          );
+        } 
       } else {
         throw Exception(
             'Failed to load vehicles. Status Code: ${response.statusCode}');
@@ -345,7 +249,7 @@ class _ExportTrackingState extends State<ExportTracking> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          "Created By",
+                                          "CHA",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
