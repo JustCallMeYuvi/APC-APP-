@@ -75,32 +75,32 @@ class _ExportApprovalState extends State<ExportApproval> {
     }
   }
 
-  // void _showApprovalDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text("Confirm Approval"),
-  //         content: Text("Are you sure you want to approve this vehicle?"),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: Text("Cancel"),
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //           TextButton(
-  //             child: Text("Approve"),
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //               approveVehicle(context, widget.vehicleID);
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+  void _showApprovalDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Approval"),
+          content: Text("Are you sure you want to approve this vehicle?"),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text("Approve"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                approveVehicle(context, widget.vehicleID);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> approveVehicle(BuildContext context, int vehicleID) async {
     try {
@@ -199,10 +199,10 @@ class _ExportApprovalState extends State<ExportApproval> {
         color: Colors.green,
         textColor: Colors.white,
         padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
-        // onPressed: _showApprovalDialog,
-        onPressed: () {
-          approveVehicle(context, widget.vehicleID);
-        },
+        onPressed: _showApprovalDialog,
+        // onPressed: () {
+        //   approveVehicle(context, widget.vehicleID);
+        // },
         child: Text(
           "Approve",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
