@@ -100,6 +100,8 @@ IconData getIconForPage(Page page) {
       return Icons.search;
     case 'Patrolling':
       return Icons.security;
+    case 'Export Approvals':
+      return Icons.approval;
 
     default:
       return Icons.help_outline; // Fallback icon
