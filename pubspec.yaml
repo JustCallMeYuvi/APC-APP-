@@ -97,6 +97,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   material_symbols_icons: ^4.2801.1
   easy_stepper: ^0.8.5+1
+  network_info_plus: ^6.1.3
   
   
 

@@ -147,9 +147,11 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:install_plugin/install_plugin.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeContent extends StatefulWidget {
   final LoginModelApi userData;
@@ -201,45 +203,122 @@ class _HomeContentState extends State<HomeContent> {
     return _updateConnectionStatus(result);
   }
 
-  Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
-    setState(() {
-      _connectionStatus = result;
-    });
-    // ignore: avoid_print
-    print('Connectivity changed: $_connectionStatus');
-    // Show a Snackbar with the connection status
-    String message;
-    Color backgroundColor;
-    // if (_connectionStatus ==ConnectivityResult.none) {
-    //   message = 'No internet connection';
-    //   backgroundColor = Colors.red;
-    // } else {
-    //   message = 'Connected: ${_connectionStatus.toString()}';
-    //   backgroundColor = Colors.green;
-    // }
+  // Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
+  //   setState(() {
+  //     _connectionStatus = result;
+  //   });
+  //   // ignore: avoid_print
+  //   print('Connectivity changed: $_connectionStatus');
+  //   // Show a Snackbar with the connection status
+  //   String message;
+  //   Color backgroundColor;
+  //   // if (_connectionStatus ==ConnectivityResult.none) {
+  //   //   message = 'No internet connection';
+  //   //   backgroundColor = Colors.red;
+  //   // } else {
+  //   //   message = 'Connected: ${_connectionStatus.toString()}';
+  //   //   backgroundColor = Colors.green;
+  //   // }
 
-    if (_connectionStatus.contains(ConnectivityResult.none)) {
-      message = 'No internet connection';
-      backgroundColor = Colors.red;
-    } else if (_connectionStatus.contains(ConnectivityResult.wifi)) {
-      message = 'Connected to Wi-Fi';
-      backgroundColor = Colors.green;
-    } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
-      message = 'Connected to Mobile Network';
-      backgroundColor = Colors.green;
-    } else {
-      message = 'Connected to another network type';
-      backgroundColor = Colors.blue;
+  //   if (_connectionStatus.contains(ConnectivityResult.none)) {
+  //     message = 'No internet connection';
+  //     backgroundColor = Colors.red;
+  //   } else if (_connectionStatus.contains(ConnectivityResult.wifi)) {
+  //     message = 'Connected to Wi-Fi';
+  //     backgroundColor = Colors.green;
+  //   } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
+  //     message = 'Connected to Mobile Network';
+  //     backgroundColor = Colors.green;
+  //   } else {
+  //     message = 'Connected to another network type';
+  //     backgroundColor = Colors.blue;
+  //   }
+  //   // Show the Snackbar
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text(message),
+  //       backgroundColor: backgroundColor,
+  //       duration: Duration(seconds: 3), // Adjust duration as needed
+  //     ),
+  //   );
+  // }
+
+  Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
+  setState(() {
+    _connectionStatus = result;
+  });
+
+  print('Connectivity changed: $_connectionStatus');
+
+  String message;
+  Color backgroundColor;
+  String? wifiIpAddress;
+
+  if (_connectionStatus.contains(ConnectivityResult.none)) {
+    message = 'No internet connection';
+    backgroundColor = Colors.red;
+  } else if (_connectionStatus.contains(ConnectivityResult.wifi)) {
+    message = 'Connected to Wi-Fi';
+    backgroundColor = Colors.green;
+    if (await _requestLocationPermissionforWifiIP()) {
+    wifiIpAddress = await _getWifiIPAddress();
+    print('Wi-Fi IP Address: $wifiIpAddress'); // Print the IP address
+    }else{
+        print("Location permission denied.");
     }
-    // Show the Snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: backgroundColor,
-        duration: Duration(seconds: 3), // Adjust duration as needed
-      ),
-    );
+    message += ' (IP: $wifiIpAddress)';
+  //  ApiHelper.updateUrlsBasedOnNetwork();// for wifi apache and apc IT
+
+  } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
+    message = 'Connected to Mobile Network';
+    backgroundColor = Colors.green;
+  } else {
+    message = 'Connected to another network type';
+    backgroundColor = Colors.blue;
   }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: backgroundColor,
+      duration: Duration(seconds: 3),
+    ),
+  );
+}
+
+// Future<String?> _getWifiIPAddress() async {
+//   try {
+//     for (var interface in await NetworkInterface.list()) {
+//       if (interface.name == 'wlan0' || interface.name == 'en0') { 
+//         // 'wlan0' for Android, 'en0' for iOS/macOS
+//         for (var addr in interface.addresses) {
+//           if (addr.type == InternetAddressType.IPv4) {
+//             return addr.address; // Return the IPv4 address
+//           }
+//         }
+//       }
+//     }
+//   } catch (e) {
+//     print('Error getting IP address: $e');
+//   }
+//   return null;
+// }
+
+Future<bool> _requestLocationPermissionforWifiIP() async {
+  PermissionStatus status = await Permission.location.request();
+  print("Location permission status: $status");
+  return status.isGranted;
+}
+Future<String?> _getWifiIPAddress() async {
+  try {
+    final info = NetworkInfo();
+    String? wifiIp = await info.getWifiIP();
+    return wifiIp;
+  } catch (e) {
+    print('Error getting Wi-Fi IP address: $e');
+    return null;
+  }
+}
 
   Future<void> checkForUpdates() async {
     setState(() {
