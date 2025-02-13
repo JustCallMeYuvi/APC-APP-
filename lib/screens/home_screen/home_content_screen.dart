@@ -170,7 +170,7 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
-    // checkForUpdates(); // Call update check on initialization
+    checkForUpdates(); // Call update check on initialization
 
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
@@ -244,52 +244,54 @@ class _HomeContentState extends State<HomeContent> {
   // }
 
   Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
-  setState(() {
-    _connectionStatus = result;
-  });
+    setState(() {
+      _connectionStatus = result;
+    });
 
-  print('Connectivity changed: $_connectionStatus');
+    print('Connectivity changed: $_connectionStatus');
 
-  String message;
-  Color backgroundColor;
-  String? wifiIpAddress;
+    String message;
+    Color backgroundColor;
+    String? wifiIpAddress;
+    String? gmsUrlToShow;
 
-  if (_connectionStatus.contains(ConnectivityResult.none)) {
-    message = 'No internet connection';
-    backgroundColor = Colors.red;
-  } else if (_connectionStatus.contains(ConnectivityResult.wifi)) {
-    message = 'Connected to Wi-Fi';
-    backgroundColor = Colors.green;
-    if (await _requestLocationPermissionforWifiIP()) {
-    wifiIpAddress = await _getWifiIPAddress();
-    print('Wi-Fi IP Address: $wifiIpAddress'); // Print the IP address
-    }else{
+    if (_connectionStatus.contains(ConnectivityResult.none)) {
+      message = 'No internet connection';
+      backgroundColor = Colors.red;
+    } else if (_connectionStatus.contains(ConnectivityResult.wifi)) {
+      message = 'Connected to Wi-Fi';
+      backgroundColor = Colors.green;
+      if (await _requestLocationPermissionforWifiIP()) {
+        wifiIpAddress = await _getWifiIPAddress();
+        print('Wi-Fi IP Address: $wifiIpAddress'); // Print the IP address
+      } else {
         print("Location permission denied.");
+      }
+      // await ApiHelper.updateUrlsBasedOnNetwork(); // for wifi apache and apc IT
+      // gmsUrlToShow = ApiHelper.urlGlobalOrLocalCheck; // Fetch GMS URL after update
+      // 🟢 Now, build the message string with the updated URL
+      message += ' (IP: $wifiIpAddress)\nURL: $gmsUrlToShow';
+    } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
+      message = 'Connected to Mobile Network';
+      backgroundColor = Colors.green;
+    } else {
+      message = 'Connected to another network type';
+      backgroundColor = Colors.blue;
     }
-    message += ' (IP: $wifiIpAddress)';
-  //  ApiHelper.updateUrlsBasedOnNetwork();// for wifi apache and apc IT
 
-  } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
-    message = 'Connected to Mobile Network';
-    backgroundColor = Colors.green;
-  } else {
-    message = 'Connected to another network type';
-    backgroundColor = Colors.blue;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(message),
-      backgroundColor: backgroundColor,
-      duration: Duration(seconds: 3),
-    ),
-  );
-}
 
 // Future<String?> _getWifiIPAddress() async {
 //   try {
 //     for (var interface in await NetworkInterface.list()) {
-//       if (interface.name == 'wlan0' || interface.name == 'en0') { 
+//       if (interface.name == 'wlan0' || interface.name == 'en0') {
 //         // 'wlan0' for Android, 'en0' for iOS/macOS
 //         for (var addr in interface.addresses) {
 //           if (addr.type == InternetAddressType.IPv4) {
@@ -304,21 +306,22 @@ class _HomeContentState extends State<HomeContent> {
 //   return null;
 // }
 
-Future<bool> _requestLocationPermissionforWifiIP() async {
-  PermissionStatus status = await Permission.location.request();
-  print("Location permission status: $status");
-  return status.isGranted;
-}
-Future<String?> _getWifiIPAddress() async {
-  try {
-    final info = NetworkInfo();
-    String? wifiIp = await info.getWifiIP();
-    return wifiIp;
-  } catch (e) {
-    print('Error getting Wi-Fi IP address: $e');
-    return null;
+  Future<bool> _requestLocationPermissionforWifiIP() async {
+    PermissionStatus status = await Permission.location.request();
+    print("Location permission status: $status");
+    return status.isGranted;
   }
-}
+
+  Future<String?> _getWifiIPAddress() async {
+    try {
+      final info = NetworkInfo();
+      String? wifiIp = await info.getWifiIP();
+      return wifiIp;
+    } catch (e) {
+      print('Error getting Wi-Fi IP address: $e');
+      return null;
+    }
+  }
 
   Future<void> checkForUpdates() async {
     setState(() {
@@ -494,7 +497,7 @@ Future<String?> _getWifiIPAddress() async {
             //         child: CircularProgressIndicator(),
             //       )
             //     :
-            SingleChildScrollView(  
+            SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [

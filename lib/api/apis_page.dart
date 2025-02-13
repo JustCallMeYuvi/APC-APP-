@@ -6,123 +6,21 @@ import 'package:http/http.dart' as http;
 import 'package:network_info_plus/network_info_plus.dart';
 
 class ApiHelper {
-  // static const String _baseUrl = 'http://10.3.0.70:9042/api/HR/';
   // static const String _baseUrl = 'http://10.3.0.208:8084/api/HR/';
-  // static  String _baseUrl = 'http://203.153.32.85:54329/api/HR/';
+  // static String _baseUrl = 'http://203.153.32.85:54329/api/HR/';
 
-  static  String _baseUrl = 'http://10.3.0.70:9042/api/HR/';
-
-  // static String _baseUrlInternal = 'http://10.3.0.208:8084/api/HR/';
-  // static String _baseUrlExternal = 'http://203.153.32.85:54329/api/HR/';
-  // static late String _baseUrl;
-  // static late String _gmsUrl;
-
-  // // Initialize the base URL by checking connectivity
-  // static Future<void> initializeBaseUrl() async {
-  //   final connectivityResult = await (Connectivity().checkConnectivity());
-
-  //   if (connectivityResult == ConnectivityResult.mobile ||
-  //       connectivityResult == ConnectivityResult.wifi) {
-  //     try {
-  //       // Try reaching the internal URL
-  //       final response = await http.get(Uri.parse(_baseUrlInternal));
-  //       if (response.statusCode == 200) {
-  //         // If internal URL works, use it
-  //         _baseUrl = _baseUrlInternal;
-  //         _gmsUrl = "http://10.3.0.208:8084/api/GMS/";
-  //       } else {
-  //         // If internal URL fails, fallback to external URL
-  //         _baseUrl = _baseUrlExternal;
-  //         _gmsUrl = "http://203.153.32.85:54329/api/GMS/";
-  //       }
-  //     } catch (_) {
-  //       // If internal URL is unreachable, fallback to external URL
-  //       _baseUrl = _baseUrlExternal;
-  //       _gmsUrl = "http://203.153.32.85:54329/api/GMS/";
-  //     }
-  //   } else {
-  //     // If no connectivity, fallback to external URL
-  //     _baseUrl = _baseUrlExternal;
-  //     _gmsUrl = "http://203.153.32.85:54329/api/GMS/";
-  //   }
-  // }
+  static String _baseUrl = 'http://10.3.0.70:9042/api/HR/';
 
   //  static const String _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
 
-  // static  String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
+  // static String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
 
-  static  String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
-
-  // static const String _gmsUrlExportApproval =
-  //     'http://10.3.0.70:83/api/Student/ExportArrovals';
-  // static const String _gmsvehicleApproval =
-  //     'http://10.3.0.70:83/api/Student/Approve';
-  // static const String _gmsUrlExportVehicles =
-  //     'http://10.3.0.70:83/api/Student/';
-
-// http://10.3.0.70:83/api/Student/GMS_ExportVehicles
-
-// class ApiHelper {
-//   // Base URLs
-//   static const String _baseUrlInternal = 'http://10.3.0.208:8084/api/HR/';
-//   static const String _baseUrlExternal = 'http://203.153.32.85:54329/api/HR/';
-//   static late String _baseUrl;
-
-//   static const String _gmsUrlInternal = 'http://10.3.0.208:8084/api/GMS/';
-//   static const String _gmsUrlExternal = 'http://203.153.32.85:54329/api/GMS/';
-//   static late String _gmsUrl;
-
-//   // Getter for Base URLs
-//   static String get baseUrl => _baseUrl;
-//   static String get gmsUrl => _gmsUrl;
-
-//   // Initialize the base URL dynamically
-//   static Future<void> initializeBaseUrl() async {
-//     final connectivityResult = await Connectivity().checkConnectivity();
-//     print(connectivityResult);
-
-//     if (connectivityResult == ConnectivityResult.wifi) {
-//       // If connected to Wi-Fi, check for the internal network IP address
-//       bool isInternalNetwork = false;
-
-//       try {
-//         for (var interface in await NetworkInterface.list()) {
-//           for (var address in interface.addresses) {
-//             if (address.address.startsWith('10.3.')) {
-//               isInternalNetwork = true;
-//               break; // Exit once a match is found
-//             }
-//           }
-//           if (isInternalNetwork) break;
-//         }
-//       } catch (e) {
-//         print("Error checking internal network: $e");
-//       }
-
-//       if (isInternalNetwork) {
-//         _baseUrl = _baseUrlInternal;
-//         _gmsUrl = _gmsUrlInternal;
-//       } else {
-//         _baseUrl = _baseUrlExternal;
-//         _gmsUrl = _gmsUrlExternal;
-//       }
-//     } else if (connectivityResult == ConnectivityResult.mobile) {
-//       // If on mobile network, use external URLs
-//       _baseUrl = _baseUrlExternal;
-//       _gmsUrl = _gmsUrlExternal;
-//     } else {
-//       // No connectivity, default to external URLs
-//       _baseUrl = _baseUrlExternal;
-//       _gmsUrl = _gmsUrlExternal;
-//     }
-
-//     print("Base URL: $_baseUrl");
-//     print("GMS URL: $_gmsUrl");
-//   }
+  static String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
 
   static String get baseUrl => _baseUrl; // Public getter
 
   static String get gmsUrl => _gmsUrl;
+  static String urlGlobalOrLocalCheck = '';
 
   // Method to update URLs based on the current Wi-Fi network
   static Future<void> updateUrlsBasedOnNetwork() async {
@@ -132,10 +30,12 @@ class ApiHelper {
         // If the IP address starts with 10.3.x.x or 10.4.x.x, use local URLs
         _baseUrl = 'http://10.3.0.208:8084/api/HR/';
         _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
+        urlGlobalOrLocalCheck = '10.3.0.208';
       } else {
         // If the IP address does not match, use the public URLs
         _baseUrl = 'http://203.153.32.85:54329/api/HR/';
         _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
+        urlGlobalOrLocalCheck = '203.153.32.85';
       }
       print('Base URL set to: $_baseUrl');
       print('GMS URL set to: $_gmsUrl');
