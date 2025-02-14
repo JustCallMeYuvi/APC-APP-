@@ -377,35 +377,76 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
+  // void _showUpdateDialog(String latestVersion, String apkFileData) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text("Update Available"),
+  //         content: Text(
+  //             "A new version ($latestVersion) is available. Please update the app."),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: Text("Later"),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(); // Close the dialog
+  //             },
+  //           ),
+  //           TextButton(
+  //             child: Text("Update Now"),
+  //             onPressed: () async {
+  //               Navigator.of(context).pop(); // Close the dialog
+
+  //               try {
+  //                 // Start downloading the APK file
+  //                 await _downloadAndInstallApk(apkFileData);
+  //               } catch (e) {
+  //                 print('Failed to download or install APK: $e');
+  //               }
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  
   void _showUpdateDialog(String latestVersion, String apkFileData) {
     showDialog(
       context: context,
+      barrierDismissible:
+          false, // Prevent dismissing the dialog by tapping outside
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Update Available"),
-          content: Text(
-              "A new version ($latestVersion) is available. Please update the app."),
-          actions: <Widget>[
-            TextButton(
-              child: Text("Later"),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-            TextButton(
-              child: Text("Update Now"),
-              onPressed: () async {
-                Navigator.of(context).pop(); // Close the dialog
+        return WillPopScope(
+          // Prevent the dialog from closing using the back button
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: Text("Update Available"),
+            content: Text(
+                "A new version ($latestVersion) is available. Please update the app."),
+            actions: <Widget>[
+              // TextButton(
+              //   child: Text("Later"),
+              //   onPressed: () {
+              //     Navigator.of(context).pop(); // Close the dialog
+              //   },
+              // ),
+              TextButton(
+                child: Text("Update Now"),
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Close the dialog
 
-                try {
-                  // Start downloading the APK file
-                  await _downloadAndInstallApk(apkFileData);
-                } catch (e) {
-                  print('Failed to download or install APK: $e');
-                }
-              },
-            ),
-          ],
+                  try {
+                    // Start downloading the APK file
+                    await _downloadAndInstallApk(apkFileData);
+                  } catch (e) {
+                    print('Failed to download or install APK: $e');
+                  }
+                },
+              ),
+            ],
+          ),
         );
       },
     );

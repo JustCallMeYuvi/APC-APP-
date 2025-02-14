@@ -18,6 +18,7 @@ class PatrollingScreen extends StatefulWidget {
 class _PatrollingScreenState extends State<PatrollingScreen> {
   String _scanResult = "No data scanned";
   String _selectedPatrolling = "Patrolling 1"; // Default value
+  String _selectedShift = 'Shift A'; // Set default value
 
   Future<void> _startScan() async {
     // Request camera permission if not already granted
@@ -159,117 +160,165 @@ class _PatrollingScreenState extends State<PatrollingScreen> {
                   ),
                 ),
               ),
-              SizedBox(
-                height: 10,
-              ),
-              MaterialButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => PatrollingDetailsPage(
-                              selectedPatrolling: _selectedPatrolling,
-                              userData: widget.userData,
-                            )),
-                  );
-                },
-                color: Colors.blue, // Background color
-                textColor: Colors.white, // Text color
-                padding: EdgeInsets.symmetric(
-                    vertical: 12.0, horizontal: 24.0), // Button padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30), // Rounded corners
+              const SizedBox(height: 10),
+              // Dropdown Button
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.green, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                elevation: 8, // Shadow effect
-                highlightElevation: 12, // Elevation when button is pressed
-                splashColor:
-                    Colors.blueAccent.withOpacity(0.3), // Splash effect on tap
-                child: Text(
-                  'Start',
-                  style: TextStyle(
-                    fontSize: 16, // Text size
-                    fontWeight: FontWeight.bold, // Bold text
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedShift,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedShift = newValue!;
+                      });
+                    },
+                    items: <String>[
+                      'Shift A',
+                      'Shift B',
+                      'Shift C',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                      );
+                    }).toList(),
+                    icon:
+                        const Icon(Icons.arrow_drop_down, color: Colors.green),
+                    dropdownColor: Colors.white,
+                    isExpanded: true,
                   ),
                 ),
               ),
+              const SizedBox(
+                height: 10,
+              ),
+
+              // MaterialButton(
+              //   onPressed: () {
+              //     // Navigator.push(
+              //     //   context,
+              //     //   MaterialPageRoute(
+              //     //       builder: (context) => PatrollingDetailsPage(
+              //     //             selectedPatrolling: _selectedPatrolling,
+              //     //             userData: widget.userData,
+              //     //           )),
+              //     // );
+              //   },
+              //   color: Colors.blue, // Background color
+              //   textColor: Colors.white, // Text color
+              //   padding: EdgeInsets.symmetric(
+              //       vertical: 12.0, horizontal: 24.0), // Button padding
+              //   shape: RoundedRectangleBorder(
+              //     borderRadius: BorderRadius.circular(30), // Rounded corners
+              //   ),
+              //   elevation: 8, // Shadow effect
+              //   highlightElevation: 12, // Elevation when button is pressed
+              //   splashColor:
+              //       Colors.blueAccent.withOpacity(0.3), // Splash effect on tap
+              //   child: Text(
+              //     'Start',
+              //     style: TextStyle(
+              //       fontSize: 16, // Text size
+              //       fontWeight: FontWeight.bold, // Bold text
+              //     ),
+              //   ),
+              // ),
 
               // const SizedBox(height: 30),
-              // ElevatedButton.icon(
-              //   onPressed: _startScan,
-              //   icon: const Icon(Icons.camera_alt),
-              //   label: const Text("Open Camera to Scan QR Code"),
-              //   style: ElevatedButton.styleFrom(
-              //     foregroundColor: Colors.white,
-              //     backgroundColor: Colors.lightGreen,
-              //     padding:
-              //         const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              //     shape: RoundedRectangleBorder(
-              //       borderRadius: BorderRadius.circular(10),
-              //     ),
-              //     textStyle: const TextStyle(fontSize: 16),
-              //   ),
-              // ),
-              // const SizedBox(height: 30),
-              // Container(
-              //   padding: const EdgeInsets.all(16),
-              //   decoration: BoxDecoration(
-              //     color: Colors.green[50],
-              //     borderRadius: BorderRadius.circular(10),
-              //     boxShadow: [
-              //       BoxShadow(
-              //         color: Colors.grey.withOpacity(0.3),
-              //         spreadRadius: 3,
-              //         blurRadius: 5,
-              //         offset: const Offset(0, 3),
-              //       ),
-              //     ],
-              //   ),
-              //   child: Column(
-              //     children: [
-              //       const Text(
-              //         'Scan Result:',
-              //         style: TextStyle(
-              //           fontSize: 20,
-              //           fontWeight: FontWeight.bold,
-              //           color: Colors.green,
-              //         ),
-              //       ),
-              //       const SizedBox(height: 10),
-              //       Text(
-              //         _scanResult,
-              //         style: const TextStyle(fontSize: 16),
-              //         textAlign: TextAlign.center,
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              // SizedBox(
-              //   height: 20,
-              // ),
-              // ElevatedButton.icon(
-              //   onPressed: _scanResult != "No data scanned" &&
-              //           _scanResult != "Scan cancelled"
-              //       ? _submitScanData
-              //       : null,
-              //   icon: const Icon(Icons.upload),
-              //   label: const Text("Submit Scan Data"),
-              //   style: ElevatedButton.styleFrom(
-              //     foregroundColor: Colors.white,
-              //     backgroundColor: Colors.blueAccent,
-              //     padding:
-              //         const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              //     shape: RoundedRectangleBorder(
-              //       borderRadius: BorderRadius.circular(10),
-              //     ),
-              //     textStyle: const TextStyle(fontSize: 16),
-              //   ),
-              // ),
-              // const SizedBox(height: 20),
-              // const Text(
-              //   "Point the camera at a QR code on another device or paper",
-              //   style: TextStyle(fontSize: 14, color: Colors.grey),
-              //   textAlign: TextAlign.center,
-              // ),
+              ElevatedButton.icon(
+                onPressed: _startScan,
+                icon: const Icon(Icons.camera_alt),
+                label: const Text("Open Camera to Scan QR Code"),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.lightGreen,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  textStyle: const TextStyle(fontSize: 16),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      spreadRadius: 3,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Scan Result:',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      _scanResult,
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              ElevatedButton.icon(
+                onPressed: _scanResult != "No data scanned" &&
+                        _scanResult != "Scan cancelled"
+                    ? _submitScanData
+                    : null,
+                icon: const Icon(Icons.upload),
+                label: const Text("Submit Scan Data"),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blueAccent,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  textStyle: const TextStyle(fontSize: 16),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Point the camera at a QR code on another device or paper",
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
