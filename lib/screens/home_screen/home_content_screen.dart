@@ -411,7 +411,6 @@ class _HomeContentState extends State<HomeContent> {
   //   );
   // }
 
-  
   void _showUpdateDialog(String latestVersion, String apkFileData) {
     showDialog(
       context: context,

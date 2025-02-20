@@ -50,6 +50,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:animated_movies_app/services/provider_services.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -171,8 +172,16 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+    // ChangeNotifierProvider(
+    //   create: (_) => AuthProvider(),
+    //   child: const App(),
+    // ),
+     MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => PatrollingProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+
+      ],
       child: const App(),
     ),
   );

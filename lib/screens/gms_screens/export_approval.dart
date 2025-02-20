@@ -192,7 +192,9 @@ class _ExportApprovalState extends State<ExportApproval> {
       appBar: AppBar(
         title: Text("Vehicle Details"),
         centerTitle: true,
-        backgroundColor: Colors.green[700],
+        // backgroundColor: Colors.green[700],
+         backgroundColor: Colors.lightGreen,
+        
         elevation: 5,
       ),
       bottomNavigationBar: MaterialButton(
