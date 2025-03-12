@@ -290,6 +290,7 @@ import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/get_emp_details.dart';
 import 'package:animated_movies_app/model/user_access.dart';
 import 'package:animated_movies_app/screens/home_screen/api_data_screen.dart';
+import 'package:animated_movies_app/screens/home_screen/employee_feedback_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:http/http.dart' as http; // Add this import for HTTP requests
@@ -554,6 +555,32 @@ class _MultipleFormsState extends State<MultipleForms> {
                                 ),
                               );
                             }).toList(),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EmployeeFeedbackScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 5,
+                    ),
+                    child: const Text(
+                      'Feedback',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],

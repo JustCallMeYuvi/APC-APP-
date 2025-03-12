@@ -50,6 +50,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:animated_movies_app/services/feedback_provider.dart';
 import 'package:animated_movies_app/services/provider_services.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -180,6 +181,8 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => PatrollingProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => FeedbackProvider()),
+
 
       ],
       child: const App(),
