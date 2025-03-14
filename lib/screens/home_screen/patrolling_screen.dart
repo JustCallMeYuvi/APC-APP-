@@ -349,7 +349,7 @@ class _PatrollingScreenState extends State<PatrollingScreen> {
   late TextEditingController patrollingController;
   late TextEditingController shiftController;
   late PatrollingProvider _provider; // Store provider reference
-  bool _cleared = false;
+  // bool _cleared = false;
   // @override
   // void initState() {
   //   super.initState();
@@ -405,113 +405,118 @@ class _PatrollingScreenState extends State<PatrollingScreen> {
     final provider = Provider.of<PatrollingProvider>(context);
 
     return Scaffold(
-      body: WillPopScope(
-        onWillPop: _onWillPop,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                buildDropDownSearchField(
-                  label: 'Patrolling',
-                  value: provider.selectedPatrolling,
-                  items: ['Patrolling 1', 'Patrolling 2', 'Patrolling 3'],
-                  onChanged: provider.setSelectedPatrolling,
-                  controller: patrollingController,
-                ),
-                const SizedBox(height: 10),
-                buildDropDownSearchField(
-                  label: 'Shift',
-                  value: provider.selectedShift,
-                  items: ['Shift A', 'Shift B', 'Shift C'],
-                  onChanged: provider.setSelectedShift,
-                  controller: shiftController,
-                ),
-                const SizedBox(height: 20),
-                // ElevatedButton.icon(
-                //   onPressed: provider.startScan,
-                //   icon: const Icon(Icons.camera_alt),
-                //   label: const Text("Open Camera to Scan QR Code"),
-                //   style: ElevatedButton.styleFrom(
-                //     backgroundColor: Colors.lightGreen,
-                //     foregroundColor: Colors.white,
-                //   ),
-                // ),
-
-                //  final url = '${ApiHelper.gmsUrl}SavePatrolling';
-                ElevatedButton.icon(
-                  onPressed: () {
-                    if (patrollingController.text.isEmpty ||
-                        shiftController.text.isEmpty) {
-                      // Show an alert dialog if any field is empty
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Please Select Values'),
-                            content: const Text(
-                                'Please select both Patrolling and Shift before scanning.'),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    } else {
-                      // Both fields have values, so start the scan.
-                      // provider.startScan();
-                      provider.startScan(widget.userData.empNo);
-                    }
-                    // shiftController.clear();
-                    // patrollingController.clear();
-                  },
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text("Open Camera to Scan QR Code"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightGreen,
-                    foregroundColor: Colors.white,
+      body: SafeArea(
+        child: WillPopScope(
+          onWillPop: _onWillPop,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 10,),
+                  buildDropDownSearchField(
+                    label: 'Patrolling',
+                    value: provider.selectedPatrolling,
+                    items: ['Patrolling 1', 'Patrolling 2', 'Patrolling 3'],
+                    onChanged: provider.setSelectedPatrolling,
+                    controller: patrollingController,
                   ),
-                ),
-
-                const SizedBox(height: 20),
-                // Text(
-                //   'Scan Result: ${provider.scanResult}',
-                //   style: const TextStyle(fontSize: 16),
-                //   textAlign: TextAlign.center,
-                // ),
-                provider.scanResult != "No data scanned"
-                    ? ScanResultWidget(jsonString: provider.scanResult)
-                    : const SizedBox.shrink(),
-
-                // ScanResultWidget(jsonString: provider.scanResult),
-
-                // ScanResultWidget(jsonString: provider.scanResult),
-                // const SizedBox(height: 20),
-                // ElevatedButton.icon(
-                //   onPressed: (provider.scanResult != "No data scanned" &&
-                //           provider.scanResult != "Scan cancelled" &&
-                //           !provider.isSubmitting)
-                //       ? () => provider.submitScanData(widget.userData.empNo)
-                //       : null,
-                //   icon: provider.isSubmitting
-                //       ? const CircularProgressIndicator(
-                //           color: Colors.white,
-                //         )
-                //       : const Icon(Icons.upload),
-                //   label: provider.isSubmitting
-                //       ? const Text("Submitting...")
-                //       : const Text("Submit Scan Data"),
-                //   style: ElevatedButton.styleFrom(
-                //     backgroundColor: Colors.blueAccent,
-                //     foregroundColor: Colors.white,
-                //   ),
-                // ),
-              ],
+                  const SizedBox(height: 10),
+                  buildDropDownSearchField(
+                    label: 'Shift',
+                    value: provider.selectedShift,
+                    items: ['Shift A', 'Shift B', 'Shift C'],
+                    onChanged: provider.setSelectedShift,
+                    controller: shiftController,
+                  ),
+                  const SizedBox(height: 20),
+                  // ElevatedButton.icon(
+                  //   onPressed: provider.startScan,
+                  //   icon: const Icon(Icons.camera_alt),
+                  //   label: const Text("Open Camera to Scan QR Code"),
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: Colors.lightGreen,
+                  //     foregroundColor: Colors.white,
+                  //   ),
+                  // ),
+        
+                  //  final url = '${ApiHelper.gmsUrl}SavePatrolling';
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      if (patrollingController.text.isEmpty ||
+                          shiftController.text.isEmpty) {
+                        // Show an alert dialog if any field is empty
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Please Select Values'),
+                              content: const Text(
+                                  'Please select both Patrolling and Shift before scanning.'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {
+                        // Both fields have values, so start the scan.
+                        // provider.startScan();
+                        provider.startScan(widget.userData.empNo);
+                      }
+                      // shiftController.clear();
+                      // patrollingController.clear();
+                    },
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text("Open Camera to Scan QR Code"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.lightGreen,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+        
+                  const SizedBox(height: 20),
+                  // Text(
+                  //   'Scan Result: ${provider.scanResult}',
+                  //   style: const TextStyle(fontSize: 16),
+                  //   textAlign: TextAlign.center,
+                  // ),
+                  provider.scanResult != "No data scanned"
+                      ? ScanResultWidget(
+                          jsonString: provider.scanResult,
+                          userData: widget.userData)
+                      : const SizedBox.shrink(),
+        
+                  // ScanResultWidget(jsonString: provider.scanResult),
+        
+                  // ScanResultWidget(jsonString: provider.scanResult),
+                  // const SizedBox(height: 20),
+                  // ElevatedButton.icon(
+                  //   onPressed: (provider.scanResult != "No data scanned" &&
+                  //           provider.scanResult != "Scan cancelled" &&
+                  //           !provider.isSubmitting)
+                  //       ? () => provider.submitScanData(widget.userData.empNo)
+                  //       : null,
+                  //   icon: provider.isSubmitting
+                  //       ? const CircularProgressIndicator(
+                  //           color: Colors.white,
+                  //         )
+                  //       : const Icon(Icons.upload),
+                  //   label: provider.isSubmitting
+                  //       ? const Text("Submitting...")
+                  //       : const Text("Submit Scan Data"),
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: Colors.blueAccent,
+                  //     foregroundColor: Colors.white,
+                  //   ),
+                  // ),
+                ],
+              ),
             ),
           ),
         ),
@@ -565,8 +570,10 @@ Widget buildDropDownSearchField({
 
 class ScanResultWidget extends StatelessWidget {
   final String jsonString;
+  final LoginModelApi userData;
 
-  const ScanResultWidget({super.key, required this.jsonString});
+  const ScanResultWidget(
+      {super.key, required this.jsonString, required this.userData});
 
   @override
   Widget build(BuildContext context) {
@@ -586,10 +593,15 @@ class ScanResultWidget extends StatelessWidget {
       "stop_Point_13": "Plant D",
       "stop_Point_14": "Emergency Exit",
       "stop_Point_15": "Plant E",
+      "stop_Point_16": "Plant D",
+      "stop_Point_17": "Area",
+      "stop_Point_18": "Plant G",
+      "stop_Point_19": "Exit",
+      "stop_Point_20": "Plant Y",
     };
 
     if (jsonString.isEmpty) {
-      return Center(
+      return const Center(
         child: Text(
           "No data scanned.",
           style: TextStyle(fontSize: 16, color: Colors.grey),
@@ -604,11 +616,15 @@ class ScanResultWidget extends StatelessWidget {
           cleanJsonString.replaceFirst("API Response:", "").trim();
     }
 
+// Print the JSON string before parsing
+    print("Raw JSON String: $cleanJsonString");
     Map<String, dynamic> jsonData;
     try {
       jsonData = json.decode(cleanJsonString);
+      print("Parsed JSON: $jsonData"); // Print parsed JSON for debugging
     } catch (e) {
-      return Center(
+      print("JSON Parsing Error: $e"); // Print error in console
+      return const Center(
         child: Text(
           "Failed to parse scan data.",
           style: TextStyle(fontSize: 16, color: Colors.red),
@@ -620,7 +636,7 @@ class ScanResultWidget extends StatelessWidget {
     final List<dynamic> data = jsonData['data']['data'] ?? [];
 
     if (data.isEmpty) {
-      return Center(
+      return const Center(
         child: Text(
           "No patrolling data found.",
           style: TextStyle(fontSize: 16, color: Colors.grey),
@@ -631,7 +647,7 @@ class ScanResultWidget extends StatelessWidget {
     final patrollingData = data.first;
     final stopPoints = patrollingData['stop_Points'] as Map<String, dynamic>;
 
-    final nonNullStopPoints = stopPoints.entries.where((e) => e.value != null);
+    // final nonNullStopPoints = stopPoints.entries.where((e) => e.value != null);
     final allStopPoints = stopPoints.entries;
 
     return Card(
@@ -641,9 +657,9 @@ class ScanResultWidget extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               "Patrolling Details",
               style: TextStyle(
                   fontSize: 20,
@@ -651,13 +667,23 @@ class ScanResultWidget extends StatelessWidget {
                   color: Colors.blue),
             ),
             const SizedBox(height: 8),
-            _infoRow("Message", message),
+            // Show a different message when it's "Invalid value"
+            message == "Invalid value"
+                ? const Center(
+                    child: Text(
+                      "This Stop point is not available",
+                      style: TextStyle(fontSize: 16, color: Colors.red),
+                    ),
+                  )
+                : _infoRow("Message", message),
+
+            // _infoRow("Message", message),
             _infoRow("User ID", patrollingData['userID']),
             _infoRow("Patrolling Type", patrollingData['patrollingType']),
             _infoRow("Shift", patrollingData['shift']),
             _infoRow("Created At", patrollingData['createdAt']),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               "Stop Points",
               style: TextStyle(
                   fontSize: 18,
@@ -688,6 +714,46 @@ class ScanResultWidget extends StatelessWidget {
                 return _animatedStopPointTile(stopPointName, time);
               }).toList(),
             ),
+            Visibility(
+              visible: patrollingData['userID'] ==
+                  userData.empNo, // Button visible only when both are the same
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Colors.blueAccent,
+                      Colors.purpleAccent
+                    ], // Gradient colors
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26, // Soft shadow
+                      blurRadius: 6,
+                      offset: Offset(2, 2),
+                    ),
+                  ],
+                ),
+                child: MaterialButton(
+                  onPressed: () {},
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'Submit',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -715,7 +781,7 @@ class ScanResultWidget extends StatelessWidget {
             Column(
               children: [
                 // Icon(FontAwesomeIcons.solidCircleDot, color: Colors.red, size: 14),
-                Icon(FontAwesomeIcons.locationDot, color: Colors.red),
+                const Icon(FontAwesomeIcons.locationDot, color: Colors.red),
 
                 Container(
                     width: 2,
@@ -730,7 +796,7 @@ class ScanResultWidget extends StatelessWidget {
                 children: [
                   Text(
                     stopPointName,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   Text(
                     time,
@@ -752,12 +818,12 @@ class ScanResultWidget extends StatelessWidget {
         children: [
           Text(
             "$label: ",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Expanded(
             child: Text(
               value ?? 'N/A',
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ),
         ],

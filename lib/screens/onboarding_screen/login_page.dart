@@ -225,7 +225,8 @@ class _LoginPageState extends State<LoginPage> {
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Something went wrong,Please Contact IT'),
+          content:
+              Text('Something went wrong, server issue detected Please Contact IT'),
         ),
       );
     } finally {
