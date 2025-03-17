@@ -380,7 +380,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
   //     _currentlyPlayingVideo; // Store the path of the currently playing video
   File? _currentlyPlayingVideo; // Track the currently playing video
 
-
 // below pick medis is images and videos saved in local device now testing db saved or not
   Future<void> _pickMedia(String type) async {
     if (type == 'image') {
@@ -1125,7 +1124,8 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
               if (_gateType.isNotEmpty)
                 Text(
                   _gateType,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 20),
                 ),
               if (_selectedVehicleNumber.isNotEmpty)
                 if (_isDetailsLoading) const CircularProgressIndicator(),
@@ -2222,7 +2222,8 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                                                           file]!,
                                                     ),
                                                   )
-                                                : const Icon(Icons.play_circle_fill,
+                                                : const Icon(
+                                                    Icons.play_circle_fill,
                                                     size: 50), // Play icon
                                           ),
                                         ),
@@ -2237,7 +2238,8 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                                   right: -12,
                                   top: -12,
                                   child: IconButton(
-                                    icon: const Icon(Icons.close, color: Colors.red),
+                                    icon: const Icon(Icons.close,
+                                        color: Colors.red),
                                     onPressed: () {
                                       setState(() {
                                         // Remove the file from _mediaFiles
@@ -2478,30 +2480,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
     );
   }
 
-  // Method to show alert when both fields are empty
-  // void _showAlertforManifestChasisAndEngineNo(BuildContext context) {
-  //   if (_manifestEngineNumber.isEmpty && _manifestChasisNumber.isEmpty) {
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return AlertDialog(
-  //           title: Text('Input Required'),
-  //           content: Text(
-  //               'Both fields (Engine Number and Chasis Number) are required.'),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.of(context).pop(); // Close the alert
-  //               },
-  //               child: Text('OK'),
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     );
-  //   }
-  // }
-
   // Method to show alert when both fields are empty in fire gate out
   void _showAlertforManifestChasisAndEngineNo(BuildContext context) {
     if (_gateType == "Fire Gate OUT" &&
@@ -2684,16 +2662,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
       }
     }
 
-// Mandatory image validation for gate types other than "Main Gate" and "Fire Gate"
-    // if (_gateType != "Main Gate" &&
-    //     _gateType != "Main Gate OUT" ||
-    //     // _selectedImages.isEmpty) {
-    //     _mediaFiles.isEmpty) {
-    //   _showErrorDialogInGms(
-    //       "Picking image is mandatory. Please select an image.");
-    //   return;
-    // }
-
     if ((_gateType == "Fire Gate" ||
             _gateType == "Fire Gate OUT" ||
             _gateType == "FG IN" ||
@@ -2704,18 +2672,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
           "Picking image is mandatory. Please select an image.");
       return;
     }
-    // if (_gateType == "FG OUT" && !_enableToggleButton) {
-    //   {
-    //     if (_selectedInspectedBarcode.isEmpty) {
-    //       _showErrorDialogInGms("Please Select Barcode.");
-    //       return;
-    //     }
-    //     // if(_mediaFiles.isEmpty){
-    //     //   _showErrorDialogInGms(
-    //     //   "Picking image is mandatory. Please select an image.");
-    //     //   return;
-    //     // }
-    //   }
+  
 
     if (_gateType == "FG OUT") {
       {
@@ -2723,11 +2680,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
           _validateAgricultureCheckList("Please Select Barcode.");
           return;
         }
-        // if(_mediaFiles.isEmpty){
-        //   _showErrorDialogInGms(
-        //   "Picking image is mandatory. Please select an image.");
-        //   return;
-        // }
+
       }
     }
 
@@ -2773,22 +2726,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
 
     if (_gateType == "Fire Gate OUT") {
       // Check if at least one of the seal fields is filled
-
-      // if (_sealNoController.text.isEmpty &&
-      //     _linearSealController.text.isEmpty &&
-      //     _customSealContoller.text.isEmpty &&
-      //     _otherSealController.text.isEmpty) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(content: Text("Please fill at least one seal field.")),
-      //   );
-      //   return; // Stop further execution
-      // }
-      // if (_selectedInspectedBarcode.isEmpty) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(content: Text("Please select an inspected barcode.")),
-      //   );
-      //   return; // Prevent submission
-      // }
 
       // Perform validations only if `_inspection` is 'Pass'
       if (_inspection == 'Pass') {

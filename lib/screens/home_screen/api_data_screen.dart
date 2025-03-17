@@ -45,7 +45,7 @@ import 'package:animated_movies_app/screens/gms_screens/export_tracking.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
-import 'package:animated_movies_app/screens/gms_screens/maxking_gms_page.dart';
+import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_page.dart';
 
 import 'package:animated_movies_app/screens/home_screen/efficiency_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/employee_feedback_screen.dart';
