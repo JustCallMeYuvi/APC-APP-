@@ -103,6 +103,12 @@ IconData getIconForPage(Page page) {
     case 'Export Approvals':
       return Icons.approval;
 
+    case 'Feedback':
+      return Icons.feedback_outlined;
+
+    case 'Maxking GMS':
+      return Icons.fire_truck_outlined;
+
     default:
       return Icons.help_outline; // Fallback icon
   }

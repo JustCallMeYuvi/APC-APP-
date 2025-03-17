@@ -150,10 +150,10 @@ class _EmployeeFeedbackScreenState extends State<EmployeeFeedbackScreen> {
         return true;
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Employee Feedback Survey'),
-          backgroundColor: Colors.lightGreen,
-        ),
+        // appBar: AppBar(
+        //   title: const Text('Employee Feedback Survey'),
+        //   backgroundColor: Colors.lightGreen,
+        // ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(

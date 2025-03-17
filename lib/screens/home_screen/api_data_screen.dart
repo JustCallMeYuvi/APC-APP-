@@ -45,8 +45,10 @@ import 'package:animated_movies_app/screens/gms_screens/export_tracking.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
-import 'package:animated_movies_app/screens/home_screen/chat_screen.dart';
+import 'package:animated_movies_app/screens/gms_screens/maxking_gms_page.dart';
+
 import 'package:animated_movies_app/screens/home_screen/efficiency_report_page.dart';
+import 'package:animated_movies_app/screens/home_screen/employee_feedback_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/patrolling_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/po_completion_page.dart';
 import 'package:animated_movies_app/screens/home_screen/rft_report_page.dart';
@@ -132,33 +134,45 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                     ? GmsCharts(
                                         // userData: widget.userData,
                                         )
-                                         : widget.pageRoute == 'ExportTracking'
-                                    ? ExportTracking(title: widget.pageName,
-                                        // userData: widget.userData,
-                                        )
-                                    : widget.pageRoute == 'TargetOutputReport'
-                                        ? TargetOutputReportPage()
-                                        : widget.pageRoute == 'EfficiencyReport'
-                                            ? EfficiencyReportPage()
-                                            : widget.pageRoute == 'RftReport'
-                                                ? RftReportPage()
+                                    : widget.pageRoute == 'ExportTracking'
+                                        ? ExportTracking(
+                                            title: widget.pageName,
+                                            // userData: widget.userData,
+                                          )
+                                        : widget.pageRoute ==
+                                                'TargetOutputReport'
+                                            ? TargetOutputReportPage()
+                                            : widget.pageRoute ==
+                                                    'EfficiencyReport'
+                                                ? EfficiencyReportPage()
                                                 : widget.pageRoute ==
-                                                        'PoCompletionReport'
-                                                    ? PoCompletionReport()
+                                                        'RftReport'
+                                                    ? RftReportPage()
                                                     : widget.pageRoute ==
-                                                            'Token Screen'
-                                                        ? TokenScreen(
-                                                            userData:
-                                                                widget.userData,
-                                                            empDetailsList: [],
-                                                          )
-                                                        : Text(
-                                                            'Data for ${widget.pageName} goes here.',
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        20),
-                                                          )
+                                                            'PoCompletionReport'
+                                                        ? PoCompletionReport()
+                                                        : widget.pageRoute ==
+                                                                'Token Screen'
+                                                            ? TokenScreen(
+                                                                userData: widget
+                                                                    .userData,
+                                                                empDetailsList: [],
+                                                              )
+                                                            : widget.pageRoute ==
+                                                                    'EmployeeFeedbackScreen'
+                                                                ? EmployeeFeedbackScreen()
+                                                                : widget.pageRoute ==
+                                                                        'MaxkingGmsPage'
+                                                                    ? MaxkingGMSPage(
+                                                                        userData:
+                                                                            widget.userData,
+                                                                      )
+                                                                    : Text(
+                                                                        'Data for ${widget.pageName} goes here.',
+                                                                        style: const TextStyle(
+                                                                            fontSize:
+                                                                                20),
+                                                                      )
 
             // : SignApprovalPage(
             //     userData: widget.userData,

@@ -490,11 +490,11 @@ class _MultipleFormsState extends State<MultipleForms> {
                   // TabBar placed below AppBar
                   PreferredSize(
                     preferredSize:
-                        Size.fromHeight(50.0), // Adjust height as needed
+                        const Size.fromHeight(50.0), // Adjust height as needed
                     child: TabBar(
                       isScrollable: true, // Allow scrolling for wider tabs
                       tabs: isLoading
-                          ? [Tab(text: 'Loading...')] // Show loading tab
+                          ? [const Tab(text: 'Loading...')] // Show loading tab
                           : userAccessList
                               .map((access) => Tab(text: access.tabName))
                               .toList(),
@@ -507,7 +507,7 @@ class _MultipleFormsState extends State<MultipleForms> {
                     child: TabBarView(
                       children: isLoading
                           ? [
-                              Center(child: CircularProgressIndicator())
+                              const Center(child: CircularProgressIndicator())
                             ] // Show loading indicator
                           : userAccessList.map((access) {
                               return Padding(
@@ -555,32 +555,6 @@ class _MultipleFormsState extends State<MultipleForms> {
                                 ),
                               );
                             }).toList(),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EmployeeFeedbackScreen(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      elevation: 5,
-                    ),
-                    child: const Text(
-                      'Feedback',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ),
                 ],
