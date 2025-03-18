@@ -107,7 +107,11 @@ IconData getIconForPage(Page page) {
       return Icons.feedback_outlined;
 
     case 'Maxking GMS':
-      return Icons.fire_truck_outlined;
+      return Icons.fire_truck;
+    case 'Tracking':
+      return Icons.location_on;
+    case 'Charts':
+      return Icons.bar_chart_rounded;
 
     default:
       return Icons.help_outline; // Fallback icon

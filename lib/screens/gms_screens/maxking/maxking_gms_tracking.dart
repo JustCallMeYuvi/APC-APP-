@@ -6,7 +6,6 @@ import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-
 class MaxkingGMSTrackingPage extends StatefulWidget {
   const MaxkingGMSTrackingPage({Key? key}) : super(key: key);
 
@@ -83,7 +82,7 @@ class _MaxkingGMSTrackingPageState extends State<MaxkingGMSTrackingPage> {
       isLoadingAllVehiclesData = true;
     });
     try {
-      final url = ApiHelper.getVehicleTacking(); // Get the URL
+      final url = ApiHelper.getMaxkingVehicleTacking(); // Get the URL
       print("API URL: $url"); // Debug: Print the URL
 
       final response = await http.get(Uri.parse(url));
@@ -112,7 +111,8 @@ class _MaxkingGMSTrackingPageState extends State<MaxkingGMSTrackingPage> {
 // Fetch vehicle data from the backend API
   Future<List<Map<String, dynamic>>> _fetchSuggestions(String pattern) async {
     try {
-      final response = await http.get(Uri.parse(ApiHelper.getVehicleTacking()));
+      final response =
+          await http.get(Uri.parse(ApiHelper.getMaxkingVehicleTacking()));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
 
@@ -153,7 +153,6 @@ class _MaxkingGMSTrackingPageState extends State<MaxkingGMSTrackingPage> {
     // Show selected vehicle details
     return _buildVehicleCard(_selectedVehicleDetails!);
   }
-
 
   // String getStatusMessage(int status) {
   //   switch (status) {

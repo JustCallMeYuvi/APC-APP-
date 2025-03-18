@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:animated_movies_app/services/provider_services.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 class ScanResultWidget extends StatefulWidget {
   final String jsonString;
@@ -49,9 +51,40 @@ class _ScanResultWidgetState extends State<ScanResultWidget> {
         ),
       );
     }
+    // if (widget.jsonString == "Patrolling successful") {
+    //   return const Center(
+    //     child: Text(
+    //       "Patrolling successfully completed!",
+    //       style: TextStyle(fontSize: 16, color: Colors.green),
+    //     ),
+    //   );
+    // }
+//     // Clean "API Response:" prefix if present
+//     String cleanJsonString = widget.jsonString.trim();
+//     if (cleanJsonString.startsWith("API Response:")) {
+//       cleanJsonString =
+//           cleanJsonString.replaceFirst("API Response:", "").trim();
+//     }
 
-    // Clean "API Response:" prefix if present
+// // Print the JSON string before parsing
+//     print("Raw JSON String: $cleanJsonString");
+//     Map<String, dynamic> jsonData;
+//     try {
+//       jsonData = json.decode(cleanJsonString);
+//       print("Parsed JSON: $jsonData"); // Print parsed JSON for debugging
+//     } catch (e) {
+
+//       return const Center(
+//         child: Text(
+//           "Failed to parse scan data.",
+//           style: TextStyle(fontSize: 16, color: Colors.red),
+//         ),
+//       );
+//     }
+
     String cleanJsonString = widget.jsonString.trim();
+
+// Clean "API Response:" prefix if present
     if (cleanJsonString.startsWith("API Response:")) {
       cleanJsonString =
           cleanJsonString.replaceFirst("API Response:", "").trim();
@@ -59,12 +92,22 @@ class _ScanResultWidgetState extends State<ScanResultWidget> {
 
 // Print the JSON string before parsing
     print("Raw JSON String: $cleanJsonString");
-    Map<String, dynamic> jsonData;
+
+    Map<String, dynamic>? jsonData;
     try {
-      jsonData = json.decode(cleanJsonString);
-      print("Parsed JSON: $jsonData"); // Print parsed JSON for debugging
+      if (cleanJsonString.startsWith('{') && cleanJsonString.endsWith('}')) {
+        jsonData = json.decode(cleanJsonString);
+        print("Parsed JSON: $jsonData");
+      } else {
+        print("Plain text response: $cleanJsonString");
+        return const Center(
+            // child: Text(
+            //   cleanJsonString, // Show the actual response text
+            //   style: TextStyle(fontSize: 16, color: Colors.green),
+            // ),
+            );
+      }
     } catch (e) {
-      print("JSON Parsing Error: $e"); // Print error in console
       return const Center(
         child: Text(
           "Failed to parse scan data.",
@@ -73,7 +116,7 @@ class _ScanResultWidgetState extends State<ScanResultWidget> {
       );
     }
 
-    final String message = jsonData['message'] ?? 'No message';
+    final String message = jsonData!['message'] ?? 'No message';
     final List<dynamic> data = jsonData['data']['data'] ?? [];
 
     if (data.isEmpty) {
@@ -191,7 +234,38 @@ class _ScanResultWidgetState extends State<ScanResultWidget> {
                   ],
                 ),
                 child: MaterialButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // context.read<PatrollingProvider>().submitPatrollingComplete(
+                    //       context,
+                    //     );
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Confirm Submission'),
+                          content: const Text(
+                              'Are you sure you want to complete patrolling?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Close the dialog
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Close the dialog
+                                context
+                                    .read<PatrollingProvider>()
+                                    .submitPatrollingComplete(context);
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                   shape: RoundedRectangleBorder(

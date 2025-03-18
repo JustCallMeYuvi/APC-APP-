@@ -17,9 +17,15 @@ class ApiHelper {
 
   static String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
 
+  static String _maxkingGMSUrl =
+      'http://10.3.0.70:9042/api/Maxking_GMS_/'; // maxking URL
+
   static String get baseUrl => _baseUrl; // Public getter
 
   static String get gmsUrl => _gmsUrl;
+
+  static String get maxkingGMSUrl => _maxkingGMSUrl; // Maxking URL
+
   static String urlGlobalOrLocalCheck = '';
 
   // Method to update URLs based on the current Wi-Fi network
@@ -200,5 +206,9 @@ class ApiHelper {
 
   static String getVehicleTacking() {
     return '${_gmsUrl}status-report'; // This is the correct way to form the URL
+  }
+
+  static String getMaxkingVehicleTacking() {
+    return '${maxkingGMSUrl}status-report'; // This is the correct way to form the URL
   }
 }

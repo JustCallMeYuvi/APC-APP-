@@ -455,14 +455,14 @@ class _PatrollingScreenState extends State<PatrollingScreen> {
                     onChanged: provider.setSelectedShift,
                     controller: shiftController,
                   ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    maxLines: 5, // Allows up to 5 lines
-                    decoration: const InputDecoration(
-                      hintText: "Patrolling Review...",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                  // const SizedBox(height: 20),
+                  // TextFormField(
+                  //   maxLines: 5, // Allows up to 5 lines
+                  //   decoration: const InputDecoration(
+                  //     hintText: "Patrolling Review...",
+                  //     border: OutlineInputBorder(),
+                  //   ),
+                  // ),
                   const SizedBox(height: 10),
                   // ElevatedButton.icon(
                   //   onPressed: provider.startScan,

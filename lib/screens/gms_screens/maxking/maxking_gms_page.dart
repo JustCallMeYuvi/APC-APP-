@@ -669,7 +669,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
 
     try {
       // final url = 'http://10.3.0.208:8084/api/GMS/getloadingpoints';
-      final url = '${ApiHelper.gmsUrl}getloadingpoints';
+      final url = '${ApiHelper.maxkingGMSUrl}getloadingpoints';
       print(
           'Requesting data from URL: $url'); // Print the URL in the debug console
 
@@ -729,7 +729,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
       _isLoading = true;
     });
 
-    final url = '${ApiHelper.gmsUrl}barcode?barcode=$barcode';
+    final url = '${ApiHelper.maxkingGMSUrl}barcode?barcode=$barcode';
     print('Request URL: $url');
 
     try {
@@ -805,7 +805,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
     // final url =
     //     'http://10.3.0.208:8084/api/GMS/getvehicledetails?id=$vehicleId&processlevel=$processLevel';
     final url =
-        '${ApiHelper.gmsUrl}getvehicledetails?id=$vehicleId&processlevel=$processLevel';
+        '${ApiHelper.maxkingGMSUrl}getvehicledetails?id=$vehicleId&processlevel=$processLevel';
 
     print('Vehicle details URL ${url}');
     print("Driver Name IN: $_driverNameIN");
@@ -1006,7 +1006,8 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
   Future<void> _fetchManifestDetails(String vehicleNumber) async {
     // final String apiUrl =
     //     'http://203.153.32.85:54329/api/GMS/ManifestReport?vehicleNo=$vehicleNumber';
-    final url = '${ApiHelper.gmsUrl}ManifestReport?vehicleNo=$vehicleNumber';
+    final url =
+        '${ApiHelper.maxkingGMSUrl}ManifestReport?vehicleNo=$vehicleNumber';
     print('Manifest$url');
     try {
       final response = await http.get(Uri.parse(url));
@@ -1040,28 +1041,11 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text("GMS Export Page"),
-      //   backgroundColor: Colors.blueAccent,
-      //   elevation: 4.0,
-      // ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            //  mainAxisSize: MainAxisSize.min, // Keep column centered
-            // crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
             children: [
-              // if (_isLoading)
-              //   CircularProgressIndicator(
-              //     color: Colors.black,
-              //   ),
-              // _isLoading
-              //     ? CircularProgressIndicator(
-              //         color: Colors.black,
-              //       )
-              //     :
-
               Card(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
@@ -1786,16 +1770,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                       return null;
                     },
                   ),
-                  // _customTextFormField(
-                  //   "Source To",
-                  //   _fireGateOutSourceToController,
-                  //   (value) {
-                  //     if (value == null || value.isEmpty) {
-                  //       return 'Please enter a value';
-                  //     }
-                  //     return null;
-                  //   },
-                  // ),
+
                   _customTextFormField(
                     "Stage In",
                     _fireGateOutStageInController,
@@ -1851,16 +1826,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                       print('Entered text: $text');
                     },
                   ),
-                  // _customTextFormField(
-                  //   "Purpose",
-                  //   _fireGateOutPurposeController,
-                  //   (value) {
-                  //     if (value == null || value.isEmpty) {
-                  //       return 'Please enter a value';
-                  //     }
-                  //     return null;
-                  //   },
-                  // ),
+
                   _customTextFormField(
                     "Seal No",
                     _sealNoController,
@@ -2330,24 +2296,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                             _validateAndSubmit();
                             _showAlertforManifestChasisAndEngineNo(context);
                             _validateCheckList();
-                            // _clearGateControllers();
-                            // await submitData(
-                            //     // _mainGateFromInController.text,
-                            //     // _mainGateStageInController.text,
-                            //     // _mainGatePurposeController.text
-                            //     );
-                            // await _clearGateControllers();
-                            // setState(() {
-                            //   _isLoading = false; // Hide the loading indicator
-                            //   _isSubmitted =
-                            //       true; // Mark submission as successful
-                            // });
 
-                            // setState(() {
-                            //   _isLoading = true; // Start loading
-                            // });
-
-                            // if (_isLoading) CircularProgressIndicator();
                             print("Submit button pressed for $_gateType");
                           },
                           child: const Text(
@@ -2374,10 +2323,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                           textColor: Colors.white, // Text color on tap
                         ),
                       ),
-              // if (_isLoading)
-              //   CircularProgressIndicator(
-              //     color: Colors.red,
-              //   ),
             ],
           ),
         ),
@@ -2672,7 +2617,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
           "Picking image is mandatory. Please select an image.");
       return;
     }
-  
 
     if (_gateType == "FG OUT") {
       {
@@ -2680,7 +2624,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
           _validateAgricultureCheckList("Please Select Barcode.");
           return;
         }
-
       }
     }
 
@@ -2688,10 +2631,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
     // loading point
     if (_gateType == "FG IN") {
       if (_selectedLoadingPoint.isEmpty) {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //       content: Text("Please select a loading point for FG IN.")),
-        // );
         _validateAgricultureCheckList(
             "Please select a loading point for FG IN.");
 
@@ -2701,12 +2640,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
 
       // barcode
       if (_selectedInspectedBarcode.isEmpty) {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //     content: Text("Please select a barcode for FG IN."),
-        //   ),
-
-        // );
         _validateAgricultureCheckList("Please select a barcode for FG IN.");
         return; // Exit the method to prevent further execution
       }
@@ -2714,10 +2647,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
 
     if (_gateType == "FG OUT") {
       if (_selectedLoadingPointofFGOut.isEmpty) {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //       content: Text("Please select a loading point for FG OUT.")),
-        // );
         _validateAgricultureCheckList(
             "Please select a loading point for FG OUT.");
         return; // Exit the method to prevent form submission
@@ -2794,10 +2723,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
       setState(() {
         _highlightedControllers = emptyControllers;
       });
-
-      // _showErrorDialogInGms(
-      //     "All fields are mandatory for $_gateType. Please fill in all fields.");
-      // return;
     }
 
     // If all validations pass, reset highlights
@@ -2807,10 +2732,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
 
     // All validations passed, call submitData()
     await submitData();
-    // Show success snackbar and clear controllers
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   const SnackBar(content: Text("Form Submitted Successfully!")),
-    // );
   }
 
 // Add a list to track controllers with errors
@@ -2910,7 +2831,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
       _isLoading = true; // Start loading ind icator
     });
     // submitData() async {
-    var apiUrl = '${ApiHelper.gmsUrl}SaveDetails';
+    var apiUrl = '${ApiHelper.maxkingGMSUrl}SaveDetails';
     // var apiUrl =
     //     'http://10.3.0.208:8084/api/GMS/SaveDetails'; // Replace with your API URL
 

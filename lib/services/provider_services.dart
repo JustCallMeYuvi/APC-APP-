@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -9,6 +11,7 @@ class PatrollingProvider extends ChangeNotifier {
   String _selectedPatrolling = "";
   String _selectedShift = '';
   bool _isSubmitting = false;
+  String? _scannedId; // Store extracted ID
 
   String get scanResult => _scanResult;
   String get selectedPatrolling => _selectedPatrolling;
@@ -70,6 +73,18 @@ class PatrollingProvider extends ChangeNotifier {
       final response = await http.post(Uri.parse(apiUrl));
       print(response.body);
       if (response.statusCode == 200) {
+        // Extract ID from response
+        // Decode the JSON response before using it
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['data'] != null &&
+            responseData['data']['data'] != null) {
+          List<dynamic> dataList = responseData['data']['data'];
+          if (dataList.isNotEmpty) {
+            _scannedId = dataList[0]['id']; // Store the extracted ID
+            print("Extracted ID: $_scannedId");
+          }
+        }
+
         _scanResult = ('API Response: ${response.body}');
       } else {
         _scanResult =
@@ -81,6 +96,71 @@ class PatrollingProvider extends ChangeNotifier {
       _isSubmitting = false;
       notifyListeners();
     }
+  }
+
+  Future<void> submitPatrollingComplete(BuildContext context) async {
+    if (_scannedId == null) {
+      _scanResult = "No valid ID found for submission.";
+      notifyListeners();
+      return;
+    }
+
+    final apiUrl = '${ApiHelper.gmsUrl}PatrollingComplete?id=$_scannedId';
+
+    try {
+      final response = await http.post(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        _scanResult = 'Patrolling Completed Successfully!';
+        _showSuccessDialog(context, _scanResult);
+      } else {
+        _scanResult =
+            'Failed to complete patrolling (Code: ${response.statusCode})';
+        _showErrorDialog(context, _scanResult);
+      }
+    } catch (e) {
+      _scanResult = 'Error submitting completion: $e';
+      _showErrorDialog(context, _scanResult);
+    }
+    notifyListeners();
+  }
+
+// Show Success Dialog
+  void _showSuccessDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Show Error Dialog
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // Future<void> submitScanData(String empNo) async {
