@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:animated_movies_app/api/apis_page.dart';
+import 'package:animated_movies_app/services/patrollin_api_data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -56,47 +57,161 @@ class PatrollingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> savePatrollingData(String scannedValue, String userId) async {
-    _isSubmitting = true;
-    notifyListeners();
+  // Future<void> savePatrollingData(String scannedValue, String userId) async {
+  //   _isSubmitting = true;
+  //   notifyListeners();
 
-    // final apiUrl =
-    //     '${ApiHelper.gmsUrl}SavePatrolling?userid=67657&patrollintype=${Uri.encodeComponent(selectedPatrolling)}&shift=${Uri.encodeComponent(selectedShift)}&value=$scannedValue';
-    final apiUrl = '${ApiHelper.gmsUrl}SavePatrolling'
-        '?userid=$userId'
-        '&patrollintype=${Uri.encodeComponent(selectedPatrolling)}'
-        '&shift=${Uri.encodeComponent(selectedShift)}'
-        '&value=$scannedValue';
+  //   // final apiUrl =
+  //   //     '${ApiHelper.gmsUrl}SavePatrolling?userid=67657&patrollintype=${Uri.encodeComponent(selectedPatrolling)}&shift=${Uri.encodeComponent(selectedShift)}&value=$scannedValue';
+  //   final apiUrl = '${ApiHelper.gmsUrl}SavePatrolling'
+  //       '?userid=$userId'
+  //       '&patrollintype=${Uri.encodeComponent(selectedPatrolling)}'
+  //       '&shift=${Uri.encodeComponent(selectedShift)}'
+  //       '&value=$scannedValue';
 
-    print(apiUrl);
-    try {
-      final response = await http.post(Uri.parse(apiUrl));
-      print(response.body);
-      if (response.statusCode == 200) {
-        // Extract ID from response
-        // Decode the JSON response before using it
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        if (responseData['data'] != null &&
-            responseData['data']['data'] != null) {
-          List<dynamic> dataList = responseData['data']['data'];
-          if (dataList.isNotEmpty) {
-            _scannedId = dataList[0]['id']; // Store the extracted ID
-            print("Extracted ID: $_scannedId");
-          }
-        }
+  //   print(apiUrl);
+  //   try {
+  //     final response = await http.post(Uri.parse(apiUrl));
+  //     print(response.body);
+  //     if (response.statusCode == 200) {
+  //       // Extract ID from response
+  //       // Decode the JSON response before using it
+  //       final Map<String, dynamic> responseData = jsonDecode(response.body);
+  //       if (responseData['data'] != null &&
+  //           responseData['data']['data'] != null) {
+  //         List<dynamic> dataList = responseData['data']['data'];
+  //         if (dataList.isNotEmpty) {
+  //           _scannedId = dataList[0]['id']; // Store the extracted ID
+  //           print("Extracted ID: $_scannedId");
+  //         }
+  //       }
 
-        _scanResult = ('API Response: ${response.body}');
-      } else {
-        _scanResult =
-            ('Failed to save patrolling data (Code: ${response.statusCode})');
-      }
-    } catch (e) {
-      _scanResult = ('Error calling API: $e');
-    } finally {
-      _isSubmitting = false;
-      notifyListeners();
+  //       _scanResult = ('API Response: ${response.body}');
+  //     } else {
+  //       _scanResult =
+  //           ('Failed to save patrolling data (Code: ${response.statusCode})');
+  //     }
+  //   } catch (e) {
+  //     _scanResult = ('Error calling API: $e');
+  //   } finally {
+  //     _isSubmitting = false;
+  //     notifyListeners();
+  //   }
+  // }
+
+//   Future<void> savePatrollingData(String scannedValue, String userId) async {
+//   _isSubmitting = true;
+//   notifyListeners();
+
+//   final apiUrl = '${ApiHelper.gmsUrl}SavePatrolling'
+//       '?userid=$userId'
+//       '&patrollintype=${Uri.encodeComponent(selectedPatrolling)}'
+//       '&shift=${Uri.encodeComponent(selectedShift)}'
+//       '&value=$scannedValue';
+
+//   print(apiUrl);
+//   // try {
+//   //   final response = await http.post(Uri.parse(apiUrl));
+//   //   print(response.body);
+    
+//   //   if (response.statusCode == 200) {
+//   //     final patrollingData = patrollingApiDataFromJson(response.body);
+
+//   //     if (patrollingData.data.data.isNotEmpty) {
+//   //       _scannedId = patrollingData.data.data[0].id; // Extract ID from first item
+//   //       print("Extracted ID: $_scannedId");
+//   //     }
+
+//   //     _scanResult = 'API Response: ${response.body}';
+//   //   } else {
+//   //     _scanResult = 'Failed to save patrolling data (Code: ${response.statusCode})';
+//   //   }
+//   // } catch (e) {
+//   //   _scanResult = 'Error calling API: $e';
+//   // } finally {
+//   //   _isSubmitting = false;
+//   //   notifyListeners();
+//   // }
+  
+
+//   try {
+//   final response = await http.post(Uri.parse(apiUrl));
+//   print("API Response: ${response.body}");
+//      // ✅ Moved response validation **after** the API call
+//     if (!response.body.startsWith('{') && !response.body.startsWith('[')) {
+//       print("Received non-JSON response: ${response.body}");
+//       _scanResult = "Unexpected response format. Check API.";
+//       return;
+//     }
+
+
+//   if (response.statusCode == 200) {
+//     try {
+//       final patrollingData = patrollingApiDataFromJson(response.body);
+//       if (patrollingData.data.data.isNotEmpty) {
+//         _scannedId = patrollingData.data.data[0].id;
+//         print("Extracted ID: $_scannedId");
+//       }
+//       _scanResult = 'API Response: ${response.body}';
+//     } catch (e) {
+//       print("JSON Decoding Error: $e");
+//       _scanResult = "Invalid JSON format received from API.";
+//     }
+//   } else {
+//     _scanResult = 'Failed to save patrolling data (Code: ${response.statusCode})';
+//   }
+// } catch (e) {
+//   _scanResult = 'Error calling API: $e';
+// }
+// }
+
+
+Future<void> savePatrollingData(String scannedValue, String userId) async {
+  _isSubmitting = true;
+  notifyListeners();
+
+  final apiUrl = '${ApiHelper.gmsUrl}SavePatrolling'
+      '?userid=$userId'
+      '&patrollintype=${Uri.encodeComponent(selectedPatrolling)}'
+      '&shift=${Uri.encodeComponent(selectedShift)}'
+      '&value=$scannedValue';
+
+  print("API URL: $apiUrl");
+
+  try {
+    final response = await http.post(Uri.parse(apiUrl));
+    print("API Response: ${response.body}");
+
+    if (response.statusCode != 200) {
+      _scanResult = 'Failed to save patrolling data (Code: ${response.statusCode})';
+      return;
     }
+
+    // Validate response format before parsing
+    final dynamic jsonResponse = json.decode(response.body);
+    
+    if (jsonResponse is! Map<String, dynamic>) {
+      print("Unexpected JSON format: $jsonResponse");
+      _scanResult = "Unexpected response format. Check API.";
+      return;
+    }
+
+    final patrollingData = PatrollingApiData.fromJson(jsonResponse);
+
+    if (patrollingData.data.data.isNotEmpty) {
+      _scannedId = patrollingData.data.data[0].id;
+      print("Extracted ID: $_scannedId");
+    }
+
+    _scanResult = 'API Response: ${response.body}';
+  } catch (e) {
+    print("Error parsing JSON: $e");
+    _scanResult = 'Error calling API: $e';
+  } finally {
+    _isSubmitting = false;
+    notifyListeners();
   }
+}
 
   Future<void> submitPatrollingComplete(BuildContext context) async {
     if (_scannedId == null) {

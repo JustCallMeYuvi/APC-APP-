@@ -327,11 +327,16 @@
 //   }
 // }
 
+import 'dart:convert';
+
 import 'package:animated_movies_app/screens/home_screen/scan_result_widget.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:animated_movies_app/services/patrollin_api_data_model.dart';
 import 'package:animated_movies_app/services/provider_services.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 
 import 'package:provider/provider.dart';
 
@@ -521,10 +526,27 @@ class _PatrollingScreenState extends State<PatrollingScreen> {
                   //   textAlign: TextAlign.center,
                   // ),
                   provider.scanResult != "No data scanned"
-                      ? ScanResultWidget(
-                          jsonString: provider.scanResult,
+                      // ? _buildScanResult(provider.scanResult)
+                      ? BuildScanResultWidget(
+                          scanResult: provider.scanResult,
                           userData: widget.userData)
-                      : const SizedBox.shrink(),
+
+                      // Text(
+                      //     'Scan Result: ${provider.scanResult}',
+                      //     style: const TextStyle(
+                      //         fontSize: 16, fontWeight: FontWeight.bold),
+                      //     textAlign: TextAlign.center,
+                      //   )
+                      : const Text(
+                          'No data scanned yet.',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                  // ? ScanResultWidget(
+                  //     jsonString: provider.scanResult,
+                  //     userData: widget.userData)
+                  // : const SizedBox.shrink(),
 
                   // ScanResultWidget(jsonString: provider.scanResult),
 
@@ -554,6 +576,443 @@ class _PatrollingScreenState extends State<PatrollingScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Widget _buildScanResult(String scanResult ,) {
+//   try {
+//     print('Raw Scan Result: $scanResult');
+
+//     // Remove any prefix if present
+//     if (scanResult.startsWith("API Response: ")) {
+//       scanResult = scanResult.replaceFirst("API Response: ", "");
+//     }
+
+//     final Map<String, dynamic> jsonResponse = json.decode(scanResult);
+
+//     if (!jsonResponse.containsKey("data") || jsonResponse["data"] == null) {
+//       print("Unexpected JSON format: $jsonResponse");
+//       return const Text(
+//         "Unexpected response format. Check API.",
+//         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+//         textAlign: TextAlign.center,
+//       );
+//     }
+
+//     final patrollingApiData = PatrollingApiData.fromJson(jsonResponse);
+
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(
+//           "Message: ${patrollingApiData.message}",
+//           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+//           textAlign: TextAlign.center,
+//         ),
+//         const SizedBox(height: 16),
+//         ListView.builder(
+//           shrinkWrap: true,
+//           physics: const NeverScrollableScrollPhysics(),
+//           itemCount: patrollingApiData.data.data.length,
+//           itemBuilder: (context, index) {
+//             final datum = patrollingApiData.data.data[index];
+//             return Card(
+//               elevation: 3,
+//               margin: const EdgeInsets.symmetric(vertical: 8),
+//               child: Padding(
+//                 padding: const EdgeInsets.all(12.0),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       "Patrolling Type: ${datum.patrollingType}",
+//                       style: const TextStyle(
+//                           fontSize: 16, fontWeight: FontWeight.bold),
+//                     ),
+//                     Text(
+//                       " UserID: ${datum.userId}",
+//                       style: const TextStyle(
+//                           fontSize: 16, fontWeight: FontWeight.bold),
+//                     ),
+//                     Text("Shift: ${datum.shift}",
+//                         style: const TextStyle(fontSize: 14)),
+//                     Text("Created At: ${datum.createdAt}",
+//                         style: const TextStyle(fontSize: 14)),
+//                     const SizedBox(height: 8),
+//                     const Text(
+//                       "Stop Points:",
+//                       style:
+//                           TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+//                     ),
+//                     const SizedBox(height: 4),
+//                     ListView.builder(
+//                       shrinkWrap: true,
+//                       physics: const NeverScrollableScrollPhysics(),
+//                       itemCount: datum.stopPoints.length,
+//                       itemBuilder: (context, spIndex) {
+//                         final stopPoint = datum.stopPoints[spIndex];
+//                         return ListTile(
+//                           contentPadding: EdgeInsets.zero,
+//                           leading: Icon(FontAwesomeIcons.locationDot,
+//                               color: Colors.red),
+//                           title: Text(stopPoint.location),
+//                           subtitle: Text("Date: ${stopPoint.date}"),
+//                         );
+//                       },
+//                     ),
+//                     Visibility(
+//                       visible: datum.userId ==
+//                           widget.userData
+//                               .empNo, // Ensure visibility only when IDs match
+//                       child: Container(
+//                         decoration: BoxDecoration(
+//                           gradient: const LinearGradient(
+//                             colors: [
+//                               Colors.blueAccent,
+//                               Colors.purpleAccent
+//                             ], // Gradient colors
+//                             begin: Alignment.topLeft,
+//                             end: Alignment.bottomRight,
+//                           ),
+//                           borderRadius: BorderRadius.circular(12),
+//                           boxShadow: const [
+//                             BoxShadow(
+//                               color: Colors.black26, // Soft shadow
+//                               blurRadius: 6,
+//                               offset: Offset(2, 2),
+//                             ),
+//                           ],
+//                         ),
+//                         child: MaterialButton(
+//                           onPressed: () {
+//                             showDialog(
+//                               context: context,
+//                               builder: (BuildContext context) {
+//                                 return AlertDialog(
+//                                   title: const Text('Confirm Submission'),
+//                                   content: const Text(
+//                                       'Are you sure you want to complete patrolling?'),
+//                                   actions: [
+//                                     TextButton(
+//                                       onPressed: () {
+//                                         Navigator.pop(
+//                                             context); // Close the dialog
+//                                       },
+//                                       child: const Text('Cancel'),
+//                                     ),
+//                                     TextButton(
+//                                       onPressed: () {
+//                                         Navigator.pop(
+//                                             context); // Close the dialog
+//                                         context
+//                                             .read<PatrollingProvider>()
+//                                             .submitPatrollingComplete(context);
+//                                       },
+//                                       child: const Text('OK'),
+//                                     ),
+//                                   ],
+//                                 );
+//                               },
+//                             );
+//                           },
+//                           padding: const EdgeInsets.symmetric(
+//                               horizontal: 24, vertical: 14),
+//                           shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(12),
+//                           ),
+//                           child: const Text(
+//                             'Submit',
+//                             style: TextStyle(
+//                               fontSize: 18,
+//                               fontWeight: FontWeight.bold,
+//                               letterSpacing: 1.2,
+//                               color: Colors.white,
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             );
+//           },
+//         ),
+//       ],
+//     );
+//   } catch (e) {
+//     print("Error parsing scan result: $e");
+//     return Text(
+//       "Error parsing scan result: $e",
+//       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+//       textAlign: TextAlign.center,
+//     );
+//   }
+// }
+
+class BuildScanResultWidget extends StatefulWidget {
+  final String scanResult;
+  final LoginModelApi userData;
+
+  const BuildScanResultWidget({
+    required this.scanResult,
+    required this.userData,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  _BuildScanResultWidgetState createState() => _BuildScanResultWidgetState();
+}
+
+class _BuildScanResultWidgetState extends State<BuildScanResultWidget> {
+  @override
+  Widget build(BuildContext context) {
+    try {
+      String scanResult = widget.scanResult;
+      print('Raw Scan Result: $scanResult');
+
+      // Remove any prefix if present
+      if (scanResult.startsWith("API Response: ")) {
+        scanResult = scanResult.replaceFirst("API Response: ", "");
+      }
+
+      final Map<String, dynamic> jsonResponse = json.decode(scanResult);
+
+      if (!jsonResponse.containsKey("data") || jsonResponse["data"] == null) {
+        print("Unexpected JSON format: $jsonResponse");
+        return const Text(
+          "Unexpected response format. Check API.",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        );
+      }
+
+      final patrollingApiData = PatrollingApiData.fromJson(jsonResponse);
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: patrollingApiData.data.data.length,
+            itemBuilder: (context, index) {
+              final datum = patrollingApiData.data.data[index];
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Text(
+                      //   "Message: ${patrollingApiData.message}",
+                      //   style: const TextStyle(
+                      //       fontSize: 16, fontWeight: FontWeight.bold),
+                      //   textAlign: TextAlign.center,
+                      // ),
+                      // Text("Patrolling Type: ${datum.patrollingType}",
+                      //     style: const TextStyle(
+                      //         fontSize: 16, fontWeight: FontWeight.bold)),
+                      // Text("UserID: ${datum.userId}",
+                      //     style: const TextStyle(
+                      //         fontSize: 16, fontWeight: FontWeight.bold)),
+                      // Text("Shift: ${datum.shift}",
+                      //     style: const TextStyle(
+                      //         fontSize: 16, fontWeight: FontWeight.bold)),
+                      // Text("Created At: ${datum.createdAt}",
+                      //     style: const TextStyle(
+                      //         fontSize: 16, fontWeight: FontWeight.bold)),
+
+                      Card(
+                        elevation: 4,
+                        // margin: const EdgeInsets.symmetric(
+                        //     vertical: 8, horizontal: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Message: ${patrollingApiData.message}",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueAccent,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const Divider(), // Adds a thin line for separation
+                              _buildInfoRow(
+                                  "Patrolling Type", datum.patrollingType),
+                              _buildInfoRow("User ID", datum.userId.toString()),
+                              _buildInfoRow("Shift", datum.shift),
+                              _buildInfoRow("Created At",
+                                  _formatDateTime(datum.createdAt)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Stop Points:",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: datum.stopPoints.length,
+                        itemBuilder: (context, spIndex) {
+                          final stopPoint = datum.stopPoints[spIndex];
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(FontAwesomeIcons.locationDot,
+                                color: Colors.red),
+                            title: Text(stopPoint.location),
+                            subtitle: stopPoint.date.isNotEmpty
+                                ? Text("Date: ${stopPoint.date}")
+                                : null, // If empty, subtitle is hidden
+                          );
+                        },
+                      ),
+                      Center(
+                        child: Visibility(
+                          visible: datum.userId == widget.userData.empNo,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Colors.blueAccent,
+                                  Colors.purpleAccent
+                                ], // Gradient colors
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26, // Soft shadow
+                                  blurRadius: 6,
+                                  offset: Offset(2, 2),
+                                ),
+                              ],
+                            ),
+                            child: MaterialButton(
+                              onPressed: () {
+                                // context.read<PatrollingProvider>().submitPatrollingComplete(
+                                //       context,
+                                //     );
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Confirm Submission'),
+                                      content: const Text(
+                                          'Are you sure you want to complete patrolling?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(
+                                                context); // Close the dialog
+                                          },
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(
+                                                context); // Close the dialog
+                                            context
+                                                .read<PatrollingProvider>()
+                                                .submitPatrollingComplete(
+                                                    context);
+                                          },
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'Submit',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      );
+    } catch (e) {
+      print("Error parsing scan result: $e");
+      return Text(
+        // "Error parsing scan result: $e",
+        "",
+
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      );
+    }
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return DateFormat('yyyy-MM-dd HH:mm')
+        .format(dateTime); // Adjust format as needed
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 1, // Gives equal space to label
+            child: Text(
+              "$label: ",
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+          Expanded(
+            flex: 2, // Gives more space to value
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ],
       ),
     );
   }
