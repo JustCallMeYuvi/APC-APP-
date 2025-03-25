@@ -875,18 +875,17 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
             final String status = vehicleDetails['status']?.toString() ?? 'N/A';
             final String active = vehicleDetails['active']?.toString() ?? 'N/A';
             // Logic to determine gate type
-            if (_status == "1" && _active == "1" && _userDept == "Main Gate") {
-              _gateType = "Main Gate";
-              _showPickButtonsandSubmit = true;
-            } else if (_status == "2" &&
-                _active == "1" &&
-                _userDept == "Fire Gate") {
+            // if (_status == "1" && _active == "1" && _userDept == "Main Gate") {
+            //   _gateType = "Main Gate";
+            //   _showPickButtonsandSubmit = true;
+            // } else
+            if (_status == "1" && _active == "1" && _userDept == "Fire Gate") {
               _gateType = "Fire Gate";
               _showPickButtonsandSubmit = true;
-            } else if (_status == "3" && _active == "1" && _userDept == "FG") {
+            } else if (_status == "2" && _active == "1" && _userDept == "FG") {
               _gateType = "FG IN";
               _showPickButtonsandSubmit = true;
-            } else if (_status == "4" && _active == "1" && _userDept == "FG") {
+            } else if (_status == "3" && _active == "1" && _userDept == "FG") {
               _gateType = "FG OUT";
               _showPickButtonsandSubmit = true;
               _isSubmitted = false;
@@ -894,43 +893,46 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
               //   _gateType = "FG OUT";
               //   _showPickButtonsandSubmit = true;
               // });
-            } else if (_status == "5" &&
+            } else if (_status == "4" &&
                 _active == "1" &&
                 _userDept == "Fire Gate") {
               _gateType = "Fire Gate OUT";
               _showPickButtonsandSubmit = true;
-            } else if (_status == "6" &&
-                _active == "1" &&
-                _userDept == "Main Gate") {
-              _gateType = "Main Gate OUT";
-              _showPickButtonsandSubmit = true;
-            } else if (_status == "6" && _active == "2") {
+            }
+            //  else if (_status == "6" &&
+            //     _active == "1" &&
+            //     _userDept == "Main Gate") {
+            //   _gateType = "Main Gate OUT";
+            //   _showPickButtonsandSubmit = true;
+            // }
+            else if (_status == "4" && _active == "2") {
               _gateType = "Already Vehicle Exited";
               _showPickButtonsandSubmit = false;
             } else if (_status == "0") {
               _gateType = "Export team not Approved";
               _showPickButtonsandSubmit = false;
             } else if (_status == "1") {
-              _gateType = "Vehicle waiting at Main Gate In";
+              _gateType = "Vehicle waiting at Fire Gate In";
               _showPickButtonsandSubmit = false;
             } else if (_status == "2") {
-              _gateType =
-                  "Vehicle Exited from Main Gate,Waiting at Fire Gate In";
-              _showPickButtonsandSubmit = false;
-            } else if (_status == "3") {
               _gateType = "Vehicle Exited from Fire Gate,Waiting at FG In";
               _showPickButtonsandSubmit = false;
-            } else if (_status == "4") {
-              _gateType = "Vehicle Entered in FG,Waiting for Loading Complete";
-              _showPickButtonsandSubmit = false;
-            } else if (_status == "5") {
-              _gateType = "Vehicle Exited from FG,Waiting at Fire Gate Out";
-              _showPickButtonsandSubmit = false;
-            } else if (_status == "6") {
+            } else if (_status == "3") {
               _gateType =
-                  "Vehicle Exited from Fire Gate ,Waiting at Main Gate Out";
+                  "Vehicle Exited from FG In,Waiting at for Loading Complete";
+              _showPickButtonsandSubmit = false;
+            } else if (_status == "4") {
+              _gateType = "Vehicle Exited in FG Out,Waiting for Fire Gate Out";
               _showPickButtonsandSubmit = false;
             }
+            // else if (_status == "5") {
+            //   _gateType = "Vehicle Exited from FG,Waiting at Fire Gate Out";
+            //   _showPickButtonsandSubmit = false;
+            // } else if (_status == "6") {
+            //   _gateType =
+            //       "Vehicle Exited from Fire Gate ,Waiting at Main Gate Out";
+            //   _showPickButtonsandSubmit = false;
+            // }
           });
         } else {
           _showErrorDialog("Error: No vehicle details found.");
@@ -1117,30 +1119,31 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                 const SizedBox(height: 16.0),
 
                 // Main Gate
-                if (_gateType == "Main Gate") ...[
-                  _vehicleDetails("Vehicle ID", _vehicleId),
-                  _vehicleDetails("Vehicle Number", _selectedVehicleNumber),
-                  _vehicleDetails("Driver Name (IN)", _driverNameIN),
-                  _vehicleDetails("Truck Number", _truckNumber),
-                  _vehicleDetails("License Number (IN)", _licenseNumberIN),
-                  _vehicleDetails("Vehicle Type", _vehicleType),
-                  // _vehicleDetails("Container Number", _container_Number_IN),
+                // if (_gateType == "Main Gate") ...[
+                //   _vehicleDetails("Vehicle ID", _vehicleId),
+                //   _vehicleDetails("Vehicle Number", _selectedVehicleNumber),
+                //   _vehicleDetails("Driver Name (IN)", _driverNameIN),
+                //   _vehicleDetails("Truck Number", _truckNumber),
+                //   _vehicleDetails("License Number (IN)", _licenseNumberIN),
+                //   _vehicleDetails("Vehicle Type", _vehicleType),
+                //   // _vehicleDetails("Container Number", _container_Number_IN),
 
-                  // Conditionally show "Container Number" only if _container_Number_IN has data
-                  if (_container_Number_IN.isNotEmpty)
-                    _vehicleDetails("Container Number", _container_Number_IN),
-                  // FROM_IN TextField
-                  _customTextField("FROM_IN", _mainGateFromInController),
+                //   // Conditionally show "Container Number" only if _container_Number_IN has data
+                //   if (_container_Number_IN.isNotEmpty)
+                //     _vehicleDetails("Container Number", _container_Number_IN),
+                //   // FROM_IN TextField
+                //   _customTextField("FROM_IN", _mainGateFromInController),
 
-                  // STAGE_IN TextField
-                  _customTextField("STAGE_IN", _mainGateStageInController),
+                //   // STAGE_IN TextField
+                //   _customTextField("STAGE_IN", _mainGateStageInController),
 
-                  // PURPOSE TextField
-                  _customTextField("PURPOSE", _mainGatePurposeController),
-                ]
+                //   // PURPOSE TextField
+                //   _customTextField("PURPOSE", _mainGatePurposeController),
+                // ]
 
-                // Fire Gate
-                else if (_gateType == "Fire Gate") ...[
+                // // Fire Gate
+                // else
+                if (_gateType == "Fire Gate") ...[
                   _vehicleDetails("Vehicle ID", _vehicleId),
                   _vehicleDetails("Vehicle Type", _vehicleType),
                   // Conditionally show "Container Number" only if _container_Number_IN has data
@@ -3013,7 +3016,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
     }
 
     print('This is the request data: ${request.fields}');
-
+    print(apiUrl);
     try {
       // Send POST request with multipart/form-data
       var response = await request.send();

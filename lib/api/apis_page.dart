@@ -36,11 +36,15 @@ class ApiHelper {
         // If the IP address starts with 10.3.x.x or 10.4.x.x, use local URLs
         _baseUrl = 'http://10.3.0.208:8084/api/HR/';
         _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
+        _maxkingGMSUrl = 'http://10.3.0.208:8084/api/Maxking_GMS_/';
+
         urlGlobalOrLocalCheck = '10.3.0.208';
       } else {
         // If the IP address does not match, use the public URLs
         _baseUrl = 'http://203.153.32.85:54329/api/HR/';
         _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
+        _maxkingGMSUrl = 'http://203.153.32.85:54329/api/Maxking_GMS_/';
+
         urlGlobalOrLocalCheck = '203.153.32.85';
       }
       print('Base URL set to: $_baseUrl');

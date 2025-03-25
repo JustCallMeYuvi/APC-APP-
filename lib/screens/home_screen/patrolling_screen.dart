@@ -329,7 +329,6 @@
 
 import 'dart:convert';
 
-import 'package:animated_movies_app/screens/home_screen/scan_result_widget.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:animated_movies_app/services/patrollin_api_data_model.dart';
 import 'package:animated_movies_app/services/provider_services.dart';
