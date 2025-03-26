@@ -267,8 +267,11 @@ class _HomeContentState extends State<HomeContent> {
       } else {
         print("Location permission denied.");
       }
-      // await ApiHelper.updateUrlsBasedOnNetwork(); // for wifi apache and apc IT
-      // gmsUrlToShow = ApiHelper.urlGlobalOrLocalCheck; // Fetch GMS URL after update
+
+      // Enable the function below when updating the app for live, as it determines whether to use local or global APIs based on Wi-Fi or mobile networks.
+      await ApiHelper.updateUrlsBasedOnNetwork(); // for wifi apache and apc IT
+      gmsUrlToShow = ApiHelper.urlGlobalOrLocalCheck; // Fetch GMS URL after update
+
       // 🟢 Now, build the message string with the updated URL
       message += ' (IP: $wifiIpAddress)\nURL: $gmsUrlToShow';
     } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/auth_provider.dart';
@@ -8,6 +9,9 @@ import 'package:animated_movies_app/screens/home_screen/home_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:install_plugin/install_plugin.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 
 import 'package:provider/provider.dart';
@@ -29,6 +33,138 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    checkForUpdates(); // Call update check on initialization
+  }
+
+  Future<void> checkForUpdates() async {
+    setState(() {
+      _isLoading = true; // Start loading
+    });
+
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String currentVersion = packageInfo.version;
+
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
+    final Uri url = ApiHelper.checkUpdateApi(currentVersion);
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data != null &&
+            data.containsKey('latestVersion') &&
+            data.containsKey('apkFileData')) {
+          String latestVersion = data['latestVersion'];
+          String apkFileData =
+              data['apkFileData']; // Base64 encoded APK file data
+
+          if (currentVersion != latestVersion) {
+            _showUpdateDialog(latestVersion, apkFileData);
+          } else {
+            // _showNoUpdateDialog();
+          }
+        } else {
+          print(
+              'Invalid response: latestVersion or apkFileData key not found.');
+        }
+      } else if (response.statusCode == 404) {
+        // Handle the case when no update is available
+        if (response.body == "No update available") {
+          // _showNoUpdateDialog();
+        } else {
+          print('Unexpected response body: ${response.body}');
+        }
+      } else {
+        print(
+            'Failed to check for updates: ${response.statusCode} ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Error while checking for updates: $e');
+    } finally {
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
+    }
+  }
+
+  void _showUpdateDialog(String latestVersion, String apkFileData) {
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, // Prevent dismissing the dialog by tapping outside
+      builder: (BuildContext context) {
+        return WillPopScope(
+          // Prevent the dialog from closing using the back button
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: Text("Update Available"),
+            content: Text(
+                "A new version ($latestVersion) is available. Please update the app."),
+            actions: <Widget>[
+              // TextButton(
+              //   child: Text("Later"),
+              //   onPressed: () {
+              //     Navigator.of(context).pop(); // Close the dialog
+              //   },
+              // ),
+              TextButton(
+                child: Text("Update Now"),
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Close the dialog
+
+                  try {
+                    // Start downloading the APK file
+                    await _downloadAndInstallApk(apkFileData);
+                  } catch (e) {
+                    print('Failed to download or install APK: $e');
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _downloadAndInstallApk(String apkFileData) async {
+    try {
+      // Decode the base64 APK data and save to a local file
+      final bytes = base64Decode(apkFileData);
+      final directory =
+          await getExternalStorageDirectory(); // Use external storage
+      if (directory == null) {
+        throw Exception("External storage directory is null");
+      }
+      final filePath = '${directory.path}/update.apk';
+      final file = File(filePath);
+      print('File Path: $filePath');
+
+      await file.writeAsBytes(bytes);
+      print('APK file written successfully.');
+
+      // Install the APK using install_plugin
+      final result = await InstallPlugin.installApk(filePath,
+          appId: 'com.example.animated_movies_app');
+      print('Install result: $result');
+
+      // if (result == true) {
+      //   // Assuming the result indicates success
+      //   _showRestartDialog();
+      // }
+    } catch (e) {
+      print('Failed to download or install APK: $e');
+    }
+  }
 
   // Future<void> loginApiBarcode() async {
   //   final barcode = _barcodeController.text;
@@ -196,6 +332,9 @@ class _LoginPageState extends State<LoginPage> {
               // Use Provider to update login state
               Provider.of<AuthProvider>(context, listen: false)
                   .login(loginData);
+                  
+              // Call the method to update URLs based on network
+              await ApiHelper.updateUrlsBasedOnNetwork();
 
               // Navigate to HomeScreen with loginData
               Navigator.pushReplacement(
@@ -225,8 +364,8 @@ class _LoginPageState extends State<LoginPage> {
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('Something went wrong, server issue detected Please Contact IT'),
+          content: Text(
+              'Something went wrong, server issue detected Please Contact IT'),
         ),
       );
     } finally {

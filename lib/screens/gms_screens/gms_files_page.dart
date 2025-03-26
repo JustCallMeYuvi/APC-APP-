@@ -363,9 +363,9 @@ class _GmsFilesPageState extends State<GmsFilesPage> {
           true; // Show the loading indicator when starting the API call
     });
     try {
-      final url = '${ApiHelper.maxkingGMSUrl}GMS_SignOff?TRACKINGID=$vehicleId';
+      final url = '${ApiHelper.gmsUrl}GMS_SignOff?TRACKINGID=$vehicleId';
       final response = await http.get(Uri.parse(url));
-
+      print(url);
       if (response.statusCode == 200) {
         final dynamic responseData = json.decode(response.body);
 

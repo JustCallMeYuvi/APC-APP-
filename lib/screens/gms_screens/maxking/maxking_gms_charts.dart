@@ -60,12 +60,12 @@ class _MaxkingGmsChartsState extends State<MaxkingGmsCharts> {
   late Future<List<StatusReport>> _statusReports;
 
   final Map<int, String> _statusLabels = {
-    1: "Main Gate Waiting",
-    2: "Fire Gate Waiting",
-    3: "FG Entry Waiting",
-    4: "FG Out Waiting",
-    5: "Fire Gate Out Waiting",
-    6: "Main Gate Out Waiting",
+    // 1: "Main Gate Waiting",
+    1: "Fire Gate Waiting",
+    2: "FG Entry Waiting",
+    3: "FG Out Waiting",
+    4: "Fire Gate Out Waiting",
+    // 6: "Main Gate Out Waiting",
   };
 
   final Map<int, Color> _statusColors = {
