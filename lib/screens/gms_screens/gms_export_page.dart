@@ -2307,7 +2307,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                 else if (_gateType == "Main Gate OUT") ...[
                   _vehicleDetails("Vehicle ID", _vehicleId),
                   _vehicleDetails("Vehicle Number", _truckNumber),
-                  _vehicleDetails("Satge In", _stageIN),
+                  _vehicleDetails("Stage In", _stageIN),
 
                   _vehicleDetails("Source To", _sourceTo),
                   _vehicleDetails("Vehicle Type", _vehicleType),
