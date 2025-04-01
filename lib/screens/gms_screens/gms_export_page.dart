@@ -930,7 +930,9 @@ class _GmsExportPageState extends State<GmsExportPage> {
           });
           _userDept = data['loginDetails'][0]['department'] ?? '';
           final processLevel = data['loginDetails'][0]['processLevel'] ?? '';
-          final exportManager = data['loginDetails'][0]['exportManager'] ?? '';
+          // final exportManager = data['loginDetails'][0]['exportManager'] ?? '';
+          final exportManager = data['loginDetails'][0]['exporT_MANAGER'] ??
+              ''; // here export manager value binds
           final barcode = data['loginDetails'][0]['barcode'] ?? '';
           // final createdBy = data['loginDetails'][0]['createdBy'] ?? '';
 

@@ -278,6 +278,9 @@ class _LoginPageState extends State<LoginPage> {
     // await ApiHelper.initializeUrls();
 
     if (barcode.isEmpty || password.isEmpty) {
+      setState(() {
+        _isLoginLoading = false; // Hide loading indicator if fields are empty
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Barcode and password cannot be empty.'),
@@ -293,7 +296,7 @@ class _LoginPageState extends State<LoginPage> {
     final url = Uri.parse(ApiHelper.login(barcode, password));
     print('Login URL: $url');
 
-    // Start a timer to show an alert if loading exceeds 2 minutes
+    // Start a timer to show an alert if loading exceeds 1 minute
     Timer? _loadingTimer = Timer(const Duration(minutes: 1), () {
       if (_isLoginLoading) {
         _showLoadingAlert();
@@ -332,7 +335,7 @@ class _LoginPageState extends State<LoginPage> {
               // Use Provider to update login state
               Provider.of<AuthProvider>(context, listen: false)
                   .login(loginData);
-                  
+
               // Call the method to update URLs based on network
               await ApiHelper.updateUrlsBasedOnNetwork();
 
