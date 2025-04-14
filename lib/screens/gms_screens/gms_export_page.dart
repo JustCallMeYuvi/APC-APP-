@@ -2335,21 +2335,58 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
               // Upload Buttons
               if (_showPickButtonsandSubmit)
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //   children: [
+                //     ElevatedButton.icon(
+                //       onPressed: () => _pickMedia('image'),
+                //       icon: Icon(Icons.image),
+                //       label: Text('Pick Images'),
+                //     ),
+                //     ElevatedButton.icon(
+                //       onPressed: () => _pickMedia('video'),
+                //       icon: Icon(Icons.videocam),
+                //       label: Text('Pick Videos'),
+                //     ),
+                //   ],
+                // ),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    ElevatedButton.icon(
-                      onPressed: () => _pickMedia('image'),
-                      icon: Icon(Icons.image),
-                      label: Text('Pick Images'),
+                    GestureDetector(
+                      onTap: () => _pickMedia('image'),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.image_outlined,
+                            size: 36,
+                            color: Colors.indigoAccent,
+                          ), // bigger icon like Instagram
+                          SizedBox(height: 4),
+                          Text('Images', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: () => _pickMedia('video'),
-                      icon: Icon(Icons.videocam),
-                      label: Text('Pick Videos'),
+                    GestureDetector(
+                      onTap: () => _pickMedia('video'),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.video_call_outlined,
+                            size: 36,
+                            color: Colors.indigoAccent,
+                          ),
+                          SizedBox(height: 4),
+                          Text('Videos', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
+
               SizedBox(height: 16.0),
 // Check if there are media files
               _mediaFiles.isNotEmpty

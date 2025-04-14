@@ -5,6 +5,7 @@ import 'package:animated_movies_app/screens/gms_screens/custom_switch_button.dar
 
 import 'package:animated_movies_app/screens/gms_screens/gms_files_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/inspected_barcodes.dart';
+import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_files_page.dart';
 
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -277,6 +278,9 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
   String _fireGateOutPurposeInTextFormField = 'Export';
   String _fireGateOutDescriptionTextFormFieldController = 'Finished Goods';
   String _loadingLocationsFireGateOut = '';
+
+  String _fireGateStageInTextFormField = 'Maxking'; // Default value
+  String _fireGatePurposeTextFormField = 'Export'; // Default value
 
   String _licenseNumberOut = '';
   String _remark = '';
@@ -1157,12 +1161,60 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                   _vehicleDetails("RC Number", _rcNumber),
                   _vehicleDetails("Stage In", _stageIN),
                   _vehicleDetails("Inward Serial Number", _inward_Serial_No),
+
+                  _customTextField("FROM_IN", _mainGateFromInController),
+
+                  // _customTextField("STAGE_IN", _mainGateStageInController),
+
+                  TextFormField(
+                    initialValue: _fireGateStageInTextFormField,
+
+                    // initialValue: 'HI',
+
+                    //controller:
+                    //   _driverNameOutController, // Bind the controller to manage the input
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'StageIn', // Label text for the field
+                    ),
+                    onChanged: (text) {
+                      // You can also update a variable or state if needed
+                      setState(() {
+                        _fireGateStageInTextFormField =
+                            text; // Update the variable or field with the new value
+                      });
+                      // Handle the change if needed
+                      print('Entered text: $text');
+                    },
+                  ),
+
                   _customTextField(
                       "Driver Pass No", _fireGateDriverPassController),
                   _customTextField(
                       "Lock Number", _fireGateLockNumberController),
                   // _customTextField("Purpose ", _fireGatePurposeController),
-                  _customTextField("Purpose ", _mainGatePurposeController),
+                  // _customTextField("Purpose ", _mainGatePurposeController),
+                  TextFormField(
+                    initialValue: _fireGatePurposeTextFormField,
+
+                    // initialValue: 'HI',
+
+                    //controller:
+                    //   _driverNameOutController, // Bind the controller to manage the input
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Purpose', // Label text for the field
+                    ),
+                    onChanged: (text) {
+                      // You can also update a variable or state if needed
+                      setState(() {
+                        _fireGatePurposeTextFormField =
+                            text; // Update the variable or field with the new value
+                      });
+                      // Handle the change if needed
+                      print('Entered text: $text');
+                    },
+                  ),
 
                   _customTextField(
                       "Truck License No ", _fireGateTruckLicenseController),
@@ -2128,18 +2180,54 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
 
               // Upload Buttons
               if (_showPickButtonsandSubmit)
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //   children: [
+                //     ElevatedButton.icon(
+                //       onPressed: () => _pickMedia('image'),
+                //       icon: const Icon(Icons.image),
+                //       label: const Text('Pick Images'),
+                //     ),
+                //     ElevatedButton.icon(
+                //       onPressed: () => _pickMedia('video'),
+                //       icon: const Icon(Icons.videocam),
+                //       label: const Text('Pick Videos'),
+                //     ),
+                //   ],
+                // ),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    ElevatedButton.icon(
-                      onPressed: () => _pickMedia('image'),
-                      icon: const Icon(Icons.image),
-                      label: const Text('Pick Images'),
+                    GestureDetector(
+                      onTap: () => _pickMedia('image'),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.image_outlined,
+                            size: 36,
+                            color: Colors.lightGreen,
+                          ), // bigger icon like Instagram
+                          SizedBox(height: 4),
+                          Text('Images', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: () => _pickMedia('video'),
-                      icon: const Icon(Icons.videocam),
-                      label: const Text('Pick Videos'),
+                    GestureDetector(
+                      onTap: () => _pickMedia('video'),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.video_call_outlined,
+                            size: 36,
+                            color: Colors.lightGreen,
+                          ),
+                          SizedBox(height: 4),
+                          Text('Videos', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -2257,7 +2345,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                GmsFilesPage(vehicleId: _vehicleId)),
+                                MaxkingGmsFilesPage(vehicleId: _vehicleId)),
                       );
                     },
                     child: const Text(
@@ -2522,6 +2610,9 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
         _fireGateTruckLicenseController,
         _fireGateDestinyController,
         _mainGatePurposeController,
+        _mainGateFromInController,
+
+        _mainGateStageInController,
       ],
       "Main Gate": [
         _mainGateFromInController,
@@ -2546,6 +2637,18 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
     }
 
     if (_gateType == "Fire Gate") {
+      if (_mainGateFromInController.text.trim().isEmpty) {
+        _validateAgricultureCheckList("Please Select Fire gate From IN.");
+        return;
+      }
+      // if (_mainGateStageInController.text.trim().isEmpty) {
+      //   _validateAgricultureCheckList("Please enter Fire Gate Stage IN.");
+      //   return;
+      // }
+      // if (_mainGatePurposeController.text.trim().isEmpty) {
+      //   _validateAgricultureCheckList("Please enter Fire Gate Purpose.");
+      //   return;
+      // }
       if (_fireGateDriverPassController.text.trim().isEmpty) {
         _validateAgricultureCheckList("Please Select Fire gate Driver Pass.");
         return;
@@ -2554,10 +2657,10 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
         _validateAgricultureCheckList("Please enter Fire Gate Lock .");
         return;
       }
-      if (_mainGatePurposeController.text.trim().isEmpty) {
-        _validateAgricultureCheckList("Please enter Fire Gate Purpose .");
-        return;
-      }
+      // if (_mainGatePurposeController.text.trim().isEmpty) {
+      //   _validateAgricultureCheckList("Please enter Fire Gate Purpose .");
+      //   return;
+      // }
       if (_fireGateTruckLicenseController.text.trim().isEmpty) {
         _validateAgricultureCheckList("Please enter Fire Gate License Number.");
         return;
@@ -2799,7 +2902,8 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
       _fireGateOutSourceToInTextFormField = 'Chennai';
       _fireGateOutDescriptionTextFormFieldController = 'Finished Goods';
       _exportManager = _exportManager;
-
+      _fireGateStageInTextFormField = '';
+      _fireGatePurposeTextFormField = '';
       // Clear selected images and videos
       // _selectedImages.clear();
       // _selectedVideos.clear();
@@ -2864,12 +2968,13 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
       ..fields['FGEntry'] = _FGEntry
       ..fields['FGExit'] = _FGExit
       ..fields['FROM_IN'] = _mainGateFromInController.text
-      ..fields['STAGE_IN'] = _mainGateStageInController.text
+      // ..fields['STAGE_IN'] = _mainGateStageInController.text
+      ..fields['STAGE_IN'] = _fireGateStageInTextFormField
       // if(_status=='1'){
       //         ..fields['PURPOSE'] = _mainGatePurposeController.text
       // }
-      ..fields['PURPOSE'] = _mainGatePurposeController.text
-
+      // ..fields['PURPOSE'] = _mainGatePurposeController.text
+      ..fields['PURPOSE'] = _fireGatePurposeTextFormField
       // Fire Gate details DriverPassNo
       ..fields['DriverPassNo'] = _fireGateDriverPassController.text
       ..fields['LockNo'] = _fireGateLockNumberController.text
