@@ -333,6 +333,7 @@ import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:animated_movies_app/services/patrollin_api_data_model.dart';
 import 'package:animated_movies_app/services/provider_services.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -435,12 +436,22 @@ class _PatrollingScreenState extends State<PatrollingScreen> {
                   const SizedBox(
                     height: 10,
                   ),
-                  buildDropDownSearchField(
-                    label: 'Patrolling',
+                  // buildDropDownSearchField(
+                  //   label: 'Patrolling',
+                  //   value: provider.selectedPatrolling,
+                  //   items: ['Patrolling 1', 'Patrolling 2', 'Patrolling 3'],
+                  //   onChanged: provider.setSelectedPatrolling,
+                  //   controller: patrollingController,
+                  // ),
+                     buildDropDownField(
+                    label: 'Shift',
                     value: provider.selectedPatrolling,
                     items: ['Patrolling 1', 'Patrolling 2', 'Patrolling 3'],
-                    onChanged: provider.setSelectedPatrolling,
-                    controller: patrollingController,
+                    onChanged: (newValue) {
+                      provider.setSelectedPatrolling(newValue);
+                      // print(
+                      //     'Selected Shift: $newValue'); // This will print the selected shift
+                    },
                   ),
                   // Text('Next Stop Point is $provider,'),
                   // Text('Next stop point is'),
@@ -452,12 +463,23 @@ class _PatrollingScreenState extends State<PatrollingScreen> {
                   // ),
 
                   const SizedBox(height: 10),
-                  buildDropDownSearchField(
+                  // buildDropDownSearchField(
+                  //   label: 'Shift',
+                  //   value: provider.selectedShift,
+                  //   items: ['Shift A', 'Shift B', 'Shift C'],
+                  //   onChanged: provider.setSelectedShift,
+                  //   controller: shiftController,
+                  // ),
+
+                  buildDropDownField(
                     label: 'Shift',
                     value: provider.selectedShift,
                     items: ['Shift A', 'Shift B', 'Shift C'],
-                    onChanged: provider.setSelectedShift,
-                    controller: shiftController,
+                    onChanged: (newValue) {
+                      provider.setSelectedShift(newValue);
+                      // print(
+                      //     'Selected Shift: $newValue'); // This will print the selected shift
+                    },
                   ),
                   // const SizedBox(height: 20),
                   // TextFormField(
@@ -1059,3 +1081,80 @@ Widget buildDropDownSearchField({
     isMultiSelectDropdown: false,
   );
 }
+
+
+
+Widget buildDropDownField({
+  required String label,
+  required String value,
+  required List<String> items,
+  required ValueChanged<String> onChanged,
+}) {
+  return SizedBox(
+    width: double.infinity,
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton2<String>(
+        isExpanded: true, // To make the button full width
+
+        items: items
+            .map(
+              (String item) => DropdownMenuItem<String>(
+                value: item,
+                child: Text(
+                  item,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    // fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            )
+            .toList(),
+        value: items.contains(value) ? value : items[0], // Default value
+        onChanged: (String? newValue) {
+          if (newValue != null) {
+            onChanged(newValue); // Update the selected value
+            print('Selected option: $newValue');
+          }
+        },
+        buttonStyleData: ButtonStyleData(
+          height: 50,
+          width: double.infinity, // Make the button full-width
+          padding: const EdgeInsets.only(left: 14, right: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              // color: Colors.blueGrey,
+              width: 0.5,
+            ),
+            color: Colors.white, // Button color
+          ),
+          elevation: 2,
+        ),
+        iconStyleData: IconStyleData(
+          icon: Icon(
+            Icons.arrow_drop_down,
+            // color: Colors.blueGrey, // Customize arrow icon color
+          ),
+          iconSize: 24,
+        ),
+        dropdownStyleData: DropdownStyleData(
+          maxHeight: 200,
+          // width: double.infinity, // Make the dropdown full-width
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            // color: Colors.redAccent,
+          ),
+          offset: const Offset(0, 0),
+        ),
+        menuItemStyleData: MenuItemStyleData(
+          height: 50,
+          padding: EdgeInsets.only(left: 14, right: 14),
+        ),
+      ),
+    ),
+  );
+}
+

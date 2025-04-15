@@ -1168,11 +1168,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
 
                   TextFormField(
                     initialValue: _fireGateStageInTextFormField,
-
-                    // initialValue: 'HI',
-
-                    //controller:
-                    //   _driverNameOutController, // Bind the controller to manage the input
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'StageIn', // Label text for the field
@@ -1196,11 +1191,6 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                   // _customTextField("Purpose ", _mainGatePurposeController),
                   TextFormField(
                     initialValue: _fireGatePurposeTextFormField,
-
-                    // initialValue: 'HI',
-
-                    //controller:
-                    //   _driverNameOutController, // Bind the controller to manage the input
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Purpose', // Label text for the field

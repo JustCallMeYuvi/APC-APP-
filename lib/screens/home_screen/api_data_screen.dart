@@ -43,10 +43,11 @@ import 'package:animated_movies_app/screens/api_data_screens/production_request_
 import 'package:animated_movies_app/screens/api_data_screens/user_approval_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/export_tracking.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
+import 'package:animated_movies_app/screens/gms_screens/gms_delete_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_charts.dart';
-import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_files_page.dart';
+
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_tracking.dart';
 
@@ -183,10 +184,15 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                 // userData:
                                                                                 //     widget.userData,
                                                                                 )
-                                                                            : Text(
-                                                                                'Data for ${widget.pageName} goes here.',
-                                                                                style: const TextStyle(fontSize: 20),
-                                                                              )
+                                                                            : widget.pageRoute == 'RemoveGmsVehicle'
+                                                                                ? GMSDeletePage(
+                                                                                    // userData:
+                                                                                    //     widget.userData,
+                                                                                    )
+                                                                                : Text(
+                                                                                    'Data for ${widget.pageName} goes here.',
+                                                                                    style: const TextStyle(fontSize: 20),
+                                                                                  )
 
             // : SignApprovalPage(
             //     userData: widget.userData,

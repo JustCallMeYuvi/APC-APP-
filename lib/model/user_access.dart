@@ -83,7 +83,7 @@ IconData getIconForPage(Page page) {
       return Icons.report;
     case 'RFT Report':
       return Icons.report;
-    case 'Token Screen':
+    case 'Notification':
       return Icons.notifications;
     case 'Skill Mapping Request':
       return Icons.work;
