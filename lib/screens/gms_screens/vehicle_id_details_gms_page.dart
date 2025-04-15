@@ -144,6 +144,7 @@ class _VehicleIdDetailsGmsPageState extends State<VehicleIdDetailsGmsPage> {
               : Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
+                    // mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // buildDetailRow(
                       //     "Vehicle Number", vehicleData!['vehiclE_NUMBER']),
@@ -153,42 +154,34 @@ class _VehicleIdDetailsGmsPageState extends State<VehicleIdDetailsGmsPage> {
                       //     "License Number", vehicleData!['licensE_NUMBER']),
                       // buildDetailRow("CHA", vehicleData!['cha']),
                       // buildDetailRow("Inspection", vehicleData!['inspection']),
-                      Stack(children: [
-                        Card(
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Column(
-                                children: [
-                                  buildDetailRow(
-                                      "Vehicle ID", vehicleData!['vehicleid']),
-                                  buildDetailRow("Vehicle Number",
-                                      vehicleData!['vehiclE_NUMBER']),
-                                  buildDetailRow("Driver Name",
-                                      vehicleData!['driveR_NAME']),
-                                  buildDetailRow("License Number",
-                                      vehicleData!['licensE_NUMBER']),
-                                  buildDetailRow("CHA", vehicleData!['cha']),
-                                  buildDetailRow(
-                                      "Inspection", vehicleData!['inspection']),
-                                ],
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Card(
+                              elevation: 5,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            )),
-                        // Positioned(
-                        //   top: 90,
-                        //   right: -10,
-                        //   child: IconButton(
-                        //     icon: const Icon(Icons.delete, color: Colors.red),
-                        //     onPressed: showDeleteConfirmationDialog,
-                        //   ),
-                        // ),
-                      ]),
-                      const SizedBox(
-                        height: 10,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Column(
+                                  children: [
+                                    buildDetailRow("Vehicle ID",
+                                        vehicleData!['vehicleid']),
+                                    buildDetailRow("Vehicle Number",
+                                        vehicleData!['vehiclE_NUMBER']),
+                                    buildDetailRow("Driver Name",
+                                        vehicleData!['driveR_NAME']),
+                                    buildDetailRow("License Number",
+                                        vehicleData!['licensE_NUMBER']),
+                                    buildDetailRow("CHA", vehicleData!['cha']),
+                                    buildDetailRow("Inspection",
+                                        vehicleData!['inspection']),
+                                  ],
+                                ),
+                              )),
+                        ),
                       ),
+
                       Material(
                         color: Colors.transparent,
                         child: Ink(
