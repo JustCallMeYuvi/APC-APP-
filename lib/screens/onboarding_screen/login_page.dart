@@ -337,7 +337,7 @@ class _LoginPageState extends State<LoginPage> {
                   .login(loginData);
 
               // Call the method to update URLs based on network
-              await ApiHelper.updateUrlsBasedOnNetwork();
+              // await ApiHelper.updateUrlsBasedOnNetwork();
 
               // Navigate to HomeScreen with loginData
               Navigator.pushReplacement(

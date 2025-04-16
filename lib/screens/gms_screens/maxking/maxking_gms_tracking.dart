@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
-import 'package:animated_movies_app/screens/gms_screens/gms_files_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_files_page.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -106,8 +104,6 @@ class _MaxkingGMSTrackingPageState extends State<MaxkingGMSTrackingPage> {
     return _buildVehicleCard(_selectedVehicleDetails!);
   }
 
-  // this is used to without stepper
-
   Widget _buildVehicleCard(Map<String, dynamic> vehicle) {
     // Define status messages based on the status code
     String getStatusMessage(int status) {
@@ -115,17 +111,17 @@ class _MaxkingGMSTrackingPageState extends State<MaxkingGMSTrackingPage> {
         case 0:
           return "Waiting for Export Approval";
         case 1:
-          return "Waiting for Main Gate In";
-        case 2:
           return "Waiting for Fire Gate In";
-        case 3:
+        case 2:
           return "Waiting for FG In";
-        case 4:
+        case 3:
           return "Waiting for FG Out";
-        case 5:
+        case 4:
           return "Waiting for Fire Gate Out";
-        case 6:
-          return "Waiting for Main Gate Out";
+        // case 5:
+        //   return "Waiting for Fire Gate Out";
+        // case 6:
+        //   return "Waiting for Main Gate Out";
         default:
           return "Unknown Status";
       }
@@ -213,7 +209,7 @@ class _MaxkingGMSTrackingPageState extends State<MaxkingGMSTrackingPage> {
         child: Column(
           children: [
             isLoadingAllVehiclesData
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
