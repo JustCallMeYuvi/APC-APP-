@@ -159,7 +159,7 @@ class _VehicleIdDetailsGmsPageState extends State<VehicleIdDetailsGmsPage> {
                           child: Card(
                               elevation: 5,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(10.0),
