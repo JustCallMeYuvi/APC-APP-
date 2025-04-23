@@ -1,9 +1,11 @@
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
 
 class EmpPunch extends StatefulWidget {
   final LoginModelApi userData;
@@ -15,8 +17,9 @@ class EmpPunch extends StatefulWidget {
 
 class _EmpPunchState extends State<EmpPunch> {
   String _location = "Fetching location...";
-  String _latLng = "";
+  String _latLng = "Fetching latLng";
   String _macAddress = "Fetching MAC address...";
+  String? _apiResponse; // Store response here
   @override
   void initState() {
     super.initState();
@@ -90,12 +93,86 @@ class _EmpPunchState extends State<EmpPunch> {
     }
   }
 
-  void _onPunchPressed() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(
-              'Punch recorded at $_location ($_latLng)\nMAC: $_macAddress')),
+  // void _onPunchPressed() {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //         content: Text(
+  //             'Punch recorded at $_location ($_latLng)\nMAC: $_macAddress')),
+  //   );
+  // }
+  void _showResponseDialog(String message) {
+    bool isMacMismatch =
+        message == "Your barcode doesn't match the registered MAC address";
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Punch Details"),
+          content: Text(message),
+          actions: [
+            if (isMacMismatch)
+              TextButton(
+                child: const Text("Change Device"),
+                onPressed: () {
+                  // You can navigate to settings or handle device switch here
+                  Navigator.of(context).pop();
+                },
+              ),
+            TextButton(
+              child: Text(isMacMismatch ? "OK" : "Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            if (!isMacMismatch)
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+          ],
+        );
+      },
     );
+  }
+
+  void _onPunchPressed() async {
+    final empNo = widget.userData.empNo;
+    final lat = _latLng.contains('Lat:')
+        ? _latLng.split(',')[0].split(':')[1].trim()
+        : "0";
+    final long = _latLng.contains('Long:')
+        ? _latLng.split(',')[1].split(':')[1].trim()
+        : "0";
+
+    final url = Uri.parse(
+      '${ApiHelper.baseUrl}EmpPunch?barcode=$empNo&longitude=$long&latitude=$lat&macadrress=$_macAddress',
+    );
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        setState(() {
+          _apiResponse = response.body; // You can parse JSON if needed
+        });
+        // Show dialog
+        _showResponseDialog(_apiResponse!);
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Punch Successful!')),
+        // );
+      } else {
+        _showResponseDialog("Error: ${response.reasonPhrase}");
+        setState(() {
+          _apiResponse = "Error: ${response.reasonPhrase}";
+        });
+      }
+    } catch (e) {
+      _showResponseDialog("Failed to connect: $e");
+      setState(() {
+        _apiResponse = "Failed to connect: $e";
+      });
+    }
   }
 
   @override
@@ -104,53 +181,60 @@ class _EmpPunchState extends State<EmpPunch> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Text(
-                      'Emp No: ${widget.userData.empNo}',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _location,
-                      style: const TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _latLng,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'MAC Address: $_macAddress',
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+            SizedBox(
+              width: double.infinity,
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Emp No: ${widget.userData.empNo}',
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      // const SizedBox(height: 10),
+                      // Text(
+                      //   _location,
+                      //   style: const TextStyle(fontSize: 16),
+                      //   textAlign: TextAlign.center,
+                      // ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _latLng,
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'MAC Address: $_macAddress',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 20),
             Container(
+              width: double.infinity,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [Colors.blueAccent, Colors.indigo],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(30),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 6,
