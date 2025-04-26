@@ -100,9 +100,10 @@ class _EmpPunchState extends State<EmpPunch> {
   //             'Punch recorded at $_location ($_latLng)\nMAC: $_macAddress')),
   //   );
   // }
+
   void _showResponseDialog(String message) {
-    bool isMacMismatch =
-        message == "Your barcode doesn't match the registered MAC address";
+    // bool isMacMismatch =
+    //     message == "Your barcode doesn't match the registered MAC address";
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -110,27 +111,29 @@ class _EmpPunchState extends State<EmpPunch> {
           title: const Text("Punch Details"),
           content: Text(message),
           actions: [
-            if (isMacMismatch)
-              TextButton(
-                child: const Text("Change Device"),
-                onPressed: () {
-                  // You can navigate to settings or handle device switch here
-                  Navigator.of(context).pop();
-                },
-              ),
+            // if (isMacMismatch)
             TextButton(
-              child: Text(isMacMismatch ? "OK" : "Cancel"),
+              child: const Text("Cancel"),
+              onPressed: () {
+                // You can navigate to settings or handle device switch here
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              // child: Text(isMacMismatch ? "OK" : "Cancel"),
+              child: const Text("OK"),
+
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
-            if (!isMacMismatch)
-              TextButton(
-                child: const Text("OK"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
+            // if (!isMacMismatch)
+            //   TextButton(
+            //     child: const Text("OK"),
+            //     onPressed: () {
+            //       Navigator.of(context).pop();
+            //     },
+            //   ),
           ],
         );
       },
@@ -206,19 +209,24 @@ class _EmpPunchState extends State<EmpPunch> {
                       //   textAlign: TextAlign.center,
                       // ),
                       const SizedBox(height: 10),
-                      Text(
-                        _latLng,
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.bold),
-                      ),
+                      _latLng.contains("Fetching")
+                          ? const CircularProgressIndicator()
+                          : Text(
+                              _latLng,
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.bold),
+                            ),
                       const SizedBox(height: 10),
-                      Text(
-                        'MAC Address: $_macAddress',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                        textAlign: TextAlign.center,
-                      ),
+                      _macAddress.contains("Fetching")
+                          ? const CircularProgressIndicator()
+                          : Text(
+                              'MAC Address: $_macAddress',
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.grey[600]),
+                              textAlign: TextAlign.center,
+                            ),
                     ],
                   ),
                 ),
