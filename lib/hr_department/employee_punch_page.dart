@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:animated_movies_app/api/apis_page.dart';
+import 'package:animated_movies_app/hr_department/punch_details_model.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -20,11 +23,21 @@ class _EmpPunchState extends State<EmpPunch> {
   String _latLng = "Fetching latLng";
   String _macAddress = "Fetching MAC address...";
   String? _apiResponse; // Store response here
+  List<PunchDetailModel> punchDetails = [];
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
     _getLocationPermission();
     _getMacAddress();
+    fetchPunchDetails();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    fetchPunchDetails(); // Automatically refresh punch details on page revisit
   }
 
   Future<void> _getMacAddress() async {
@@ -140,6 +153,44 @@ class _EmpPunchState extends State<EmpPunch> {
     );
   }
 
+  // void _onPunchPressed() async {
+  //   final empNo = widget.userData.empNo;
+  //   final lat = _latLng.contains('Lat:')
+  //       ? _latLng.split(',')[0].split(':')[1].trim()
+  //       : "0";
+  //   final long = _latLng.contains('Long:')
+  //       ? _latLng.split(',')[1].split(':')[1].trim()
+  //       : "0";
+
+  //   final url = Uri.parse(
+  //     '${ApiHelper.baseUrl}EmpPunch?barcode=$empNo&longitude=$long&latitude=$lat&macadrress=$_macAddress',
+  //   );
+
+  //   try {
+  //     final response = await http.get(url);
+  //     if (response.statusCode == 200) {
+  //       setState(() {
+  //         _apiResponse = response.body; // You can parse JSON if needed
+  //       });
+  //       // Show dialog
+  //       _showResponseDialog(_apiResponse!);
+  //       // ScaffoldMessenger.of(context).showSnackBar(
+  //       //   SnackBar(content: Text('Punch Successful!')),
+  //       // );
+  //     } else {
+  //       _showResponseDialog("Error: ${response.reasonPhrase}");
+  //       setState(() {
+  //         _apiResponse = "Error: ${response.reasonPhrase}";
+  //       });
+  //     }
+  //   } catch (e) {
+  //     _showResponseDialog("Failed to connect: $e");
+  //     setState(() {
+  //       _apiResponse = "Failed to connect: $e";
+  //     });
+  //   }
+  // }
+
   void _onPunchPressed() async {
     final empNo = widget.userData.empNo;
     final lat = _latLng.contains('Lat:')
@@ -161,9 +212,9 @@ class _EmpPunchState extends State<EmpPunch> {
         });
         // Show dialog
         _showResponseDialog(_apiResponse!);
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(content: Text('Punch Successful!')),
-        // );
+
+        // Update the punch details in real-time
+        await fetchPunchDetails(); // Fetch the latest punch details after recording
       } else {
         _showResponseDialog("Error: ${response.reasonPhrase}");
         setState(() {
@@ -178,103 +229,206 @@ class _EmpPunchState extends State<EmpPunch> {
     }
   }
 
+  // Future<void> fetchPunchDetails() async {
+  //   try {
+  //     final url =
+  //         '${ApiHelper.baseUrl}PunchDetails?barcode=${widget.userData.empNo}';
+  //     final response = await http.get(Uri.parse(url));
+  //     if (response.statusCode == 200) {
+  //       final List<dynamic> data = json.decode(response.body);
+  //       setState(() {
+  //         punchDetails =
+  //             data.map((item) => PunchDetailModel.fromJson(item)).toList();
+  //         isLoading = false;
+  //       });
+  //     } else {
+  //       // Handle error
+  //       setState(() {
+  //         isLoading = false;
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching punch details: $e');
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
+
+  Future<void> fetchPunchDetails() async {
+    setState(() {
+      isLoading = true; // 🔥 Start loading when fetching
+    });
+
+    try {
+      final url =
+          '${ApiHelper.baseUrl}PunchDetails?barcode=${widget.userData.empNo}';
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          punchDetails =
+              data.map((item) => PunchDetailModel.fromJson(item)).toList();
+          isLoading = false; // 🔥 Stop loading
+        });
+      } else {
+        setState(() {
+          isLoading = false; // 🔥 Stop loading on error
+        });
+        print('Failed to fetch punch details');
+      }
+    } catch (e) {
+      print('Error fetching punch details: $e');
+      setState(() {
+        isLoading = false; // 🔥 Stop loading on exception
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: double.infinity,
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Emp No: ${widget.userData.empNo}',
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      // const SizedBox(height: 10),
-                      // Text(
-                      //   _location,
-                      //   style: const TextStyle(fontSize: 16),
-                      //   textAlign: TextAlign.center,
-                      // ),
-                      const SizedBox(height: 10),
-                      _latLng.contains("Fetching")
-                          ? const CircularProgressIndicator()
-                          : Text(
-                              _latLng,
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[700],
-                                  fontWeight: FontWeight.bold),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Emp No: ${widget.userData.empNo}',
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
                             ),
-                      const SizedBox(height: 10),
-                      _macAddress.contains("Fetching")
-                          ? const CircularProgressIndicator()
-                          : Text(
-                              'MAC Address: $_macAddress',
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.grey[600]),
-                              textAlign: TextAlign.center,
-                            ),
-                    ],
+                            // const SizedBox(height: 10),
+                            // Text(
+                            //   _location,
+                            //   style: const TextStyle(fontSize: 16),
+                            //   textAlign: TextAlign.center,
+                            // ),
+                            const SizedBox(height: 10),
+                            _latLng.contains("Fetching")
+                                ? const CircularProgressIndicator()
+                                : Text(
+                                    _latLng,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[700],
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                            const SizedBox(height: 10),
+                            _macAddress.contains("Fetching")
+                                ? const CircularProgressIndicator()
+                                : Text(
+                                    'MAC Address: $_macAddress',
+                                    style: TextStyle(
+                                        fontSize: 14, color: Colors.grey[600]),
+                                    textAlign: TextAlign.center,
+                                  ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.blueAccent, Colors.indigo],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.blueAccent, Colors.indigo],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: MaterialButton(
+                      // onPressed: _location.contains("Error") ||
+                      //         _location.contains("denied")
+                      //     ? null
+                      //     // : _onPunchPressed,
+                      //     : () async {
+                      //         await _getCurrentLocation(); // Step 1: Get latest location
+                      //         _onPunchPressed(); // Step 2: Call API with new lat/long
+                      //         await fetchPunchDetails(); // Step 3: Refresh punch details
+                      //         setState(() {});              // 🔥 Step 4: Rebuild UI to show new list
+                      //       },
+
+                      onPressed: _location.contains("Error") ||
+                              _location.contains("denied")
+                          ? null
+                          : () async {
+                              await _getCurrentLocation();
+                              _onPunchPressed();
+                              await fetchPunchDetails(); // handles loading itself
+                            },
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      disabledColor: Colors.grey[400],
+                      elevation: 0,
+                      child: const Text(
+                        'Punch',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                        itemCount: punchDetails.length,
+                        itemBuilder: (context, index) {
+                          final punch = punchDetails[index];
+                          return Card(
+                            margin: const EdgeInsets.all(8),
+                            child: ListTile(
+                              title: Text(
+                                'Bar Code: ${punch.emP_NO}',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Punch Date: ${punch.inserT_DATE}'),
+                                  Text('Punch: ${punch.visE_BECAUSE}'),
+                                ],
+                              ),
+                              // leading: CircleAvatar(
+                              //   child: Text(
+                              //       punch.emP_NO.substring(punch.emP_NO.length - 2)),
+                              // ),
+                            ),
+                          );
+                        }),
                   ),
                 ],
               ),
-              child: MaterialButton(
-                onPressed:
-                    _location.contains("Error") || _location.contains("denied")
-                        ? null
-                        : _onPunchPressed,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                disabledColor: Colors.grey[400],
-                elevation: 0,
-                child: const Text(
-                  'Punch',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
