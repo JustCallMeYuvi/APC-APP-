@@ -106,14 +106,6 @@ class _EmpPunchState extends State<EmpPunch> {
     }
   }
 
-  // void _onPunchPressed() {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //         content: Text(
-  //             'Punch recorded at $_location ($_latLng)\nMAC: $_macAddress')),
-  //   );
-  // }
-
   void _showResponseDialog(String message) {
     // bool isMacMismatch =
     //     message == "Your barcode doesn't match the registered MAC address";
@@ -153,44 +145,6 @@ class _EmpPunchState extends State<EmpPunch> {
     );
   }
 
-  // void _onPunchPressed() async {
-  //   final empNo = widget.userData.empNo;
-  //   final lat = _latLng.contains('Lat:')
-  //       ? _latLng.split(',')[0].split(':')[1].trim()
-  //       : "0";
-  //   final long = _latLng.contains('Long:')
-  //       ? _latLng.split(',')[1].split(':')[1].trim()
-  //       : "0";
-
-  //   final url = Uri.parse(
-  //     '${ApiHelper.baseUrl}EmpPunch?barcode=$empNo&longitude=$long&latitude=$lat&macadrress=$_macAddress',
-  //   );
-
-  //   try {
-  //     final response = await http.get(url);
-  //     if (response.statusCode == 200) {
-  //       setState(() {
-  //         _apiResponse = response.body; // You can parse JSON if needed
-  //       });
-  //       // Show dialog
-  //       _showResponseDialog(_apiResponse!);
-  //       // ScaffoldMessenger.of(context).showSnackBar(
-  //       //   SnackBar(content: Text('Punch Successful!')),
-  //       // );
-  //     } else {
-  //       _showResponseDialog("Error: ${response.reasonPhrase}");
-  //       setState(() {
-  //         _apiResponse = "Error: ${response.reasonPhrase}";
-  //       });
-  //     }
-  //   } catch (e) {
-  //     _showResponseDialog("Failed to connect: $e");
-  //     setState(() {
-  //       _apiResponse = "Failed to connect: $e";
-  //     });
-  //   }
-  // }
-
   void _onPunchPressed() async {
     final empNo = widget.userData.empNo;
     final lat = _latLng.contains('Lat:')
@@ -203,7 +157,7 @@ class _EmpPunchState extends State<EmpPunch> {
     final url = Uri.parse(
       '${ApiHelper.baseUrl}EmpPunch?barcode=$empNo&longitude=$long&latitude=$lat&macadrress=$_macAddress',
     );
-
+print('Punch URL$url');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -212,7 +166,9 @@ class _EmpPunchState extends State<EmpPunch> {
         });
         // Show dialog
         _showResponseDialog(_apiResponse!);
-
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Punch Successful!')),
+        // );
         // Update the punch details in real-time
         await fetchPunchDetails(); // Fetch the latest punch details after recording
       } else {
@@ -229,58 +185,29 @@ class _EmpPunchState extends State<EmpPunch> {
     }
   }
 
-  // Future<void> fetchPunchDetails() async {
-  //   try {
-  //     final url =
-  //         '${ApiHelper.baseUrl}PunchDetails?barcode=${widget.userData.empNo}';
-  //     final response = await http.get(Uri.parse(url));
-  //     if (response.statusCode == 200) {
-  //       final List<dynamic> data = json.decode(response.body);
-  //       setState(() {
-  //         punchDetails =
-  //             data.map((item) => PunchDetailModel.fromJson(item)).toList();
-  //         isLoading = false;
-  //       });
-  //     } else {
-  //       // Handle error
-  //       setState(() {
-  //         isLoading = false;
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching punch details: $e');
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   }
-  // }
-
   Future<void> fetchPunchDetails() async {
-    setState(() {
-      isLoading = true; // 🔥 Start loading when fetching
-    });
-
     try {
       final url =
           '${ApiHelper.baseUrl}PunchDetails?barcode=${widget.userData.empNo}';
+          print('fetchPunch Details URL $url');
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
           punchDetails =
               data.map((item) => PunchDetailModel.fromJson(item)).toList();
-          isLoading = false; // 🔥 Stop loading
+          isLoading = false;
         });
       } else {
+        // Handle error
         setState(() {
-          isLoading = false; // 🔥 Stop loading on error
+          isLoading = false;
         });
-        print('Failed to fetch punch details');
       }
     } catch (e) {
       print('Error fetching punch details: $e');
       setState(() {
-        isLoading = false; // 🔥 Stop loading on exception
+        isLoading = false;
       });
     }
   }
@@ -360,21 +287,13 @@ class _EmpPunchState extends State<EmpPunch> {
                       ],
                     ),
                     child: MaterialButton(
-                      // onPressed: _location.contains("Error") ||
-                      //         _location.contains("denied")
-                      //     ? null
-                      //     // : _onPunchPressed,
-                      //     : () async {
-                      //         await _getCurrentLocation(); // Step 1: Get latest location
-                      //         _onPunchPressed(); // Step 2: Call API with new lat/long
-                      //         await fetchPunchDetails(); // Step 3: Refresh punch details
-                      //         setState(() {});              // 🔥 Step 4: Rebuild UI to show new list
-                      //       },
-
                       onPressed: _location.contains("Error") ||
                               _location.contains("denied")
                           ? null
                           : () async {
+                              setState(() {
+                                isLoading = true;
+                              });
                               await _getCurrentLocation();
                               _onPunchPressed();
                               await fetchPunchDetails(); // handles loading itself
@@ -397,7 +316,7 @@ class _EmpPunchState extends State<EmpPunch> {
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   Expanded(
@@ -410,7 +329,8 @@ class _EmpPunchState extends State<EmpPunch> {
                             child: ListTile(
                               title: Text(
                                 'Bar Code: ${punch.emP_NO}',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

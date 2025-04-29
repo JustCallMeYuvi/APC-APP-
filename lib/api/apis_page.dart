@@ -4,21 +4,21 @@ import 'package:network_info_plus/network_info_plus.dart';
 class ApiHelper {
   // static const String _baseUrl = 'http://10.3.0.208:8084/api/HR/'; // 208 local url
 
-  // static String _baseUrl = 'http://203.153.32.85:54329/api/HR/'; //global url
+  static String _baseUrl = 'http://203.153.32.85:54329/api/HR/'; //global url
 
-  static String _baseUrl = 'http://10.3.0.70:9042/api/HR/'; // 70 local url
+  // static String _baseUrl = 'http://10.3.0.70:9042/api/HR/'; // 70 local url
 
   //  static const String _gmsUrl = 'http://10.3.0.208:8084/api/GMS/'; // 208 local url
 
-  // static String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/'; //global url
+  static String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/'; //global url
 
-  static String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/'; // 70 local url
-
-  // static String _maxkingGMSUrl =
-  //     'http://203.153.32.85:54329/api/Maxking_GMS_/'; // Global maxking URL
+  // static String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/'; // 70 local url
 
   static String _maxkingGMSUrl =
-      'http://10.3.0.70:9042/api/Maxking_GMS_/'; // 70 maxking URL
+      'http://203.153.32.85:54329/api/Maxking_GMS_/'; // Global maxking URL
+
+  // static String _maxkingGMSUrl =
+  //     'http://10.3.0.70:9042/api/Maxking_GMS_/'; // 70 maxking URL
 
   static String get baseUrl => _baseUrl; // Public getter
 
