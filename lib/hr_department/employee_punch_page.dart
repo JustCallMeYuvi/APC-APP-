@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/hr_department/punch_details_model.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -53,6 +55,51 @@ class _EmpPunchState extends State<EmpPunch> {
       });
     }
   }
+
+  // Future<void> _getDeviceIdentifier() async {
+  //   try {
+  //     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  //     String identifier;
+
+  //     if (Platform.isAndroid) {
+  //       final androidInfo = await deviceInfo.androidInfo;
+  //       identifier = androidInfo.id ?? "Unknown Android ID";
+  //     } else if (Platform.isIOS) {
+  //       final iosInfo = await deviceInfo.iosInfo;
+  //       identifier = iosInfo.identifierForVendor ?? "Unknown iOS ID";
+  //     } else {
+  //       identifier = "Unsupported Platform";
+  //     }
+
+  //     setState(() {
+  //       _macAddress = "MAC not available, ID: $identifier";
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _macAddress = "Error getting device ID: $e";
+  //     });
+  //   }
+  // }
+
+  // Future<void> _getMacAddress() async {
+  //   try {
+  //     final info = NetworkInfo();
+  //     String? mac = await info.getWifiBSSID();
+
+  //     if (mac == null || mac == "02:00:00:00:00:00") {
+  //       // Fallback to device ID
+  //       await _getDeviceIdentifier();
+  //     } else {
+  //       setState(() {
+  //         _macAddress = mac;
+  //       });
+  //     }
+  //   } catch (e) {
+  //     setState(() {
+  //       _macAddress = "Error getting MAC: $e";
+  //     });
+  //   }
+  // }
 
   Future<void> _getLocationPermission() async {
     var status = await Permission.location.request();
@@ -157,7 +204,7 @@ class _EmpPunchState extends State<EmpPunch> {
     final url = Uri.parse(
       '${ApiHelper.baseUrl}EmpPunch?barcode=$empNo&longitude=$long&latitude=$lat&macadrress=$_macAddress',
     );
-print('Punch URL$url');
+    print('Punch URL$url');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -189,7 +236,7 @@ print('Punch URL$url');
     try {
       final url =
           '${ApiHelper.baseUrl}PunchDetails?barcode=${widget.userData.empNo}';
-          print('fetchPunch Details URL $url');
+      print('fetchPunch Details URL $url');
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -328,7 +375,7 @@ print('Punch URL$url');
                             margin: const EdgeInsets.all(8),
                             child: ListTile(
                               title: Text(
-                                'Bar Code: ${punch.emP_NO}',
+                                'Barcode: ${punch.emP_NO}',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold),
                               ),
