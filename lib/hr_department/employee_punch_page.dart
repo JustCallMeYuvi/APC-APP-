@@ -11,6 +11,8 @@ import 'package:geocoding/geocoding.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class EmpPunch extends StatefulWidget {
   final LoginModelApi userData;
@@ -27,6 +29,7 @@ class _EmpPunchState extends State<EmpPunch> {
   String? _apiResponse; // Store response here
   List<PunchDetailModel> punchDetails = [];
   bool isLoading = true;
+  String _deviceId = "Fetching Device ID...";
 
   @override
   void initState() {
@@ -34,6 +37,14 @@ class _EmpPunchState extends State<EmpPunch> {
     _getLocationPermission();
     _getMacAddress();
     fetchPunchDetails();
+    _loadDeviceId();
+  }
+
+  Future<void> _loadDeviceId() async {
+    String id = await getUniqueDeviceId();
+    setState(() {
+      _deviceId = id;
+    });
   }
 
   @override
@@ -53,6 +64,41 @@ class _EmpPunchState extends State<EmpPunch> {
       setState(() {
         _macAddress = "Error getting MAC address: $e";
       });
+    }
+  }
+
+  Future<String> getDeviceId() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+    if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.id ?? "Unknown Android ID";
+    } else if (Platform.isIOS) {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      return iosInfo.identifierForVendor ?? "Unknown iOS ID";
+    } else {
+      return "Unsupported platform";
+    }
+  }
+
+  Future<String> getPersistentDeviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? deviceId = prefs.getString('device_id');
+
+    if (deviceId == null) {
+      deviceId = const Uuid().v4();
+      await prefs.setString('device_id', deviceId);
+    }
+
+    return deviceId;
+  }
+
+  Future<String> getUniqueDeviceId() async {
+    try {
+      String hardwareId = await getDeviceId();
+      return hardwareId;
+    } catch (_) {
+      return await getPersistentDeviceId();
     }
   }
 
@@ -291,6 +337,15 @@ class _EmpPunchState extends State<EmpPunch> {
                             //   style: const TextStyle(fontSize: 16),
                             //   textAlign: TextAlign.center,
                             // ),
+                            const SizedBox(height: 10),
+                            _deviceId.contains("Fetching")
+                                ? const CircularProgressIndicator()
+                                : Text(
+                                    'Device ID: $_deviceId',
+                                    style: TextStyle(
+                                        fontSize: 14, color: Colors.grey[600]),
+                                    textAlign: TextAlign.center,
+                                  ),
                             const SizedBox(height: 10),
                             _latLng.contains("Fetching")
                                 ? const CircularProgressIndicator()
