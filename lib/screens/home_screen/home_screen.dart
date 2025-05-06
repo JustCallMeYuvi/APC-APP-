@@ -236,7 +236,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: _isLoading // Show loading indicator if loading
           ? Center(
-              child: CircularProgressIndicator(),
+              // child: CircularProgressIndicator(),
+                  child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                const SizedBox(height: 20),
+                const Text(
+                  'App updating, please wait...',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
             )
           : IndexedStack(
               index: _selectedIndex,

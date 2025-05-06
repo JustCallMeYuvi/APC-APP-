@@ -248,7 +248,8 @@ class _EmpPunchState extends State<EmpPunch> {
         : "0";
 
     final url = Uri.parse(
-      '${ApiHelper.baseUrl}EmpPunch?barcode=$empNo&longitude=$long&latitude=$lat&macadrress=$_macAddress',
+      // '${ApiHelper.baseUrl}EmpPunch?barcode=$empNo&longitude=$long&latitude=$lat&macadrress=$_macAddress',
+      '${ApiHelper.baseUrl}EmpPunch?barcode=$empNo&longitude=$long&latitude=$lat&macadrress=$_deviceId',
     );
     print('Punch URL$url');
     try {
@@ -343,7 +344,9 @@ class _EmpPunchState extends State<EmpPunch> {
                                 : Text(
                                     'Device ID: $_deviceId',
                                     style: TextStyle(
-                                        fontSize: 14, color: Colors.grey[600]),
+                                        fontSize: 16,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.bold),
                                     textAlign: TextAlign.center,
                                   ),
                             const SizedBox(height: 10),
@@ -356,15 +359,15 @@ class _EmpPunchState extends State<EmpPunch> {
                                         color: Colors.grey[700],
                                         fontWeight: FontWeight.bold),
                                   ),
-                            const SizedBox(height: 10),
-                            _macAddress.contains("Fetching")
-                                ? const CircularProgressIndicator()
-                                : Text(
-                                    'MAC Address: $_macAddress',
-                                    style: TextStyle(
-                                        fontSize: 14, color: Colors.grey[600]),
-                                    textAlign: TextAlign.center,
-                                  ),
+                            // const SizedBox(height: 10),
+                            // _macAddress.contains("Fetching")
+                            //     ? const CircularProgressIndicator()
+                            //     : Text(
+                            //         'MAC Address: $_macAddress',
+                            //         style: TextStyle(
+                            //             fontSize: 14, color: Colors.grey[600]),
+                            //         textAlign: TextAlign.center,
+                            //       ),
                           ],
                         ),
                       ),
