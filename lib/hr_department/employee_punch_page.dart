@@ -70,7 +70,11 @@ class _EmpPunchState extends State<EmpPunch> {
   Future<String> getDeviceId() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
 
-    if (Platform.isAndroid) {
+    if (Platform.isWindows) {
+      WindowsDeviceInfo windowsInfo = await deviceInfo.windowsInfo;
+      print('Windows Name: ${windowsInfo.computerName}');
+      return windowsInfo.computerName ?? "Unknown Windows Name";
+    } else if (Platform.isAndroid) {
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       return androidInfo.id ?? "Unknown Android ID";
     } else if (Platform.isIOS) {
@@ -433,15 +437,15 @@ class _EmpPunchState extends State<EmpPunch> {
                             margin: const EdgeInsets.all(8),
                             child: ListTile(
                               title: Text(
-                                'Barcode: ${punch.emP_NO}',
+                                'Barcode: ${punch.empNo}',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold),
                               ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Punch Date: ${punch.inserT_DATE}'),
-                                  Text('Punch: ${punch.visE_BECAUSE}'),
+                                  Text('Punch Date: ${punch.insertDate}'),
+                                  Text('Punch: ${punch.viseBecause}'),
                                 ],
                               ),
                               // leading: CircleAvatar(

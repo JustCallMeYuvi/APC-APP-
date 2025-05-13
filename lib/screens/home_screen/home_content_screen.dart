@@ -138,10 +138,10 @@ import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/data/movies_data.dart';
 import 'package:animated_movies_app/screens/detail_screen/detail_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/animated_stack.dart';
-import 'package:animated_movies_app/screens/home_screen/widgets/filters_widget.dart';
+
 import 'package:animated_movies_app/screens/home_screen/widgets/header_widget.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/movies_cover_widget.dart';
-import 'package:animated_movies_app/screens/home_screen/widgets/search_field_widget.dart';
+
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
