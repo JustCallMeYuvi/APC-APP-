@@ -2,28 +2,18 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/custom_switch_button.dart';
-import 'package:animated_movies_app/screens/gms_screens/fire_gate_exit_manifest_widget.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_files_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/inspected_barcodes.dart';
-import 'package:animated_movies_app/screens/gms_screens/inspection_fg_in.dart';
-import 'package:animated_movies_app/screens/gms_screens/loading_points_widget.dart';
-import 'package:animated_movies_app/screens/gms_screens/manifest_input_screen.dart';
-import 'package:animated_movies_app/screens/gms_screens/video_player_widget.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
-import 'package:mime/mime.dart'; // Import the mime package for MediaType
-import 'package:path_provider/path_provider.dart'; // ✅ Import for storage handling
 
 class GmsExportPage extends StatefulWidget {
   final LoginModelApi userData;
@@ -174,7 +164,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Inspection Result"),
+            title: const Text("Inspection Result"),
             content: RichText(
               textAlign: TextAlign.center, // Center align text
               text: TextSpan(
@@ -191,7 +181,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the alert box
                 },
-                child: Text("Check Again"),
+                child: const Text("Check Again"),
               ),
             ],
           );
@@ -214,7 +204,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
     return Column(
       children: [
         Text('Inspection Result: ${getInspectionResult()}',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         // Optional: Display Truck_Refused state
         // Text(
         //   'Truck Refused: ${_truckRefused ? "True" : "False"}',
@@ -508,8 +498,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.camera_alt),
-              title: Text('Take a Picture'),
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a Picture'),
               onTap: () async {
                 Navigator.of(context).pop();
                 final pickedFile = await _imagePicker.pickImage(
@@ -518,7 +508,10 @@ class _GmsExportPageState extends State<GmsExportPage> {
                 );
                 if (pickedFile != null) {
                   File newFile = File(pickedFile.path);
-
+                  if (_mediaFiles.length >= 30) {
+                    _showSnackBar('Maximum of 30 files reached.');
+                    return;
+                  }
                   // ✅ Request permission before saving
                   if (await _requestPermission('image')) {
                     final result =
@@ -538,8 +531,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.photo_library),
-              title: Text('Choose from Gallery'),
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
               onTap: () async {
                 Navigator.of(context).pop();
                 final result = await FilePicker.platform.pickFiles(
@@ -547,9 +540,16 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   allowMultiple: true,
                 );
                 if (result != null) {
-                  setState(() {
-                    _mediaFiles.addAll(result.paths.map((path) => File(path!)));
-                  });
+                  int totalFilesAfterPick =
+                      _mediaFiles.length + result.paths.length;
+                  if (totalFilesAfterPick > 30) {
+                    _showSnackBar('You can only select up to 30 files.');
+                  } else {
+                    setState(() {
+                      _mediaFiles
+                          .addAll(result.paths.map((path) => File(path!)));
+                    });
+                  }
                 } else {
                   _showSnackBar('No images selected.');
                 }
@@ -565,8 +565,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.videocam),
-              title: Text('Capture Video'),
+              leading: const Icon(Icons.videocam),
+              title: const Text('Capture Video'),
               onTap: () async {
                 Navigator.of(context).pop();
                 final pickedFile = await _imagePicker.pickVideo(
@@ -575,7 +575,10 @@ class _GmsExportPageState extends State<GmsExportPage> {
                 );
                 if (pickedFile != null) {
                   File newFile = File(pickedFile.path);
-
+                  if (_mediaFiles.length >= 30) {
+                    _showSnackBar('Maximum of 30 files reached.');
+                    return;
+                  }
                   // ✅ Request permission before saving
                   if (await _requestPermission('video')) {
                     final result =
@@ -595,8 +598,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.video_library),
-              title: Text('Choose from Gallery'),
+              leading: const Icon(Icons.video_library),
+              title: const Text('Choose from Gallery'),
               onTap: () async {
                 Navigator.of(context).pop();
                 final result = await FilePicker.platform.pickFiles(
@@ -604,9 +607,16 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   allowMultiple: true,
                 );
                 if (result != null) {
-                  setState(() {
-                    _mediaFiles.addAll(result.paths.map((path) => File(path!)));
-                  });
+                  int totalFilesAfterPick =
+                      _mediaFiles.length + result.paths.length;
+                  if (totalFilesAfterPick > 30) {
+                    _showSnackBar('You can only select up to 30 files.');
+                  } else {
+                    setState(() {
+                      _mediaFiles
+                          .addAll(result.paths.map((path) => File(path!)));
+                    });
+                  }
                 } else {
                   _showSnackBar('No videos selected.');
                 }
@@ -735,12 +745,12 @@ class _GmsExportPageState extends State<GmsExportPage> {
     });
 
     // Simulate Upload
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
     setState(() {
       _isUploading = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text('Media uploaded successfully!'),
     ));
   }
@@ -1141,7 +1151,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
           actions: <Widget>[
             TextButton(
               onPressed: onOkPressed,
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         );
@@ -1153,12 +1163,12 @@ class _GmsExportPageState extends State<GmsExportPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Error"),
+        title: const Text("Error"),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("OK"),
+            child: const Text("OK"),
           ),
         ],
       ),
@@ -1253,14 +1263,14 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   },
                   hideOnSelect:
                       true, // Ensures the dropdown closes on selection
-                  constraints: BoxConstraints(maxHeight: 300),
+                  constraints: const BoxConstraints(maxHeight: 300),
                   builder: (context, controller, focusNode) {
                     controller.text =
                         _selectedVehicleNumber; // Update the field with the selected value if any
                     return TextField(
                       controller: controller,
                       focusNode: focusNode,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: "Search Vehicle Numbers",
                         border: OutlineInputBorder(),
                         suffixIcon: Icon(Icons.search),
@@ -1300,16 +1310,17 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   },
                 ),
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               if (_gateType.isNotEmpty)
                 Text(
                   _gateType,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 20),
                 ),
               if (_selectedVehicleNumber.isNotEmpty)
-                if (_isDetailsLoading) CircularProgressIndicator(),
+                if (_isDetailsLoading) const CircularProgressIndicator(),
               if (!_isDetailsLoading && _vehicleId.isNotEmpty) ...[
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
 
                 // Main Gate
                 if (_gateType == "Main Gate") ...[
@@ -1359,7 +1370,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       "Destiny Country ", _fireGateDestinyController),
 
                   ExpansionTile(
-                    title: Text(
+                    title: const Text(
                       'Inspection Points',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -1368,7 +1379,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       ..._inspectionPointsRadioButtons.keys.map((point) {
                         return Card(
                           child: Padding(
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -1377,7 +1388,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                   flex: 2,
                                   child: Text(
                                     point,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold),
                                   ),
@@ -1404,7 +1415,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                               });
                                             },
                                           ),
-                                          Text("Ok",
+                                          const Text("Ok",
                                               style: TextStyle(fontSize: 10)),
                                         ],
                                       ),
@@ -1423,7 +1434,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                               });
                                             },
                                           ),
-                                          Text("Reject",
+                                          const Text("Reject",
                                               style: TextStyle(
                                                   fontSize:
                                                       10)), // "N/A" Radio Button (Only for Refrigeration_Unit)
@@ -1442,7 +1453,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                                     });
                                                   },
                                                 ),
-                                                Text("N/A",
+                                                const Text("N/A",
                                                     style: TextStyle(
                                                         fontSize: 10)),
                                               ],
@@ -1457,7 +1468,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           ),
                         );
                       }).toList(),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       InspectedBarcodesWidget(
@@ -1470,10 +1481,10 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     ],
                   ),
 
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
                   ExpansionTile(
-                    title: Text(
+                    title: const Text(
                       'Agriculture Inspection',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -1482,7 +1493,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       ..._agricultureInspectionRadioButtons.keys.map((point) {
                         return Card(
                           child: Padding(
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -1491,7 +1502,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                   flex: 2,
                                   child: Text(
                                     point,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold),
                                   ),
@@ -1518,7 +1529,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                               });
                                             },
                                           ),
-                                          Text("Ok",
+                                          const Text("Ok",
                                               style: TextStyle(fontSize: 10)),
                                         ],
                                       ),
@@ -1537,7 +1548,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                               });
                                             },
                                           ),
-                                          Text("Reject",
+                                          const Text("Reject",
                                               style: TextStyle(fontSize: 10)),
                                           if (point == "Measures")
                                             Row(
@@ -1554,7 +1565,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                                     });
                                                   },
                                                 ),
-                                                Text("N/A",
+                                                const Text("N/A",
                                                     style: TextStyle(
                                                         fontSize: 10)),
                                               ],
@@ -1572,10 +1583,10 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     ],
                   ),
 
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
                   ExpansionTile(
-                    title: Text(
+                    title: const Text(
                       'Agriculture Checklist',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -1584,7 +1595,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       ..._agricultureCheckListRadioButtons.keys.map((point) {
                         return Card(
                           child: Padding(
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -1593,7 +1604,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                   flex: 2,
                                   child: Text(
                                     point,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold),
                                   ),
@@ -1620,7 +1631,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                               });
                                             },
                                           ),
-                                          Text("Present",
+                                          const Text("Present",
                                               style: TextStyle(fontSize: 12)),
                                         ],
                                       ),
@@ -1639,7 +1650,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                               });
                                             },
                                           ),
-                                          Text("Not Present",
+                                          const Text("Not Present",
                                               style: TextStyle(fontSize: 12)),
                                         ],
                                       ),
@@ -1655,7 +1666,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   ),
 
                   ExpansionTile(
-                    title: Text(
+                    title: const Text(
                       'Other Inspection',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -1664,7 +1675,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       ..._otherInspections.keys.map((point) {
                         return Card(
                           child: Padding(
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -1673,7 +1684,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                   flex: 2,
                                   child: Text(
                                     point,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold),
                                   ),
@@ -1699,7 +1710,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                               });
                                             },
                                           ),
-                                          Text("Available",
+                                          const Text("Available",
                                               style: TextStyle(fontSize: 11)),
                                         ],
                                       ),
@@ -1717,7 +1728,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                               });
                                             },
                                           ),
-                                          Text("Not Available",
+                                          const Text("Not Available",
                                               style: TextStyle(fontSize: 11)),
                                         ],
                                       ),
@@ -1732,7 +1743,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     ],
                   ),
 
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1741,7 +1752,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           _isChecked
                               ? "Container/Truck cleaned & Used for loading"
                               : "Container/Truck cleaned & Used for loading",
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1769,7 +1780,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   if (_container_Number_IN.isNotEmpty)
                     _vehicleDetails("Container Number", _container_Number_IN),
 
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   TypeAheadField<String>(
@@ -1783,14 +1794,14 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           pattern, _allLoadingPoints);
                     },
                     hideOnSelect: true,
-                    constraints: BoxConstraints(maxHeight: 300),
+                    constraints: const BoxConstraints(maxHeight: 300),
                     builder: (context, controller, focusNode) {
                       controller.text =
                           _selectedLoadingPoint; // Set initial text if any
                       return TextField(
                         controller: controller,
                         focusNode: focusNode,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: "Search Loading Point",
                           border: OutlineInputBorder(),
                           suffixIcon: Icon(Icons.search),
@@ -1814,7 +1825,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           .unfocus(); // Optionally unfocus the text field
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   InspectedBarcodesWidget(
@@ -1836,7 +1847,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   // _vehicleDetails("Container Number", _container_Number_IN),
                   // FireGateExitManifestWidget(),
 
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   TypeAheadField<String>(
@@ -1850,14 +1861,14 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           pattern, _allLoadingPoints);
                     },
                     hideOnSelect: true,
-                    constraints: BoxConstraints(maxHeight: 300),
+                    constraints: const BoxConstraints(maxHeight: 300),
                     builder: (context, controller, focusNode) {
                       controller.text =
                           _selectedLoadingPointofFGOut; // Set initial text if any
                       return TextField(
                         controller: controller,
                         focusNode: focusNode,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: "Search Loading Point",
                           border: OutlineInputBorder(),
                           suffixIcon: Icon(Icons.search),
@@ -1881,7 +1892,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           .unfocus(); // Optionally unfocus the text field
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   InspectedBarcodesWidget(
@@ -1891,7 +1902,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       });
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   Column(
@@ -1899,7 +1910,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             'Last Loading Point ',
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20),
@@ -1914,9 +1925,9 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 16.0),
+                      const SizedBox(height: 16.0),
                       if (_enableToggleButton)
-                        Column(
+                        const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -1992,7 +2003,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                     //controller:
                     //   _driverNameOutController, // Bind the controller to manage the input
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Source To', // Label text for the field
                     ),
@@ -2006,7 +2017,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       print('Entered text: $text');
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   TextFormField(
@@ -2016,7 +2027,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                     //controller:
                     //   _driverNameOutController, // Bind the controller to manage the input
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Purpose', // Label text for the field
                     ),
@@ -2090,7 +2101,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                     //controller:
                     //   _driverNameOutController, // Bind the controller to manage the input
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Driver Name OUT', // Label text for the field
                     ),
@@ -2104,7 +2115,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       print('Entered text: $text');
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 15,
                   ),
                   TextFormField(
@@ -2114,7 +2125,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                     //controller:
                     //   _driverNameOutController, // Bind the controller to manage the input
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText:
                           'License Number OUT', // Label text for the field
@@ -2130,12 +2141,12 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     },
                   ),
 
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
 
                   ExpansionTile(
-                    title: Text(
+                    title: const Text(
                       "Manifest Check Report Details",
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -2156,7 +2167,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                         //controller:
                         //   _driverNameOutController, // Bind the controller to manage the input
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Description', // Label text for the field
                         ),
@@ -2184,7 +2195,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                         //controller:
                         //   _driverNameOutController, // Bind the controller to manage the input
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Engine No', // Label text for the field
                         ),
@@ -2198,7 +2209,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           print('Entered text: $text');
                         },
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       TextFormField(
@@ -2208,7 +2219,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                         //controller:
                         //   _driverNameOutController, // Bind the controller to manage the input
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Chassis No', // Label text for the field
                         ),
@@ -2226,14 +2237,14 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                       TextFormField(
                         controller: _combinedSealController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: "Seal No",
                           border: OutlineInputBorder(),
                         ),
                         onChanged: _onCombinedSealChanged,
                       ),
 
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       TextFormField(
@@ -2243,7 +2254,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                         //controller:
                         //   _driverNameOutController, // Bind the controller to manage the input
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText:
                               'Loading Locations', // Label text for the field
@@ -2258,7 +2269,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           print('Entered text: $text');
                         },
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       TextFormField(
@@ -2268,7 +2279,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
                         //controller:
                         //   _driverNameOutController, // Bind the controller to manage the input
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText:
                               'Logistics_Manager', // Label text for the field
@@ -2285,7 +2296,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       ),
                       // _exportManager
                       // _combineLoadingPoints
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       InspectedBarcodesWidget(
@@ -2298,7 +2309,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     ],
                   ),
 
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                 ]
@@ -2331,7 +2342,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                 ],
               ],
 
-              SizedBox(height: 10.0),
+              const SizedBox(height: 10.0),
 
               // Upload Buttons
               if (_showPickButtonsandSubmit)
@@ -2356,9 +2367,9 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   children: [
                     GestureDetector(
                       onTap: () => _pickMedia('image'),
-                      child: Column(
+                      child: const Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Icon(
                             Icons.image_outlined,
                             size: 36,
@@ -2371,9 +2382,9 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     ),
                     GestureDetector(
                       onTap: () => _pickMedia('video'),
-                      child: Column(
+                      child: const Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Icon(
                             Icons.video_call_outlined,
                             size: 36,
@@ -2387,7 +2398,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   ],
                 ),
 
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
 // Check if there are media files
               _mediaFiles.isNotEmpty
                   ? SizedBox(
@@ -2404,7 +2415,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           bool isVideoPlaying = _currentlyPlayingVideo == file;
 
                           return Container(
-                            margin: EdgeInsets.only(
+                            margin: const EdgeInsets.only(
                                 right: 8.0), // Spacing between items
                             child: Stack(
                               children: [
@@ -2438,7 +2449,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                                           file]!,
                                                     ),
                                                   )
-                                                : Icon(Icons.play_circle_fill,
+                                                : const Icon(
+                                                    Icons.play_circle_fill,
                                                     size: 50), // Play icon
                                           ),
                                         ),
@@ -2453,7 +2465,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                   right: -12,
                                   top: -12,
                                   child: IconButton(
-                                    icon: Icon(Icons.close, color: Colors.red),
+                                    icon: const Icon(Icons.close,
+                                        color: Colors.red),
                                     onPressed: () {
                                       setState(() {
                                         // Remove the file from _mediaFiles
@@ -2484,9 +2497,9 @@ class _GmsExportPageState extends State<GmsExportPage> {
                         },
                       ),
                     )
-                  : SizedBox
+                  : const SizedBox
                       .shrink(), // This avoids adding unnecessary height when there are no files
-              SizedBox(
+              const SizedBox(
                 height: 15,
               ),
               if (_imagesShows)
@@ -2502,7 +2515,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                 GmsFilesPage(vehicleId: _vehicleId)),
                       );
                     },
-                    child: Text(
+                    child: const Text(
                       'View Files',
                       style: TextStyle(
                         fontSize: 16, // Text size
@@ -2511,7 +2524,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       ),
                     ),
                     color: Colors.lightGreen, // Background color
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                         vertical: 10.0, horizontal: 20.0), // Button padding
                     shape: RoundedRectangleBorder(
                       borderRadius:
@@ -2526,9 +2539,9 @@ class _GmsExportPageState extends State<GmsExportPage> {
                   ),
                 ),
 
-              SizedBox(height: 10.0),
+              const SizedBox(height: 10.0),
               if (_isLoading)
-                CircularProgressIndicator(
+                const CircularProgressIndicator(
                   color: Colors.red,
                 ),
               if (_showPickButtonsandSubmit)
@@ -2564,7 +2577,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                             // if (_isLoading) CircularProgressIndicator();
                             print("Submit button pressed for $_gateType");
                           },
-                          child: Text(
+                          child: const Text(
                             'Submit',
                             style: TextStyle(
                               fontSize: 16, // Text size
@@ -2573,7 +2586,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
                             ),
                           ),
                           color: Colors.blue, // Background color
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                               vertical: 10.0,
                               horizontal: 20.0), // Button padding
                           shape: RoundedRectangleBorder(
@@ -2608,13 +2621,13 @@ class _GmsExportPageState extends State<GmsExportPage> {
         children: [
           Text(
             "$label:",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -2727,15 +2740,15 @@ class _GmsExportPageState extends State<GmsExportPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Input Required'),
-            content: Text(
+            title: const Text('Input Required'),
+            content: const Text(
                 'Both fields (Engine Number and Chasis Number) are required.'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the alert
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -2749,14 +2762,14 @@ class _GmsExportPageState extends State<GmsExportPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Validation Error"),
+          title: const Text("Validation Error"),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         );
@@ -3403,7 +3416,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
           _showPickButtonsandSubmit =
               false; // after submit this pick images and videos button hide
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Images and Data Saved Successfully'),
               backgroundColor: Colors.green,
             ),
@@ -3441,7 +3454,7 @@ class _GmsExportPageState extends State<GmsExportPage> {
 
       // Show error SnackBar
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('An error occurred. Please check your connection.'),
           backgroundColor: Colors.red,
         ),

@@ -403,7 +403,10 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                 );
                 if (pickedFile != null) {
                   File newFile = File(pickedFile.path);
-
+                  if (_mediaFiles.length >= 30) {
+                    _showSnackBar('Maximum of 30 files reached.');
+                    return;
+                  }
                   // ✅ Request permission before saving
                   if (await _requestPermission('image')) {
                     final result =
@@ -432,9 +435,16 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                   allowMultiple: true,
                 );
                 if (result != null) {
-                  setState(() {
-                    _mediaFiles.addAll(result.paths.map((path) => File(path!)));
-                  });
+                  int totalFilesAfterPick =
+                      _mediaFiles.length + result.paths.length;
+                  if (totalFilesAfterPick > 30) {
+                    _showSnackBar('You can only select up to 30 files.');
+                  } else {
+                    setState(() {
+                      _mediaFiles
+                          .addAll(result.paths.map((path) => File(path!)));
+                    });
+                  }
                 } else {
                   _showSnackBar('No images selected.');
                 }
@@ -460,7 +470,10 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                 );
                 if (pickedFile != null) {
                   File newFile = File(pickedFile.path);
-
+                  if (_mediaFiles.length >= 30) {
+                    _showSnackBar('Maximum of 30 files reached.');
+                    return;
+                  }
                   // ✅ Request permission before saving
                   if (await _requestPermission('video')) {
                     final result =
@@ -489,9 +502,16 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                   allowMultiple: true,
                 );
                 if (result != null) {
-                  setState(() {
-                    _mediaFiles.addAll(result.paths.map((path) => File(path!)));
-                  });
+                  int totalFilesAfterPick =
+                      _mediaFiles.length + result.paths.length;
+                  if (totalFilesAfterPick > 30) {
+                    _showSnackBar('You can only select up to 30 files.');
+                  } else {
+                    setState(() {
+                      _mediaFiles
+                          .addAll(result.paths.map((path) => File(path!)));
+                    });
+                  }
                 } else {
                   _showSnackBar('No videos selected.');
                 }
