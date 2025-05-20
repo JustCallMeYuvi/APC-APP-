@@ -40,6 +40,7 @@
 // api_data_screen.dart
 
 import 'package:animated_movies_app/hr_department/employee_punch_page.dart';
+import 'package:animated_movies_app/it_modules/asset_management_screen.dart';
 import 'package:animated_movies_app/screens/api_data_screens/production_request_page.dart';
 import 'package:animated_movies_app/screens/api_data_screens/user_approval_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/export_tracking.dart';
@@ -195,6 +196,13 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                     // userData:
                                                                                     //     widget.userData,
                                                                                     )
+                                                                                    
+                                                                                               : widget.pageRoute == 'Asset_Management'
+                                                                                ? AssetManagementScreen(userData: widget.userData,
+                                                                                    // userData:
+                                                                                    //     widget.userData,
+                                                                                    )
+                                                                                    
                                                                                 : Text(
                                                                                     'Data for ${widget.pageName} goes here.',
                                                                                     style: const TextStyle(fontSize: 20),
