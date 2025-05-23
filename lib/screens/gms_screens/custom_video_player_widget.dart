@@ -6,10 +6,12 @@ import 'package:video_player/video_player.dart';
 class CustomVideoPlayerWidget extends StatefulWidget {
   final String filePath;
 
-  const CustomVideoPlayerWidget({Key? key, required this.filePath}) : super(key: key);
+  const CustomVideoPlayerWidget({Key? key, required this.filePath})
+      : super(key: key);
 
   @override
-  _CustomVideoPlayerWidgetState createState() => _CustomVideoPlayerWidgetState();
+  _CustomVideoPlayerWidgetState createState() =>
+      _CustomVideoPlayerWidgetState();
 }
 
 class _CustomVideoPlayerWidgetState extends State<CustomVideoPlayerWidget> {
