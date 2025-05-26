@@ -1,4 +1,5 @@
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -28,6 +29,9 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
   // final List<String> assetIds = ['A001', 'A002', 'A003', 'A004'];
   List<String> plantNames = [];
   String? selectedPlant;
+  final TextEditingController _assetSearchController = TextEditingController();
+  final TextEditingController _plantSearchController = TextEditingController();
+
   // final List<String> plantNames = [
   //   'Admin',
   //   'HR Buillding',
@@ -151,6 +155,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           const SnackBar(content: Text('Asset Data submitted successfully!')),
         );
         setState(() {
+          _assetSearchController.clear();
+          _plantSearchController.clear();
           selectedAssetId = null;
           selectedPlant = null;
           selectedIssue = null;
@@ -231,70 +237,162 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                   Text('Asset ID',
                       style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 6),
-                  DropdownButtonHideUnderline(
-                      child: DropdownButton2<String>(
-                    isExpanded: true,
-                    hint: const Text('Select Asset ID'),
-                    value: selectedAssetId,
-                    items: assetItems.map((item) {
-                      return DropdownMenuItem<String>(
-                        value: item['id'],
-                        child: Text('${item['name']} (${item['id']})'),
+                  // DropdownButtonHideUnderline(
+                  //     child: DropdownButton2<String>(
+                  //   isExpanded: true,
+                  //   hint: const Text('Select Asset ID'),
+                  //   value: selectedAssetId,
+                  //   items: assetItems.map((item) {
+                  //     return DropdownMenuItem<String>(
+                  //       value: item['id'],
+                  //       child: Text('${item['name']} (${item['id']})'),
+                  //     );
+                  //   }).toList(),
+                  //   onChanged: (value) =>
+                  //       setState(() => selectedAssetId = value),
+                  //   buttonStyleData: ButtonStyleData(
+                  //     padding: const EdgeInsets.symmetric(horizontal: 14),
+                  //     height: 50,
+                  //     decoration: BoxDecoration(
+                  //       borderRadius: BorderRadius.circular(10),
+                  //       border: Border.all(color: Colors.grey),
+                  //     ),
+                  //   ),
+                  //   dropdownStyleData: DropdownStyleData(
+                  //     width: MediaQuery.of(context).size.width - 70,
+                  //     decoration: BoxDecoration(
+                  //       borderRadius: BorderRadius.circular(10),
+                  //     ),
+                  //   ),
+                  // )),
+                  DropDownSearchField(
+                    textFieldConfiguration: TextFieldConfiguration(
+                      controller:
+                          _assetSearchController, // Add this TextEditingController
+                      autofocus: false,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Search Asset ID",
+                        suffixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: (text) {
+                        setState(() {
+                          if (text.isEmpty) {
+                            selectedAssetId = null; // Reset selection
+                          }
+                        });
+                      },
+                    ),
+                    suggestionsCallback: (pattern) async {
+                      if (pattern.isEmpty) {
+                        return assetItems;
+                      }
+                      // Filter list based on pattern
+                      return assetItems.where((item) {
+                        final combined =
+                            '${item['name']} (${item['id']})'.toLowerCase();
+                        return combined.contains(pattern.toLowerCase());
+                      }).toList();
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        leading: const Icon(Icons.inventory),
+                        title:
+                            Text('${suggestion['name']} (${suggestion['id']})'),
                       );
-                    }).toList(),
-                    onChanged: (value) =>
-                        setState(() => selectedAssetId = value),
-                    buttonStyleData: ButtonStyleData(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      height: 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey),
-                      ),
-                    ),
-                    dropdownStyleData: DropdownStyleData(
-                      width: MediaQuery.of(context).size.width - 70,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  )),
+                    },
+                    onSuggestionSelected: (suggestion) {
+                      setState(() {
+                        selectedAssetId = suggestion['id'];
+                        _assetSearchController.text =
+                            '${suggestion['name']} (${suggestion['id']})';
+                      });
+                      print("Selected Asset ID: $selectedAssetId");
+                    },
+                    displayAllSuggestionWhenTap: true,
+                    isMultiSelectDropdown: false,
+                  ),
 
                   const SizedBox(height: 20),
 
                   /// Plant Dropdown
                   Text('Select Plant:',
                       style: Theme.of(context).textTheme.titleMedium),
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton2<String>(
-                      isExpanded: true,
-                      hint: const Text('Select Plant'),
-                      value: selectedPlant,
-                      // items: plantNames.map((plant) {
-                      //   return DropdownMenuItem(value: plant, child: Text(plant));
-                      // }).toList(),
-                      // onChanged: (value) => setState(() => selectedPlant = value),
-                      items: plantNames.map((plant) {
-                        return DropdownMenuItem(
-                            value: plant, child: Text(plant));
-                      }).toList(),
-                      onChanged: (value) =>
-                          setState(() => selectedPlant = value),
-                      buttonStyleData: ButtonStyleData(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey),
-                        ),
+                  // DropdownButtonHideUnderline(
+                  //   child: DropdownButton2<String>(
+                  //     isExpanded: true,
+                  //     hint: const Text('Select Plant'),
+                  //     value: selectedPlant,
+                  //     // items: plantNames.map((plant) {
+                  //     //   return DropdownMenuItem(value: plant, child: Text(plant));
+                  //     // }).toList(),
+                  //     // onChanged: (value) => setState(() => selectedPlant = value),
+                  //     items: plantNames.map((plant) {
+                  //       return DropdownMenuItem(
+                  //           value: plant, child: Text(plant));
+                  //     }).toList(),
+                  //     onChanged: (value) =>
+                  //         setState(() => selectedPlant = value),
+                  //     buttonStyleData: ButtonStyleData(
+                  //       padding: const EdgeInsets.symmetric(horizontal: 14),
+                  //       height: 50,
+                  //       decoration: BoxDecoration(
+                  //         borderRadius: BorderRadius.circular(10),
+                  //         border: Border.all(color: Colors.grey),
+                  //       ),
+                  //     ),
+                  //     dropdownStyleData: DropdownStyleData(
+                  //       width: MediaQuery.of(context).size.width - 70,
+                  //       decoration: BoxDecoration(
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+
+                  DropDownSearchField(
+                    textFieldConfiguration: TextFieldConfiguration(
+                      controller:
+                          _plantSearchController, // Define this controller in your state
+                      autofocus: false,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Search Plant",
+                        suffixIcon: Icon(Icons.search),
                       ),
-                      dropdownStyleData: DropdownStyleData(
-                        width: MediaQuery.of(context).size.width - 70,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
+                      onChanged: (text) {
+                        setState(() {
+                          if (text.isEmpty) {
+                            selectedPlant = null; // Reset if cleared
+                          }
+                        });
+                      },
                     ),
+                    suggestionsCallback: (pattern) async {
+                      if (pattern.isEmpty) {
+                        return plantNames;
+                      }
+                      return plantNames
+                          .where((plant) => plant
+                              .toLowerCase()
+                              .contains(pattern.toLowerCase()))
+                          .toList();
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        leading: const Icon(Icons.factory),
+                        title: Text(suggestion),
+                      );
+                    },
+                    onSuggestionSelected: (suggestion) {
+                      setState(() {
+                        selectedPlant = suggestion;
+                        _plantSearchController.text = suggestion;
+                      });
+                      print("Selected Plant: $selectedPlant");
+                    },
+                    displayAllSuggestionWhenTap: true,
+                    isMultiSelectDropdown: false,
                   ),
 
                   const SizedBox(height: 20),
