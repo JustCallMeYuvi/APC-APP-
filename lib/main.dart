@@ -179,17 +179,17 @@ Future<void> main() async {
     //   create: (_) => AuthProvider(),
     //   child: const App(),
     // ),
-     MultiProvider(
+    MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => PatrollingProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FeedbackProvider()),
-
-
       ],
-        child: BlocProvider(
-        create: (_) => AssetBloc(),
+      //     child: BlocProvider(
+      //     create: (_) => AssetBloc(),
+      //   child: const App(),
+      // ),
       child: const App(),
-    ),),
+    ),
   );
 }

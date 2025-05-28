@@ -181,420 +181,333 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
   Widget build(BuildContext context) {
     final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
 
-    return Scaffold(
-      // appBar: AppBar(title: const Text("Asset Management")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Card(
-          elevation: 6,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Text(
-                      widget.userData.empNo,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+    return SafeArea(
+      child: Scaffold(
+        // appBar: AppBar(title: const Text("Asset Management")),
 
-                  /// Date Picker
-                  Text('Selected Date',
-                      style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(child: Text(formattedDate)),
-                      IconButton(
-                        icon: const Icon(Icons.calendar_today,
-                            color: Colors.lightGreen),
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: selectedDate,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime.now(),
-                          );
-                          if (picked != null) {
-                            setState(() => selectedDate = picked);
-                          }
-                        },
-                      )
-                    ],
-                  ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(25),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Center(
+                //   child: Text(
+                //     widget.userData.empNo,
+                //     style: const TextStyle(
+                //         fontSize: 20, fontWeight: FontWeight.bold),
+                //   ),
+                // ),
+                // const SizedBox(height: 20),
 
-                  const SizedBox(height: 20),
-
-                  /// Asset ID Dropdown
-                  Text('Asset ID',
-                      style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  // DropdownButtonHideUnderline(
-                  //     child: DropdownButton2<String>(
-                  //   isExpanded: true,
-                  //   hint: const Text('Select Asset ID'),
-                  //   value: selectedAssetId,
-                  //   items: assetItems.map((item) {
-                  //     return DropdownMenuItem<String>(
-                  //       value: item['id'],
-                  //       child: Text('${item['name']} (${item['id']})'),
-                  //     );
-                  //   }).toList(),
-                  //   onChanged: (value) =>
-                  //       setState(() => selectedAssetId = value),
-                  //   buttonStyleData: ButtonStyleData(
-                  //     padding: const EdgeInsets.symmetric(horizontal: 14),
-                  //     height: 50,
-                  //     decoration: BoxDecoration(
-                  //       borderRadius: BorderRadius.circular(10),
-                  //       border: Border.all(color: Colors.grey),
-                  //     ),
-                  //   ),
-                  //   dropdownStyleData: DropdownStyleData(
-                  //     width: MediaQuery.of(context).size.width - 70,
-                  //     decoration: BoxDecoration(
-                  //       borderRadius: BorderRadius.circular(10),
-                  //     ),
-                  //   ),
-                  // )),
-                  DropDownSearchField(
-                    textFieldConfiguration: TextFieldConfiguration(
-                      controller:
-                          _assetSearchController, // Add this TextEditingController
-                      autofocus: false,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Search Asset ID",
-                        suffixIcon: Icon(Icons.search),
-                      ),
-                      onChanged: (text) {
-                        setState(() {
-                          if (text.isEmpty) {
-                            selectedAssetId = null; // Reset selection
-                          }
-                        });
-                      },
-                    ),
-                    suggestionsCallback: (pattern) async {
-                      if (pattern.isEmpty) {
-                        return assetItems;
-                      }
-                      // Filter list based on pattern
-                      return assetItems.where((item) {
-                        final combined =
-                            '${item['name']} (${item['id']})'.toLowerCase();
-                        return combined.contains(pattern.toLowerCase());
-                      }).toList();
-                    },
-                    itemBuilder: (context, suggestion) {
-                      return ListTile(
-                        leading: const Icon(Icons.inventory),
-                        title:
-                            Text('${suggestion['name']} (${suggestion['id']})'),
-                      );
-                    },
-                    onSuggestionSelected: (suggestion) {
-                      setState(() {
-                        selectedAssetId = suggestion['id'];
-                        _assetSearchController.text =
-                            '${suggestion['name']} (${suggestion['id']})';
-                      });
-                      print("Selected Asset ID: $selectedAssetId");
-                    },
-                    displayAllSuggestionWhenTap: true,
-                    isMultiSelectDropdown: false,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// Plant Dropdown
-                  Text('Select Plant:',
-                      style: Theme.of(context).textTheme.titleMedium),
-                  // DropdownButtonHideUnderline(
-                  //   child: DropdownButton2<String>(
-                  //     isExpanded: true,
-                  //     hint: const Text('Select Plant'),
-                  //     value: selectedPlant,
-                  //     // items: plantNames.map((plant) {
-                  //     //   return DropdownMenuItem(value: plant, child: Text(plant));
-                  //     // }).toList(),
-                  //     // onChanged: (value) => setState(() => selectedPlant = value),
-                  //     items: plantNames.map((plant) {
-                  //       return DropdownMenuItem(
-                  //           value: plant, child: Text(plant));
-                  //     }).toList(),
-                  //     onChanged: (value) =>
-                  //         setState(() => selectedPlant = value),
-                  //     buttonStyleData: ButtonStyleData(
-                  //       padding: const EdgeInsets.symmetric(horizontal: 14),
-                  //       height: 50,
-                  //       decoration: BoxDecoration(
-                  //         borderRadius: BorderRadius.circular(10),
-                  //         border: Border.all(color: Colors.grey),
-                  //       ),
-                  //     ),
-                  //     dropdownStyleData: DropdownStyleData(
-                  //       width: MediaQuery.of(context).size.width - 70,
-                  //       decoration: BoxDecoration(
-                  //         borderRadius: BorderRadius.circular(10),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-
-                  DropDownSearchField(
-                    textFieldConfiguration: TextFieldConfiguration(
-                      controller:
-                          _plantSearchController, // Define this controller in your state
-                      autofocus: false,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Search Plant",
-                        suffixIcon: Icon(Icons.search),
-                      ),
-                      onChanged: (text) {
-                        setState(() {
-                          if (text.isEmpty) {
-                            selectedPlant = null; // Reset if cleared
-                          }
-                        });
-                      },
-                    ),
-                    suggestionsCallback: (pattern) async {
-                      if (pattern.isEmpty) {
-                        return plantNames;
-                      }
-                      return plantNames
-                          .where((plant) => plant
-                              .toLowerCase()
-                              .contains(pattern.toLowerCase()))
-                          .toList();
-                    },
-                    itemBuilder: (context, suggestion) {
-                      return ListTile(
-                        leading: const Icon(Icons.factory),
-                        title: Text(suggestion),
-                      );
-                    },
-                    onSuggestionSelected: (suggestion) {
-                      setState(() {
-                        selectedPlant = suggestion;
-                        _plantSearchController.text = suggestion;
-                      });
-                      print("Selected Plant: $selectedPlant");
-                    },
-                    displayAllSuggestionWhenTap: true,
-                    isMultiSelectDropdown: false,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// Type (Radio)
-                  Text('Select Type:',
-                      style: Theme.of(context).textTheme.titleMedium),
-                  Row(
-                    children: ['Network', 'Desktop'].map((type) {
-                      return Row(
-                        children: [
-                          Radio<String>(
-                            value: type,
-                            groupValue: selectedType,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedType = value!;
-                                selectedIssue = null;
-                              });
-                            },
-                          ),
-                          Text(type),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  /// Issue Dropdown
-                  Text('Issue', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton2<String>(
-                      isExpanded: true,
-                      hint: const Text('Select an Issue'),
-                      value: selectedIssue,
-                      items: (selectedType == 'Network'
-                              ? networkIssues
-                              : desktopIssues)
-                          .map((issue) {
-                        return DropdownMenuItem(
-                            value: issue, child: Text(issue));
-                      }).toList(),
-                      onChanged: (value) =>
-                          setState(() => selectedIssue = value),
-                      buttonStyleData: ButtonStyleData(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey),
-                        ),
-                      ),
-                      dropdownStyleData: DropdownStyleData(
-                        width: MediaQuery.of(context).size.width - 70,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  /// Description
-                  if (selectedIssue != null) ...[
-                    const SizedBox(height: 20),
-                    Text('Description',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
-                    TextField(
-                      onChanged: (value) => setState(() => description = value),
-                      decoration: InputDecoration(
-                        hintText: 'Describe the issue...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
-                      ),
-                      maxLines: 3,
-                    ),
-                  ],
-                  SizedBox(
-                    height: 10,
-                  ),
-                  const SizedBox(height: 20),
-                  Text('Email', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  // TextField(
-                  //   controller: emailController,
-                  //   keyboardType: TextInputType.emailAddress,
-                  //   onChanged: (value) => setState(() => email = value),
-                  //   decoration: InputDecoration(
-                  //     hintText: 'Enter your email',
-                  //     border: OutlineInputBorder(
-                  //       borderRadius: BorderRadius.circular(10),
-                  //     ),
-                  //     contentPadding: const EdgeInsets.symmetric(
-                  //         horizontal: 14, vertical: 12),
-                  //   ),
-                  // ),
-                  TextFormField(
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    onChanged: (value) => setState(() => email = value),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Email is required';
-                      }
-                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                      if (!emailRegex.hasMatch(value)) {
-                        return 'Enter a valid email';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Enter your email',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text('Phone', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  // TextField(
-                  //   controller: phoneController,
-                  //   keyboardType: TextInputType.phone,
-                  //   onChanged: (value) => setState(() => phone = value),
-                  //   decoration: InputDecoration(
-                  //     hintText: 'Enter your phone number',
-                  //     border: OutlineInputBorder(
-                  //       borderRadius: BorderRadius.circular(10),
-                  //     ),
-                  //     contentPadding: const EdgeInsets.symmetric(
-                  //         horizontal: 14, vertical: 12),
-                  //   ),
-                  // ),
-
-                  TextFormField(
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
-                    onChanged: (value) => setState(() => phone = value),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Phone number is required';
-                      }
-                      final phoneRegex =
-                          RegExp(r'^\d{10}$'); // Accepts only 10 digits
-                      if (!phoneRegex.hasMatch(value)) {
-                        return 'Enter a valid 10-digit phone number';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Enter your phone number',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Center(
-                    child: MaterialButton(
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          // Your logic here
-                          submitAssetData();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Please fix validation errors before submitting.')),
-                          );
+                /// Date Picker
+                Text('Selected Date',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(child: Text(formattedDate)),
+                    IconButton(
+                      icon: const Icon(Icons.calendar_today,
+                          color: Colors.lightGreen),
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null) {
+                          setState(() => selectedDate = picked);
                         }
                       },
-                      color: Colors.blueAccent,
-                      elevation: 6,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'Submit',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2,
+                    )
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                /// Asset ID Dropdown
+                Text('Asset ID',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 6),
+
+                DropDownSearchField(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    controller:
+                        _assetSearchController, // Add this TextEditingController
+                    autofocus: false,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10))),
+                      labelText: "Search Asset ID",
+                      suffixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (text) {
+                      setState(() {
+                        if (text.isEmpty) {
+                          selectedAssetId = null; // Reset selection
+                        }
+                      });
+                    },
+                  ),
+                  suggestionsCallback: (pattern) async {
+                    if (pattern.isEmpty) {
+                      return assetItems;
+                    }
+                    // Filter list based on pattern
+                    return assetItems.where((item) {
+                      final combined =
+                          '${item['name']} (${item['id']})'.toLowerCase();
+                      return combined.contains(pattern.toLowerCase());
+                    }).toList();
+                  },
+                  itemBuilder: (context, suggestion) {
+                    return ListTile(
+                      leading: const Icon(Icons.inventory),
+                      title:
+                          Text('${suggestion['name']} (${suggestion['id']})'),
+                    );
+                  },
+                  onSuggestionSelected: (suggestion) {
+                    setState(() {
+                      selectedAssetId = suggestion['id'];
+                      _assetSearchController.text =
+                          '${suggestion['name']} (${suggestion['id']})';
+                    });
+                    print("Selected Asset ID: $selectedAssetId");
+                  },
+                  displayAllSuggestionWhenTap: true,
+                  isMultiSelectDropdown: false,
+                ),
+
+                const SizedBox(height: 20),
+
+                /// Plant Dropdown
+                Text('Select Plant:',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 6),
+                DropDownSearchField(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    controller:
+                        _plantSearchController, // Define this controller in your state
+                    autofocus: false,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10))),
+                      labelText: "Search Plant",
+                      suffixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (text) {
+                      setState(() {
+                        if (text.isEmpty) {
+                          selectedPlant = null; // Reset if cleared
+                        }
+                      });
+                    },
+                  ),
+                  suggestionsCallback: (pattern) async {
+                    if (pattern.isEmpty) {
+                      return plantNames;
+                    }
+                    return plantNames
+                        .where((plant) =>
+                            plant.toLowerCase().contains(pattern.toLowerCase()))
+                        .toList();
+                  },
+                  itemBuilder: (context, suggestion) {
+                    return ListTile(
+                      leading: const Icon(Icons.factory),
+                      title: Text(suggestion),
+                    );
+                  },
+                  onSuggestionSelected: (suggestion) {
+                    setState(() {
+                      selectedPlant = suggestion;
+                      _plantSearchController.text = suggestion;
+                    });
+                    print("Selected Plant: $selectedPlant");
+                  },
+                  displayAllSuggestionWhenTap: true,
+                  isMultiSelectDropdown: false,
+                ),
+
+                const SizedBox(height: 20),
+
+                /// Type (Radio)
+                Text('Select Type:',
+                    style: Theme.of(context).textTheme.titleMedium),
+                Row(
+                  children: ['Network', 'Desktop'].map((type) {
+                    return Row(
+                      children: [
+                        Radio<String>(
+                          value: type,
+                          groupValue: selectedType,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedType = value!;
+                              selectedIssue = null;
+                            });
+                          },
                         ),
+                        Text(type),
+                      ],
+                    );
+                  }).toList(),
+                ),
+
+                const SizedBox(height: 10),
+
+                /// Issue Dropdown
+                Text('Issue', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 6),
+                DropdownButtonHideUnderline(
+                  child: DropdownButton2<String>(
+                    isExpanded: true,
+                    hint: const Text('Select an Issue'),
+                    value: selectedIssue,
+                    items: (selectedType == 'Network'
+                            ? networkIssues
+                            : desktopIssues)
+                        .map((issue) {
+                      return DropdownMenuItem(value: issue, child: Text(issue));
+                    }).toList(),
+                    onChanged: (value) => setState(() => selectedIssue = value),
+                    buttonStyleData: ButtonStyleData(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      height: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey),
                       ),
                     ),
-                  )
+                    dropdownStyleData: DropdownStyleData(
+                      width: MediaQuery.of(context).size.width - 70,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+
+                /// Description
+                if (selectedIssue != null) ...[
+                  const SizedBox(height: 20),
+                  Text('Description',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 6),
+                  TextField(
+                    onChanged: (value) => setState(() => description = value),
+                    decoration: InputDecoration(
+                      hintText: 'Describe the issue...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                    ),
+                    maxLines: 3,
+                  ),
                 ],
-              ),
+                const SizedBox(
+                  height: 10,
+                ),
+                const SizedBox(height: 20),
+                Text('Email', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 6),
+
+                TextFormField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  onChanged: (value) => setState(() => email = value),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email is required';
+                    }
+                    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                    if (!emailRegex.hasMatch(value)) {
+                      return 'Enter a valid email';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter your email',
+                    suffixIcon: const Icon(Icons.email),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text('Phone', style: Theme.of(context).textTheme.titleMedium),
+
+                const SizedBox(height: 6),
+
+                TextFormField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  onChanged: (value) => setState(() => phone = value),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Phone number is required';
+                    }
+                    final phoneRegex =
+                        RegExp(r'^\d{10}$'); // Accepts only 10 digits
+                    if (!phoneRegex.hasMatch(value)) {
+                      return 'Enter a valid 10-digit phone number';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter your phone number',
+                    suffixIcon: const Icon(Icons.phone),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Center(
+                  child: MaterialButton(
+                    onPressed: () {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        // Your logic here
+                        submitAssetData();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text(
+                                  'Please fix validation errors before submitting.')),
+                        );
+                      }
+                    },
+                    color: Colors.blueAccent,
+                    elevation: 6,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Submit',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -603,7 +516,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
   }
 }
 
-
+// below code bloc pattern UI CODE
 // import 'package:animated_movies_app/it_modules/bloc/asset_bloc.dart';
 // import 'package:animated_movies_app/it_modules/bloc/asset_event.dart';
 // import 'package:animated_movies_app/it_modules/bloc/asset_state.dart';
