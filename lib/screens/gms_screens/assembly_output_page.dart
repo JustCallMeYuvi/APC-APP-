@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/production_data_model.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
   List<Map<String, dynamic>> filteredDepartmentData = [];
   DateTime selectedDate = DateTime.now();
   bool isLoading = false;
-
+  List<Department> summaryList = [];
   @override
   void initState() {
     super.initState();
@@ -39,11 +40,12 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
       isLoading = true;
     });
     final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
-    final url = Uri.parse(
-        'http://10.3.0.70:9042/api/Production/get-production?date=$formattedDate');
+    // final url = Uri.parse(
+    //     'http://10.3.0.70:9042/api/Production/get-production?date=$formattedDate');
 
+    var apiUrl = '${ApiHelper.productionUrl}get-production?date=$formattedDate';
     try {
-      final response = await http.get(url);
+      final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         // print('Production Data ${response.body}');
@@ -74,6 +76,7 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
           departmentData =
               productionData.departments.map((e) => e.toJson()).toList();
           filteredDepartmentData = departmentData; // initialize with full data
+          summaryList = productionData.summary;
         });
       } else {
         print("Failed to load data. Status code: ${response.statusCode}");
@@ -222,7 +225,7 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                       displayAllSuggestionWhenTap: true,
                       isMultiSelectDropdown: false,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
                     /// Dropdown for APC / MXK
                     // const Text('Select Company'),
@@ -297,7 +300,7 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                     // ]
 
                     if (filteredDepartmentData.isNotEmpty) ...[
-                      const SizedBox(height: 20),
+                      // const SizedBox(height: 20),
                       // Text(
                       //   'Department Production Summary',
                       //   style: Theme.of(context).textTheme.headlineSmall,
@@ -311,63 +314,122 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                           return Card(
                             elevation: 4,
                             margin: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
+                              vertical: 8,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              // leading: Icon(Icons.factory,
-                              //     color: Colors.green[700], size: 30),
-                              title: Text(
-                                dept['udf05'].toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 18,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // _buildInfoText('Scan Date', dept['scanDate']),
-                                    _buildInfoText('Target', dept['target']),
-                                    _buildInfoText(
-                                        'Achieved Output', dept['output']),
-                                    // _buildInfoText('Balance', dept['achievement']),
-                                    _buildInfoText(
-                                      'Balance',
-                                      dept['achievement'],
-                                      valueColor: int.tryParse(
-                                                      dept['achievement']
-                                                          .toString()) !=
-                                                  null &&
-                                              int.parse(dept['achievement']
-                                                      .toString()) >=
-                                                  100
-                                          ? Colors.green
-                                          : Colors.red,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 16, horizontal: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    dept['udf05'].toString(),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 18,
+                                      color: Colors.blueAccent,
                                     ),
-                                    _buildInfoText(
-                                      'Achievement %',
-                                      dept['achievementPercent'],
-                                      valueColor: _parseAchievementPercent(
-                                                  dept['achievementPercent']) >=
-                                              100
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Divider(
+                                    color: Colors.grey,
+                                    thickness: 1,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildInfoText('Target', dept['target']),
+                                  _buildInfoText(
+                                      'Achieved Output', dept['output']),
+                                  _buildInfoText(
+                                    'Balance',
+                                    dept['achievement'],
+                                    valueColor: int.tryParse(dept['achievement']
+                                                    .toString()) !=
+                                                null &&
+                                            int.parse(dept['achievement']
+                                                    .toString()) >=
+                                                100
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                  _buildInfoText(
+                                    'Achievement %',
+                                    dept['achievementPercent'],
+                                    valueColor: _parseAchievementPercent(
+                                                dept['achievementPercent']) >=
+                                            100
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                ],
                               ),
                             ),
                           );
                         },
                       ),
-                    ]
+                    ],
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ...summaryList.map((item) {
+                      final achievementColor =
+                          item.achievement >= 100 ? Colors.green : Colors.red;
+
+                      final achievementPercentValue =
+                          _parseAchievementPercent(item.achievementPercent);
+                      final percentColor = achievementPercentValue >= 100
+                          ? Colors.green
+                          : Colors.red;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.udf05,
+                                style: const TextStyle(
+                                    color: Colors.blueAccent,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              const Divider(
+                                color: Colors.grey,
+                                thickness: 1,
+                              ),
+                              const SizedBox(height: 18),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  _buildSummaryLabel(
+                                      "Target", item.target.toString()),
+                                  _buildSummaryLabel(
+                                      "Output", item.output.toString()),
+                                  _buildSummaryLabel(
+                                    "Achievement",
+                                    item.achievement.toString(),
+                                    valueColor: achievementColor,
+                                  ),
+                                  _buildSummaryLabel(
+                                    "%",
+                                    item.achievementPercent,
+                                    valueColor: percentColor,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ],
                 ),
               ),
@@ -409,5 +471,23 @@ Widget _buildInfoText(String label, dynamic value, {Color? valueColor}) {
         ),
       ],
     ),
+  );
+}
+
+Widget _buildSummaryLabel(String label, String value, {Color? valueColor}) {
+  return Column(
+    children: [
+      Text(label,
+          style: const TextStyle(
+              color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 4),
+      Text(
+        value,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: valueColor ?? Colors.black87,
+        ),
+      ),
+    ],
   );
 }

@@ -20,6 +20,13 @@ class ApiHelper {
   static String _maxkingGMSUrl =
       'http://10.3.0.70:9042/api/Maxking_GMS_/'; // 70 maxking URL
 
+  // Production base URL
+  static const String _productionUrl = 'http://10.3.0.70:9042/api/Production/';
+
+  // Getter for Production URL (optional)
+  static String get productionUrl => _productionUrl;
+
+
   static String get baseUrl => _baseUrl; // Public getter
 
   static String get gmsUrl => _gmsUrl;
