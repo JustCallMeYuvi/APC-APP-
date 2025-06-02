@@ -49,6 +49,7 @@ import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_delete_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
+import 'package:animated_movies_app/screens/gms_screens/kpi_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_charts.dart';
 
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_page.dart';
@@ -206,6 +207,12 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                           )
                                                                                         : widget.pageRoute == 'AssemblyOutputPage'
                                                                                             ? AssemblyOutputPage(
+                                                                                                userData: widget.userData,
+                                                                                                // userData:
+                                                                                                //     widget.userData,
+                                                                                              )
+                                                                                                   : widget.pageRoute == 'KpiOutput'
+                                                                                            ? KpiScreen(
                                                                                                 userData: widget.userData,
                                                                                                 // userData:
                                                                                                 //     widget.userData,

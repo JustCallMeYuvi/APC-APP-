@@ -169,9 +169,9 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                             );
                             if (picked != null) {
                               setState(() => selectedDate = picked);
+                              fetchProductionData();
+                              filterDepartmentData(); // Then apply filters
                             }
-                            fetchProductionData();
-                            filterDepartmentData(); // Then apply filters
                           },
                         )
                       ],
@@ -305,77 +305,207 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                       //   'Department Production Summary',
                       //   style: Theme.of(context).textTheme.headlineSmall,
                       // ),
+                      // ListView.builder(
+                      //   shrinkWrap: true,
+                      //   physics: const NeverScrollableScrollPhysics(),
+                      //   itemCount: filteredDepartmentData.length,
+                      //   itemBuilder: (context, index) {
+                      //     final dept = filteredDepartmentData[index];
+                      //     return Card(
+                      //       elevation: 4,
+                      //       margin: const EdgeInsets.symmetric(
+                      //         vertical: 8,
+                      //       ),
+                      //       shape: RoundedRectangleBorder(
+                      //         borderRadius: BorderRadius.circular(12),
+                      //       ),
+                      //       child: Padding(
+                      //         padding: const EdgeInsets.symmetric(
+                      //             vertical: 16, horizontal: 20),
+                      //         child: Column(
+                      //           crossAxisAlignment: CrossAxisAlignment.center,
+                      //           children: [
+                      //             Row(
+                      //               mainAxisAlignment:
+                      //                   MainAxisAlignment.spaceBetween,
+                      //               children: [
+                      //                 Text(
+                      //                   dept['udf05'].toString(),
+                      //                   style: const TextStyle(
+                      //                     fontWeight: FontWeight.w700,
+                      //                     fontSize: 18,
+                      //                     color: Colors.blueAccent,
+                      //                   ),
+                      //                 ),
+                      //                 IconButton(
+                      //                     onPressed: () {},
+                      //                     icon: Icon(Icons.expand_more))
+                      //               ],
+                      //             ),
+                      //             const SizedBox(height: 8),
+                      //             const Divider(
+                      //               color: Colors.grey,
+                      //               thickness: 1,
+                      //             ),
+                      //             const SizedBox(height: 12),
+                      //             _buildInfoText('Target', dept['target']),
+                      //             _buildInfoText(
+                      //                 'Achieved Output', dept['output']),
+                      //             _buildInfoText(
+                      //               'Balance',
+                      //               dept['achievement'],
+                      //               valueColor: int.tryParse(dept['achievement']
+                      //                               .toString()) !=
+                      //                           null &&
+                      //                       int.parse(dept['achievement']
+                      //                               .toString()) >=
+                      //                           0
+                      //                   ? Colors.green
+                      //                   : Colors.red,
+                      //             ),
+                      //             _buildInfoText(
+                      //               'Achievement %',
+                      //               dept['achievementPercent'],
+                      //               valueColor: _parseAchievementPercent(
+                      //                           dept['achievementPercent']) >=
+                      //                       100
+                      //                   ? Colors.green
+                      //                   : Colors.red,
+                      //             ),
+                      //           ],
+                      //         ),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
+
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: filteredDepartmentData.length,
                         itemBuilder: (context, index) {
                           final dept = filteredDepartmentData[index];
-                          return Card(
-                            elevation: 4,
-                            margin: const EdgeInsets.symmetric(
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 16, horizontal: 20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    dept['udf05'].toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 18,
-                                      color: Colors.blueAccent,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Divider(
-                                    color: Colors.grey,
-                                    thickness: 1,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  _buildInfoText('Target', dept['target']),
-                                  _buildInfoText(
-                                      'Achieved Output', dept['output']),
-                                  _buildInfoText(
-                                    'Balance',
-                                    dept['achievement'],
-                                    valueColor: int.tryParse(dept['achievement']
-                                                    .toString()) !=
-                                                null &&
-                                            int.parse(dept['achievement']
-                                                    .toString()) >=
+                          bool isExpanded = false;
+
+                          return StatefulBuilder(
+                            builder: (context, setState) {
+                              return Card(
+                                elevation: 4,
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 16, horizontal: 20),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Header Row with toggle button
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  dept['udf05'].toString(),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 18,
+                                                    color: Colors.blueAccent,
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                    width:
+                                                        60), // spacing between the two texts
+                                                const Text(
+                                                  'Line Wise Info',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                              isExpanded
+                                                  ? Icons.expand_less
+                                                  : Icons.expand_more,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                isExpanded = !isExpanded;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+
+                                      const Divider(
+                                          color: Colors.grey, thickness: 1),
+                                      const SizedBox(height: 12),
+                                      _buildInfoText('Target', dept['target']),
+                                      _buildInfoText(
+                                          'Achieved Output', dept['output']),
+                                      _buildInfoText(
+                                        'Balance',
+                                        dept['achievement'],
+                                        valueColor: int.tryParse(
+                                                        dept['achievement']
+                                                            .toString()) !=
+                                                    null &&
+                                                int.parse(dept['achievement']
+                                                        .toString()) >=
+                                                    0
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                      _buildInfoText(
+                                        'Achievement %',
+                                        dept['achievementPercent'],
+                                        valueColor: _parseAchievementPercent(
+                                                    dept[
+                                                        'achievementPercent']) >=
                                                 100
-                                        ? Colors.green
-                                        : Colors.red,
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+
+                                      // Expandable Section
+                                      if (isExpanded) ...[
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          'Team Members:',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text('- Yuvi'),
+                                        const Text('- Yuva'),
+                                        const Text('- Vijay'),
+                                      ],
+                                    ],
                                   ),
-                                  _buildInfoText(
-                                    'Achievement %',
-                                    dept['achievementPercent'],
-                                    valueColor: _parseAchievementPercent(
-                                                dept['achievementPercent']) >=
-                                            100
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
-                                ],
-                              ),
-                            ),
+                                ),
+                              );
+                            },
                           );
                         },
-                      ),
+                      )
                     ],
                     const SizedBox(
                       height: 10,
                     ),
                     ...summaryList.map((item) {
                       final achievementColor =
-                          item.achievement >= 100 ? Colors.green : Colors.red;
+                          item.achievement >= 0 ? Colors.green : Colors.red;
 
                       final achievementPercentValue =
                           _parseAchievementPercent(item.achievementPercent);
@@ -451,7 +581,7 @@ Widget _buildInfoText(String label, dynamic value, {Color? valueColor}) {
         SizedBox(
           width: 160, // Fixed width for labels (adjust as needed)
           child: Text(
-            '$label:',
+            label,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
               color: Colors.black87,
