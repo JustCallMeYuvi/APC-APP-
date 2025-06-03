@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:animated_movies_app/api/apis_page.dart';
+import 'package:animated_movies_app/model/line_wise_production_data_model.dart';
 import 'package:animated_movies_app/screens/gms_screens/production_data_model.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
@@ -29,10 +30,17 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
   DateTime selectedDate = DateTime.now();
   bool isLoading = false;
   List<Department> summaryList = [];
+  List<LineWiseDataModel> lineWiseDataList = [];
+  // Add these variables inside your widget's State class:
+  Map<int, bool> expandedItems = {};
+  Map<int, List<LineWiseDataModel>> fetchedLineWiseData = {};
+  Map<int, bool> loadingItems = {}; // index -> isLoading
+
   @override
   void initState() {
     super.initState();
     fetchProductionData();
+    // fetchLineWiseData('AP1');
   }
 
   Future<void> fetchProductionData() async {
@@ -90,30 +98,70 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
     }
   }
 
-  // void filterDepartmentData() {
-  //   setState(() {
-  //     filteredDepartmentData = departmentData.where((dept) {
-  //       final matchesDept = selectedDeptId == null ||
-  //           dept['udf05'].toString() == selectedDeptId;
-  //       // final matchesCompany = selectedApcMxk == null ||
-  //       //     dept['companyList'].toString() == selectedApcMxk;
-  //       return matchesDept ;
-  //     }).toList();
-  //   });
-  // }
-  // void filterDepartmentData() {
-  //   setState(() {
-  //     if (selectedDeptId == null || selectedDeptId == "ALL") {
-  //       // Show all departments
-  //       filteredDepartmentData = departmentData;
+  // Future<void> fetchLineWiseData(String line, int index) async {
+  //   // setState(() {
+  //   //   isLoading = true;
+  //   // });
+
+  //   final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+  //   final apiUrl =
+  //       '${ApiHelper.productionUrl}get-production-linedata?inputDate=$formattedDate&line=$line';
+
+  //   try {
+  //     final response = await http.get(Uri.parse(apiUrl));
+  //     if (response.statusCode == 200) {
+  //       final jsonData = response.body;
+  //       final List<LineWiseDataModel> lineWiseData =
+  //           lineWiseDataModelFromJson(jsonData);
+  //       print('Line Wise Data: ${response.body}');
+  //       setState(() {
+  //         fetchedLineWiseData[index] = lineWiseData; // store per index
+  //         expandedItems[index] = true; // mark as expanded
+  //       });
   //     } else {
-  //       // Filter by selected department
-  //       filteredDepartmentData = departmentData.where((dept) {
-  //         return dept['udf05'].toString() == selectedDeptId;
-  //       }).toList();
+  //       print(
+  //           "Failed to load line-wise data. Status code: ${response.statusCode}");
   //     }
-  //   });
+  //   } catch (e) {
+  //     print("Error fetching line-wise data: $e");
+  //   } finally {
+  //     // setState(() {
+  //     //   isLoading = false;
+  //     // });
+  //   }
   // }
+
+  Future<void> fetchLineWiseData(String line, int index) async {
+    setState(() {
+      loadingItems[index] = true;
+    });
+
+    final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final apiUrl =
+        '${ApiHelper.productionUrl}get-production-linedata?inputDate=$formattedDate&line=$line';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        final jsonData = response.body;
+        final List<LineWiseDataModel> lineWiseData =
+            lineWiseDataModelFromJson(jsonData);
+
+        setState(() {
+          fetchedLineWiseData[index] = lineWiseData;
+          expandedItems[index] = true;
+        });
+      } else {
+        print("Failed to load line-wise data.");
+      }
+    } catch (e) {
+      print("Error: $e");
+    } finally {
+      setState(() {
+        loadingItems[index] = false;
+      });
+    }
+  }
 
   void filterDepartmentData() {
     setState(() {
@@ -385,120 +433,224 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                         itemCount: filteredDepartmentData.length,
                         itemBuilder: (context, index) {
                           final dept = filteredDepartmentData[index];
-                          bool isExpanded = false;
+                          final isExpanded = expandedItems[index] ?? false;
+                          final lineWiseData = fetchedLineWiseData[index] ?? [];
 
-                          return StatefulBuilder(
-                            builder: (context, setState) {
-                              return Card(
-                                elevation: 4,
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 16, horizontal: 20),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                          return Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 16, horizontal: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Header Row with toggle button
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      // Header Row with toggle button
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  dept['udf05'].toString(),
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 18,
-                                                    color: Colors.blueAccent,
-                                                  ),
-                                                ),
-                                                const SizedBox(
-                                                    width:
-                                                        60), // spacing between the two texts
-                                                const Text(
-                                                  'Line Wise Info',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
-                                                    color: Colors.black87,
-                                                  ),
-                                                ),
-                                              ],
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              dept['udf05'].toString(),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 18,
+                                                color: Colors.blueAccent,
+                                              ),
                                             ),
-                                          ),
-                                          IconButton(
-                                            icon: Icon(
-                                              isExpanded
-                                                  ? Icons.expand_less
-                                                  : Icons.expand_more,
+                                            const SizedBox(width: 80),
+                                            const Text(
+                                              'Line Wise Info',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: Colors.black87,
+                                              ),
                                             ),
-                                            onPressed: () {
-                                              setState(() {
-                                                isExpanded = !isExpanded;
-                                              });
-                                            },
-                                          ),
-                                        ],
-                                      ),
-
-                                      const Divider(
-                                          color: Colors.grey, thickness: 1),
-                                      const SizedBox(height: 12),
-                                      _buildInfoText('Target', dept['target']),
-                                      _buildInfoText(
-                                          'Achieved Output', dept['output']),
-                                      _buildInfoText(
-                                        'Balance',
-                                        dept['achievement'],
-                                        valueColor: int.tryParse(
-                                                        dept['achievement']
-                                                            .toString()) !=
-                                                    null &&
-                                                int.parse(dept['achievement']
-                                                        .toString()) >=
-                                                    0
-                                            ? Colors.green
-                                            : Colors.red,
-                                      ),
-                                      _buildInfoText(
-                                        'Achievement %',
-                                        dept['achievementPercent'],
-                                        valueColor: _parseAchievementPercent(
-                                                    dept[
-                                                        'achievementPercent']) >=
-                                                100
-                                            ? Colors.green
-                                            : Colors.red,
-                                      ),
-
-                                      // Expandable Section
-                                      if (isExpanded) ...[
-                                        const SizedBox(height: 16),
-                                        const Text(
-                                          'Team Members:',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16),
+                                          ],
                                         ),
-                                        const SizedBox(height: 8),
-                                        const Text('- Yuvi'),
-                                        const Text('- Yuva'),
-                                        const Text('- Vijay'),
-                                      ],
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          isExpanded
+                                              ? Icons.expand_less
+                                              : Icons.expand_more,
+                                        ),
+                                        onPressed: () {
+                                          if (isExpanded) {
+                                            // Collapse: update in outer setState
+                                            setState(() {
+                                              expandedItems[index] = false;
+                                            });
+                                          } else {
+                                            // Expand and fetch data
+                                            fetchLineWiseData(
+                                                dept['udf05'].toString(),
+                                                index);
+                                          }
+                                        },
+                                      ),
                                     ],
                                   ),
-                                ),
-                              );
-                            },
+
+                                  const Divider(
+                                      color: Colors.grey, thickness: 1),
+                                  const SizedBox(height: 12),
+                                  _customPlantInfoText(
+                                      '🎯 Target', dept['target']),
+                                  _customPlantInfoText(
+                                      '✅ Achieved Output', dept['output']),
+                                  _customPlantInfoText(
+                                    '📊 Balance',
+                                    dept['achievement'],
+                                    valueColor: int.tryParse(dept['achievement']
+                                                    .toString()) !=
+                                                null &&
+                                            int.parse(dept['achievement']
+                                                    .toString()) >=
+                                                0
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                  _customPlantInfoText(
+                                    '🏆 Achievement %',
+                                    dept['achievementPercent'],
+                                    valueColor: _parseAchievementPercent(
+                                                dept['achievementPercent']) >=
+                                            100
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+
+                                  if (isExpanded) ...[
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Line Wise Details:',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    // isLoading
+                                    //     ? const Center(
+                                    //         child: CircularProgressIndicator())
+                                    //     : lineWiseData.isEmpty
+                                    //         ? const Text('No data available.')
+                                    //         :
+
+                                    if (loadingItems[index] == true)
+                                      const Center(
+                                          child: CircularProgressIndicator())
+                                    else if (lineWiseData.isEmpty)
+                                      const Text('No data available.')
+                                    else
+                                      ListView.builder(
+                                        itemCount: lineWiseData.length,
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemBuilder: (context, i) {
+                                          final data = lineWiseData[i];
+                                          return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.all(16),
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.15),
+                                                      blurRadius: 8,
+                                                      offset:
+                                                          const Offset(0, 4),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    _customLineWiseData(
+                                                        '📅 Date', data.date),
+                                                    const Divider(height: 20),
+                                                    _customLineWiseData(
+                                                        '🏭 Department',
+                                                        data.department),
+                                                    const Divider(height: 20),
+                                                    _customLineWiseData(
+                                                        '🎯 Target',
+                                                        data.target.toString()),
+                                                    const Divider(height: 20),
+                                                    _customLineWiseData(
+                                                        '📦 Output',
+                                                        data.output.toString()),
+                                                    const Divider(height: 20),
+                                                    _customLineWiseData(
+                                                      '📈 Achievement',
+                                                      data.achievement
+                                                          .toString(),
+                                                      valueColor: int.tryParse(data
+                                                                      .achievement
+                                                                      .toString()) !=
+                                                                  null &&
+                                                              int.parse(data
+                                                                      .achievement
+                                                                      .toString()) >=
+                                                                  0
+                                                          ? Colors.green
+                                                          : Colors.red,
+                                                    ),
+                                                    const Divider(height: 20),
+                                                    _customLineWiseData(
+                                                      '✅ Achievement %',
+                                                      data.achievementPercent,
+                                                      valueColor:
+                                                          _parseAchievementPercent(
+                                                                      data.achievementPercent) >=
+                                                                  100
+                                                              ? Colors.green
+                                                              : Colors.red,
+                                                    ),
+                                                    const Divider(height: 20),
+                                                    _customLineWiseData(
+                                                        '👷‍♂️ Manpower',
+                                                        data.manPower),
+                                                  ],
+                                                ),
+                                              ),
+                                              if (i != lineWiseData.length - 1)
+                                                const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 8),
+                                                  child: Divider(
+                                                      color: Colors.grey),
+                                                ),
+                                            ],
+                                          );
+                                        },
+                                      )
+                                  ],
+                                ],
+                              ),
+                            ),
                           );
                         },
-                      )
+                      ),
                     ],
                     const SizedBox(
                       height: 10,
@@ -539,16 +691,16 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  _buildSummaryLabel(
+                                  _customSummaryLabel(
                                       "Target", item.target.toString()),
-                                  _buildSummaryLabel(
+                                  _customSummaryLabel(
                                       "Output", item.output.toString()),
-                                  _buildSummaryLabel(
+                                  _customSummaryLabel(
                                     "Achievement",
                                     item.achievement.toString(),
                                     valueColor: achievementColor,
                                   ),
-                                  _buildSummaryLabel(
+                                  _customSummaryLabel(
                                     "%",
                                     item.achievementPercent,
                                     valueColor: percentColor,
@@ -567,12 +719,40 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
     );
   }
 
+  Widget _customLineWiseData(String label, dynamic value, {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Text(
+              value.toString(),
+              style: TextStyle(
+                fontWeight: FontWeight.normal,
+                color: valueColor ?? Colors.black87,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   int _parseAchievementPercent(String percentStr) {
     return int.tryParse(percentStr.replaceAll('%', '').trim()) ?? 0;
   }
 }
 
-Widget _buildInfoText(String label, dynamic value, {Color? valueColor}) {
+Widget _customPlantInfoText(String label, dynamic value, {Color? valueColor}) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 4),
     child: Row(
@@ -604,7 +784,7 @@ Widget _buildInfoText(String label, dynamic value, {Color? valueColor}) {
   );
 }
 
-Widget _buildSummaryLabel(String label, String value, {Color? valueColor}) {
+Widget _customSummaryLabel(String label, String value, {Color? valueColor}) {
   return Column(
     children: [
       Text(label,
