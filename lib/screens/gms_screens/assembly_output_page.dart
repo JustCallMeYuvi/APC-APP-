@@ -20,7 +20,7 @@ class AssemblyOutputPage extends StatefulWidget {
 
 class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
   final TextEditingController _deptSearchController = TextEditingController();
-  final TextEditingController _apcMxkSearchController = TextEditingController();
+  // final TextEditingController _apcMxkSearchController = TextEditingController();
   List<Map<String, String>> deptNames = [];
   List<Map<String, String>> companyLists = [];
   String? selectedApcMxk;
@@ -181,6 +181,7 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
     return Scaffold(
       body: SafeArea(
@@ -193,10 +194,12 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     /// Heading
-                    const Text(
-                      'APC Assembly Output Daily Tracking Report',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    const Center(
+                      child: Text(
+                        'APC Assembly Output Daily Tracking Report',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Text('Selected Date',
@@ -464,7 +467,18 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                                                 color: Colors.blueAccent,
                                               ),
                                             ),
-                                            const SizedBox(width: 80),
+                                            // SizedBox(
+                                            //   width: MediaQuery.of(context)
+                                            //           .size
+                                            //           .width *
+                                            //       0.2, // 20% of screen width
+                                            // ),
+                                            SizedBox(
+                                              width: screenWidth < 600
+                                                  ? screenWidth * 0.2 // mobile
+                                                  : screenWidth *
+                                                      0.3, // tablet or larger
+                                            ),
                                             const Text(
                                               'Line Wise Info',
                                               style: TextStyle(
@@ -477,6 +491,7 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                                         ),
                                       ),
                                       IconButton(
+                                        color: Colors.red,
                                         icon: Icon(
                                           isExpanded
                                               ? Icons.expand_less
@@ -586,11 +601,13 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     _customLineWiseData(
-                                                        '📅 Date', data.date),
+                                                        '🏭 Line',
+                                                        data.department,
+                                                        valueColor:
+                                                            Colors.blue),
                                                     const Divider(height: 20),
                                                     _customLineWiseData(
-                                                        '🏭 Department',
-                                                        data.department),
+                                                        '📅 Date', data.date),
                                                     const Divider(height: 20),
                                                     _customLineWiseData(
                                                         '🎯 Target',
@@ -725,7 +742,7 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
       child: Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 5,
             child: Text(
               label,
               style: const TextStyle(fontWeight: FontWeight.bold),
