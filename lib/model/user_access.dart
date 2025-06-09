@@ -11,7 +11,6 @@ const targetOutputReportIcon = Symbols.add_task; // Use IconData directly
 const skillMappingRequestIcon = Symbols.skillet_sharp; // Use IconData directly
 const punchIcon = Symbols.fingerprint_rounded; // Use IconData directly
 
-
 List<UserAccess> userAccessFromJson(String str) =>
     List<UserAccess>.from(json.decode(str).map((x) => UserAccess.fromJson(x)));
 
@@ -118,6 +117,8 @@ IconData getIconForPage(Page page) {
       return punchIcon; // Use Material Symbol for punch clock
     case 'Remove Vehicle ID':
       return Icons.remove_circle_outline;
+    case 'Assembly Output':
+      return Icons.output;
 
     default:
       return Icons.help_outline; // Fallback icon

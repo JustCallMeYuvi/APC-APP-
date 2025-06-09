@@ -176,6 +176,9 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
 
         return matchesDept && matchesDate;
       }).toList();
+      // Reset expansion and fetched data when new filter applied
+      expandedItems.clear();
+      fetchedLineWiseData.clear();
     });
   }
 
