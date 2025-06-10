@@ -52,6 +52,7 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
     //     'http://10.3.0.70:9042/api/Production/get-production?date=$formattedDate');
 
     var apiUrl = '${ApiHelper.productionUrl}get-production?date=$formattedDate';
+    print('Production Data URL ${apiUrl}');
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
