@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'dart:convert';
@@ -88,6 +93,95 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
   String? selectedIssue;
   String? description;
 
+  final List<String> priorityItems = ['High', 'Medium','Low'];
+  String? selectedPriority;
+
+  List<File> _selectedImages = [];
+  File? _imageFile;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  // void _showPickerOptions(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     builder: (_) => SafeArea(
+  //       child: Wrap(
+  //         children: [
+  //           ListTile(
+  //             leading: const Icon(Icons.photo_library),
+  //             title: const Text('Pick from Gallery'),
+  //             onTap: () {
+  //               Navigator.of(context).pop();
+  //               _pickImage(ImageSource.gallery);
+  //             },
+  //           ),
+  //           ListTile(
+  //             leading: const Icon(Icons.camera_alt),
+  //             title: const Text('Take a Photo'),
+  //             onTap: () {
+  //               Navigator.of(context).pop();
+  //               _pickImage(ImageSource.camera);
+  //             },
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  void _showPickerOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Pick from Gallery'),
+              onTap: () async {
+                Navigator.of(context).pop();
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  allowMultiple: true,
+                  type: FileType.image,
+                );
+
+                if (result != null) {
+                  setState(() {
+                    _selectedImages =
+                        result.paths.map((path) => File(path!)).toList();
+                  });
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a Photo'),
+              onTap: () async {
+                Navigator.of(context).pop();
+                final pickedFile =
+                    await ImagePicker().pickImage(source: ImageSource.camera);
+
+                if (pickedFile != null) {
+                  setState(() {
+                    _selectedImages.add(File(pickedFile.path));
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> fetchPlantDropdown() async {
     try {
       final response = await http.get(Uri.parse(
@@ -109,17 +203,89 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     }
   }
 
-  Future<void> submitAssetData() async {
-    // Combine issue + description into one string
-    final combinedDescription = selectedIssue != null && description != null
-        ? "$selectedIssue: $description"
-        : null;
+  // Future<void> submitAssetData() async {
+  //   // Combine issue + description into one string
+  //   final combinedDescription = selectedIssue != null && description != null
+  //       ? "$selectedIssue: $description"
+  //       : null;
 
+  //   if (selectedAssetId == null ||
+  //       selectedPlant == null ||
+  //       combinedDescription == null ||
+  //       combinedDescription.isEmpty ||
+  //       selectedIssue == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //           content: Text('Please complete all fields before submitting.')),
+  //     );
+  //     return;
+  //   }
+
+  //   const url = 'http://10.3.0.70:9093/api/Login/InsertIncidentRecords';
+  //   // 🔁 Convert images to base64 strings
+  //   List<String> base64Images = [];
+  //   for (File image in _selectedImages) {
+  //     List<int> imageBytes = await image.readAsBytes();
+  //     base64Images.add(base64Encode(imageBytes));
+  //   }
+
+  //   final Map<String, dynamic> payload = {
+  //     "barcode": widget.userData.empNo,
+  //     "assetId": selectedAssetId.toString(), // or just "string" if testing
+  //     "incidentDate":
+  //         DateFormat('dd/MM/yyyy').format(selectedDate), // ✅ Only date
+  //     "reportedBy": widget.userData.empNo.toString(),
+  //     "description": combinedDescription,
+  //     // "issueType": selectedType,
+  //     "issueType": selectedType, // ✅ Use selectedType with correct key
+  //     "locationName": selectedPlant.toString(),
+  //     "email": emailController.text.trim(), // ← from TextField
+  //     "mobile": phoneController.text.trim(), // ← from TextField
+  //     "priority": selectedPriority, // ✅ new field
+  //     "images": base64Images, // ✅ new field
+  //   };
+  //   print('Submit asset data${payload}');
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(url),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(payload),
+  //     );
+
+  //     if (response.statusCode == 200) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('Asset Data submitted successfully!')),
+  //       );
+  //       setState(() {
+  //         _assetSearchController.clear();
+  //         _plantSearchController.clear();
+  //         selectedAssetId = null;
+  //         selectedPlant = null;
+  //         selectedIssue = null;
+  //         description = null;
+  //         emailController.clear();
+  //         phoneController.clear();
+  //         _selectedImages.clear();
+  //       });
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //             content: Text('Failed to submit incident: ${response.body}')),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Error submitting incident: $e')),
+  //     );
+  //   }
+  // }
+
+  Future<void> submitAssetData() async {
     if (selectedAssetId == null ||
         selectedPlant == null ||
-        combinedDescription == null ||
-        combinedDescription.isEmpty ||
-        selectedIssue == null) {
+        selectedIssue == null ||
+        description == null ||
+        description!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Please complete all fields before submitting.')),
@@ -128,32 +294,70 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     }
 
     const url = 'http://10.3.0.70:9093/api/Login/InsertIncidentRecords';
+    var request = http.MultipartRequest('POST', Uri.parse(url));
 
-    final Map<String, dynamic> payload = {
-      "barcode": widget.userData.empNo,
-      "assetId": selectedAssetId.toString(), // or just "string" if testing
-      "incidentDate":
-          DateFormat('yyyy-MM-dd').format(selectedDate), // ✅ Only date
-      "reportedBy": widget.userData.empNo.toString(),
-      "description": combinedDescription,
-      // "issueType": selectedType,
-      "issueType": selectedType, // ✅ Use selectedType with correct key
-      "locationName": selectedPlant.toString(),
-      "email": emailController.text.trim(), // ← from TextField
-      "mobile": phoneController.text.trim() // ← from TextField
-    };
-    print('Submit asset data${payload}');
+    // Add form fields
+    request.fields['barcode'] = widget.userData.empNo.toString();
+    request.fields['assetId'] = selectedAssetId.toString();
+    request.fields['incidentDate'] =
+        DateFormat('dd/MM/yyyy').format(selectedDate);
+    request.fields['reportedBy'] = widget.userData.empNo.toString();
+    request.fields['Created_By'] = widget.userData.empNo.toString();
+    request.fields['description'] = "$selectedIssue: $description";
+    request.fields['issueType'] = selectedType ?? "";
+    request.fields['locationName'] = selectedPlant.toString();
+    request.fields['email'] = emailController.text.trim();
+    request.fields['mobile'] = phoneController.text.trim();
+    request.fields['priority'] = selectedPriority ?? "";
+    // request.fields['files'] = _selectedImages;
+
+    // 🔽 Print the fields
+    print("🔽 Submitting Incident Data:");
+    print("Barcode: ${widget.userData.empNo}");
+    print("Asset ID: $selectedAssetId");
+    print("Incident Date: $selectedDate");
+    print("Reported By: ${widget.userData.empNo}");
+    print("Description: $description");
+    print("Issue Type: $selectedType");
+    print("Location: $selectedPlant");
+    print("Email: ${emailController.text.trim()}");
+    print("Mobile: ${phoneController.text.trim()}");
+    print("Priority: $selectedPriority");
+    // Attach image files
+    // for (int i = 0; i < _selectedImages.length; i++) {
+    //   File imageFile = _selectedImages[i];
+    //   String fileName = imageFile.path.split('/').last;
+
+    //   request.files.add(
+    //     await http.MultipartFile.fromPath(
+    //       'images', // ✅ Must match the expected field name in your backend
+    //       imageFile.path,
+    //       filename: fileName,
+    //     ),
+    //   );
+    // }
+
+    // Add image files
+    for (var file in _selectedImages) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'files', // The key used in your backend to receive the file
+
+        file.path,
+        contentType:
+            MediaType('image', 'jpeg'), // or adjust based on actual file type
+      ));
+    }
+
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(payload),
-      );
-
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      print("🔁 Server response: ${response.statusCode}");
+      print("🔁 Response body: ${response.body}");
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Asset Data submitted successfully!')),
         );
+
         setState(() {
           _assetSearchController.clear();
           _plantSearchController.clear();
@@ -163,6 +367,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
           description = null;
           emailController.clear();
           phoneController.clear();
+          _selectedImages.clear();
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -412,6 +617,56 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                   ),
                 ],
                 const SizedBox(
+                  height: 20,
+                ),
+                DropdownButtonHideUnderline(
+                  child: DropdownButton2<String>(
+                    isExpanded:
+                        true, // 🔥 This makes the button take full available width
+                    hint: const Text(
+                      'Select Priority',
+                      style: TextStyle(
+                        fontSize: 16,
+                        // color: Colors.grey,
+                      ),
+                    ),
+                    items: priorityItems
+                        .map((item) => DropdownMenuItem<String>(
+                              value: item,
+                              child: Text(
+                                item,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                    value: selectedPriority,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedPriority = value;
+                      });
+                    },
+                    buttonStyleData: ButtonStyleData(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      height: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                    ),
+                    dropdownStyleData: DropdownStyleData(
+                      width: MediaQuery.of(context).size.width - 70,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    iconStyleData: const IconStyleData(
+                      icon: Icon(Icons.arrow_drop_down),
+                    ),
+                  ),
+                ),
+                const SizedBox(
                   height: 10,
                 ),
                 const SizedBox(height: 20),
@@ -472,6 +727,132 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                         horizontal: 14, vertical: 12),
                   ),
                 ),
+                const SizedBox(
+                  height: 20,
+                ),
+
+                // if (_imageFile != null)
+                //   Image.file(_imageFile!, height: 200, fit: BoxFit.cover)
+                // else
+                //   const
+
+                // _imageFile != null
+                //     ? Stack(
+                //         children: [
+                //           Image.file(
+                //             _imageFile!,
+                //             height: 200,
+                //             // width: double.infinity,
+                //             fit: BoxFit.cover,
+                //           ),
+                //           Positioned(
+                //             top: 8,
+                //             right: 8,
+                //             child: GestureDetector(
+                //               onTap: () {
+                //                 setState(() {
+                //                   _imageFile = null;
+                //                 });
+                //               },
+                //               child: Container(
+                //                 decoration: BoxDecoration(
+                //                   color: Colors.black.withOpacity(0.5),
+                //                   shape: BoxShape.circle,
+                //                 ),
+                //                 child: const Padding(
+                //                   padding: EdgeInsets.all(4.0),
+                //                   child: Icon(
+                //                     Icons.close,
+                //                     color: Colors.white,
+                //                     size: 20,
+                //                   ),
+                //                 ),
+                //               ),
+                //             ),
+                //           ),
+                //         ],
+                //       )
+                //     : const Text("No image selected"),
+
+                _selectedImages.isNotEmpty
+                    ? SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: _selectedImages.map((image) {
+                            return Stack(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  child: Image.file(
+                                    image,
+                                    height: 100,
+                                    width: 100,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 8,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedImages.remove(image);
+                                      });
+                                    },
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        // color: Colors.black.withOpacity(0.6),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(4.0),
+                                        child: Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      )
+                    : const Center(child: Text("No images selected")),
+
+                const SizedBox(
+                  height: 10,
+                ),
+                SizedBox(
+                  width: double.infinity, // Makes the button take full width
+                  child: ElevatedButton.icon(
+                    icon: const Icon(
+                      Icons.image,
+                      size: 24,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      "Choose Image",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      padding: const EdgeInsets.all(
+                          14), // Equal padding on all sides
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 4,
+                    ),
+                    onPressed: () => _showPickerOptions(context),
+                  ),
+                ),
+
                 const SizedBox(
                   height: 20,
                 ),
