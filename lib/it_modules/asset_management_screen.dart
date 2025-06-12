@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:animated_movies_app/methods/get_emp_details_apoi_fetch_method.dart';
+import 'package:animated_movies_app/model/get_emp_details.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:file_picker/file_picker.dart';
@@ -56,11 +58,26 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     'Blue Screen',
     'Keyboard Issue'
   ];
+
+  List<GetEmpDetails> empDetailsList = [];
   @override
   void initState() {
     super.initState();
     fetchAssetDropdown();
     fetchPlantDropdown(); // fetch plants
+    loadEmpDetails(widget.userData.empNo);
+  }
+
+  Future<void> loadEmpDetails(String empNo) async {
+    try {
+      final details = await EmpDetailsService.fetchEmpDetails(empNo);
+      setState(() {
+        empDetailsList = details;
+      });
+    } catch (e) {
+      // Handle error gracefully (e.g. show a snackbar or dialog)
+      print('Error: $e');
+    }
   }
 
   Future<void> fetchAssetDropdown() async {
@@ -93,7 +110,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
   String? selectedIssue;
   String? description;
 
-  final List<String> priorityItems = ['High', 'Medium','Low'];
+  final List<String> priorityItems = ['High', 'Medium', 'Low'];
   String? selectedPriority;
 
   List<File> _selectedImages = [];
@@ -297,6 +314,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     var request = http.MultipartRequest('POST', Uri.parse(url));
 
     // Add form fields
+    request.fields['DEPARTMENT'] = empDetailsList.first.depTName;
     request.fields['barcode'] = widget.userData.empNo.toString();
     request.fields['assetId'] = selectedAssetId.toString();
     request.fields['incidentDate'] =
@@ -431,7 +449,17 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 20),
+                // const SizedBox(height: 10),
+                empDetailsList.isNotEmpty
+                    ? Text(
+                        empDetailsList.first.depTName,
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      )
+                    : const Text('Department info not available'),
+                const SizedBox(
+                  height: 10,
+                ),
 
                 /// Asset ID Dropdown
                 Text('Asset ID',

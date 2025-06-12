@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/model/line_wise_production_data_model.dart';
 import 'package:animated_movies_app/screens/gms_screens/production_data_model.dart';
