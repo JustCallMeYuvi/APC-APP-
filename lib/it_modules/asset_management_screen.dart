@@ -309,6 +309,8 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       );
       return;
     }
+    // ✅ Format date here
+    // String formattedDate = DateFormat('dd/MM/yyyy').format(selectedDate);
 
     const url = 'http://10.3.0.70:9093/api/Login/InsertIncidentRecords';
     var request = http.MultipartRequest('POST', Uri.parse(url));
@@ -317,8 +319,17 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     request.fields['DEPARTMENT'] = empDetailsList.first.depTName;
     request.fields['barcode'] = widget.userData.empNo.toString();
     request.fields['assetId'] = selectedAssetId.toString();
-    request.fields['incidentDate'] =
-        DateFormat('dd/MM/yyyy').format(selectedDate);
+    // request.fields['incidentDate'] =
+    //     DateFormat('dd/MM/yyyy').format(selectedDate);
+
+// // Format as 'dd/MM/yyyy'
+//     request.fields['incidentDate'] =
+//         DateFormat('dd/MM/yyyy').format(selectedDate);
+
+    request.fields['incidentDate'] = selectedDate.toIso8601String();
+    // Send using form-data
+    // request.fields['incidentDate'] = formattedDate;
+
     request.fields['reportedBy'] = widget.userData.empNo.toString();
     request.fields['Created_By'] = widget.userData.empNo.toString();
     request.fields['description'] = "$selectedIssue: $description";
@@ -371,6 +382,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       var response = await http.Response.fromStream(streamedResponse);
       print("🔁 Server response: ${response.statusCode}");
       print("🔁 Response body: ${response.body}");
+
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Asset Data submitted successfully!')),
@@ -402,7 +414,9 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+    // final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+    // Format to dd/MM/yyyy
+    String formattedDate = DateFormat('dd/MM/yyyy').format(selectedDate);
 
     return SafeArea(
       child: Scaffold(

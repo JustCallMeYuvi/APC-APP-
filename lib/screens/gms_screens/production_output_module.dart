@@ -1,167 +1,3 @@
-// import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
-// import 'package:drop_down_search_field/drop_down_search_field.dart';
-// import 'package:flutter/material.dart';
-
-// class ProductionReportsModule extends StatefulWidget {
-//   final LoginModelApi userData;
-//   const ProductionReportsModule({Key? key, required this.userData})
-//       : super(key: key);
-
-//   @override
-//   _ProductionReportsModuleState createState() =>
-//       _ProductionReportsModuleState();
-// }
-
-// class _ProductionReportsModuleState extends State<ProductionReportsModule> {
-//   final List<String> reportOptions = ['RFT Report', 'IE Efficiency', 'B-Grade'];
-//   final List<String> plants = ['AP1', 'AP2', 'AP3','AP4'];
-//   final List<String> processsType = ['ALL', 'Stiching', 'Assembly', 'Cutting'];
-
-//   String? selectedReport;
-//   String? selectedPlants;
-//   String? selectedProcess;
-
-//   final TextEditingController _reportSearchController = TextEditingController();
-//   final TextEditingController _plantController = TextEditingController();
-//   final TextEditingController _processTypeController = TextEditingController();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           children: [
-//             DropDownSearchField(
-//               textFieldConfiguration: TextFieldConfiguration(
-//                 controller: _reportSearchController,
-//                 autofocus: false,
-//                 decoration: const InputDecoration(
-//                   border: OutlineInputBorder(
-//                     borderRadius: BorderRadius.all(Radius.circular(10)),
-//                   ),
-//                   labelText: "Search Report",
-//                   suffixIcon: Icon(Icons.search),
-//                 ),
-//                 onChanged: (text) {
-//                   setState(() {
-//                     if (text.isEmpty) selectedReport = null;
-//                   });
-//                 },
-//               ),
-//               suggestionsCallback: (pattern) async {
-//                 if (pattern.isEmpty) return reportOptions;
-//                 return reportOptions
-//                     .where((option) =>
-//                         option.toLowerCase().contains(pattern.toLowerCase()))
-//                     .toList();
-//               },
-//               itemBuilder: (context, suggestion) {
-//                 return ListTile(
-//                   leading: const Icon(Icons.assignment_outlined),
-//                   title: Text(suggestion),
-//                 );
-//               },
-//               onSuggestionSelected: (suggestion) {
-//                 setState(() {
-//                   selectedReport = suggestion;
-//                   _reportSearchController.text = suggestion;
-//                 });
-//               },
-//               displayAllSuggestionWhenTap: true,
-//               isMultiSelectDropdown: false,
-//             ),
-//             const SizedBox(
-//               height: 20,
-//             ),
-//             DropDownSearchField(
-//               textFieldConfiguration: TextFieldConfiguration(
-//                 controller: _plantController,
-//                 autofocus: false,
-//                 decoration: const InputDecoration(
-//                   border: OutlineInputBorder(
-//                     borderRadius: BorderRadius.all(Radius.circular(10)),
-//                   ),
-//                   labelText: "Search Plant",
-//                   suffixIcon: Icon(Icons.search),
-//                 ),
-//                 onChanged: (text) {
-//                   setState(() {
-//                     if (text.isEmpty) selectedPlants = null;
-//                   });
-//                 },
-//               ),
-//               suggestionsCallback: (pattern) async {
-//                 if (pattern.isEmpty) return plants;
-//                 return plants
-//                     .where((option) =>
-//                         option.toLowerCase().contains(pattern.toLowerCase()))
-//                     .toList();
-//               },
-//               itemBuilder: (context, suggestion) {
-//                 return ListTile(
-//                   leading: const Icon(Icons.assignment_outlined),
-//                   title: Text(suggestion),
-//                 );
-//               },
-//               onSuggestionSelected: (suggestion) {
-//                 setState(() {
-//                   selectedPlants = suggestion;
-//                   _plantController.text = suggestion;
-//                 });
-//               },
-//               displayAllSuggestionWhenTap: true,
-//               isMultiSelectDropdown: false,
-//             ),
-//             const SizedBox(
-//               height: 20,
-//             ),
-//             DropDownSearchField(
-//               textFieldConfiguration: TextFieldConfiguration(
-//                 controller: _processTypeController,
-//                 autofocus: false,
-//                 decoration: const InputDecoration(
-//                   border: OutlineInputBorder(
-//                     borderRadius: BorderRadius.all(Radius.circular(10)),
-//                   ),
-//                   labelText: "Search Process",
-//                   suffixIcon: Icon(Icons.search),
-//                 ),
-//                 onChanged: (text) {
-//                   setState(() {
-//                     if (text.isEmpty) selectedProcess = null;
-//                   });
-//                 },
-//               ),
-//               suggestionsCallback: (pattern) async {
-//                 if (pattern.isEmpty) return processsType;
-//                 return processsType
-//                     .where((option) =>
-//                         option.toLowerCase().contains(pattern.toLowerCase()))
-//                     .toList();
-//               },
-//               itemBuilder: (context, suggestion) {
-//                 return ListTile(
-//                   leading: const Icon(Icons.assignment_outlined),
-//                   title: Text(suggestion),
-//                 );
-//               },
-//               onSuggestionSelected: (suggestion) {
-//                 setState(() {
-//                   selectedProcess = suggestion;
-//                   _processTypeController.text = suggestion;
-//                 });
-//               },
-//               displayAllSuggestionWhenTap: true,
-//               isMultiSelectDropdown: false,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
@@ -232,6 +68,40 @@ class IEEfficiencyData {
   }
 }
 
+List<RftReport> rftReportFromJson(String str) {
+  final List<dynamic> jsonData = json.decode(str);
+  return jsonData.map((item) => RftReport.fromJson(item)).toList();
+}
+
+class RftReport {
+  final String? createdate;
+  final String? productionLineCode;
+  final String? totalQty;
+  final String? qualifiedQty;
+  final String? rft;
+  final String? udf01;
+
+  RftReport({
+    this.createdate,
+    this.productionLineCode,
+    this.totalQty,
+    this.qualifiedQty,
+    this.rft,
+    this.udf01,
+  });
+
+  factory RftReport.fromJson(Map<String, dynamic> json) {
+    return RftReport(
+      createdate: json['createdate']?.toString(),
+      productionLineCode: json['productioN_LINE_CODE']?.toString(),
+      totalQty: json['totaL_QTY']?.toString(),
+      qualifiedQty: json['qualifieD_QTY']?.toString(),
+      rft: json['rft']?.toString(),
+      udf01: json['udF01']?.toString(),
+    );
+  }
+}
+
 class ProductionReportsModule extends StatefulWidget {
   final LoginModelApi userData;
   const ProductionReportsModule({Key? key, required this.userData})
@@ -244,8 +114,9 @@ class ProductionReportsModule extends StatefulWidget {
 
 class _ProductionReportsModuleState extends State<ProductionReportsModule> {
   final List<String> reportOptions = ['RFT Report', 'IE Efficiency', 'B-Grade'];
-  final List<String> plants = ['AP1', 'AP2', 'AP3', 'AP4'];
-  final List<String> processsType = ['ALL', 'Stiching', 'Assembly', 'Cutting'];
+  // final List<String> plants = ['AP1', 'AP2', 'AP3', 'AP4'];
+  List<String> plants = [];
+  final List<String> processsType = ['ALL', 'Stitching', 'Assembly', 'Cutting'];
 
   String? selectedReport;
   String? selectedPlants;
@@ -257,6 +128,32 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
   final TextEditingController _processTypeController = TextEditingController();
 
   List<BGradeData> bGradeList = [];
+  List<RftReport> rftReportList = [];
+  @override
+  void initState() {
+    super.initState();
+    fetchPlants();
+  }
+
+  Future<void> fetchPlants() async {
+    final url = Uri.parse('${ApiHelper.productionUrl}get-Plants');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+
+        setState(() {
+          plants = data.map((item) => item.toString()).toList();
+        });
+      } else {
+        print("❌ Failed to load plants: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("❌ Error fetching plants: $e");
+    }
+  }
 
   Future<void> fetchBGradeData() async {
     if (selectedPlants == null || selectedProcess == null) {
@@ -269,8 +166,8 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
     String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
     String process = selectedProcess == "Cutting"
         ? "C"
-        : selectedProcess == "Stiching"
-            ? "L"
+        : selectedProcess == "Stitching"
+            ? "S"
             : selectedProcess == "Assembly"
                 ? "L"
                 : "ALL";
@@ -311,7 +208,7 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
     final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
     String ieefficencyProcess = selectedProcess == "Cutting"
         ? "C"
-        : selectedProcess == "Stiching"
+        : selectedProcess == "Stitching"
             ? "S"
             : selectedProcess == "Assembly"
                 ? "L"
@@ -333,6 +230,75 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
       }
     } catch (e) {
       print("Error fetching IE Efficiency data: $e");
+    }
+  }
+
+  // Future<void> fetchRFTReportData() async {
+  //   final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+
+  //   // Use a map for better clarity and flexibility
+  //   const processCodeMap = {
+  //     "Cutting": "C",
+  //     "Stitching": "S",
+  //     "Assembly": "L",
+  //   };
+
+  //   // Get the code or fallback to "ALL"
+  //   final rftReportprocess = processCodeMap[selectedProcess] ?? "ALL";
+
+  //   final url = Uri.parse(
+  //     "http://10.3.0.70:9042/api/Production/get-RFT-data?inputDate=$formattedDate&line=$selectedPlants&process=$rftReportprocess",
+  //   );
+  //   print('RFT Report URL ${url}');
+  //   try {
+  //     final response = await http.get(url);
+  //     if (response.statusCode == 200) {
+  //       final List<RftReport> data = rftReportFromJson(response.body);
+  //       setState(() {
+  //         rftReportList = data;
+  //       });
+  //     } else {
+  //       print("❌ Failed to fetch RFT data: ${response.statusCode}");
+  //     }
+  //   } catch (e) {
+  //     print("❌ Error: $e");
+  //   }
+  // }
+
+  Future<void> fetchRFTReportData() async {
+    final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+
+    // Use a map for better clarity and flexibility
+    const processCodeMap = {
+      "Cutting": "C",
+      "Stitching": "S",
+      "Assembly": "L",
+    };
+
+    // Get the code or fallback to "ALL"
+    final rftReportprocess = processCodeMap[selectedProcess] ?? "ALL";
+
+    // Construct the URL string
+    final rftURL =
+        '${ApiHelper.productionUrl}get-RFT-data?inputDate=$formattedDate&line=$selectedPlants&process=$rftReportprocess';
+
+    print('RFT Report URL: $rftURL');
+
+    // Convert to Uri
+    final url = Uri.parse(rftURL);
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<RftReport> data = rftReportFromJson(response.body);
+        setState(() {
+          rftReportList = data;
+        });
+      } else {
+        print("❌ Failed to fetch RFT data: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("❌ Error: $e");
     }
   }
 
@@ -370,6 +336,15 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
 
     final groupedIEData =
         groupBy(ieEfficiencyList, (item) => item.process); // Move here
+
+    // final Map<String, List<RftReport>> groupedRFTData = groupBy(
+    //   rftReportList,
+    //   (item) => item.udf01 ?? 'Unknown', // or 'ALL', or ''
+    // );
+    final groupedRFTData = groupBy(
+      rftReportList,
+      (RftReport item) => item.udf01 ?? 'ALL', // Ensure non-null grouping key
+    );
 
     return Scaffold(
       body: Padding(
@@ -488,6 +463,8 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                   fetchBGradeData();
                 } else if (selectedReport == 'IE Efficiency') {
                   fetchIEEfficiencyData();
+                } else if (selectedReport == 'RFT Report') {
+                  fetchRFTReportData(); // ✅ call RFT report function
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -499,158 +476,9 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
             ),
 
             const SizedBox(height: 16),
-            // Expanded(
-            //   child: bGradeList.isEmpty
-            //       ? const Center(child: Text("No data found"))
-            //       : ListView.builder(
-            //           itemCount: bGradeList.length,
-            //           itemBuilder: (context, index) {
-            //             final data = bGradeList[index];
-            //             return Card(
-            //               margin: const EdgeInsets.symmetric(
-            //                   vertical: 8, horizontal: 4),
-            //               elevation: 4,
-            //               shape: RoundedRectangleBorder(
-            //                 borderRadius: BorderRadius.circular(12),
-            //               ),
-            //               child: ExpansionTile(
-            //                 title: Text(
-            //                   "${data.department} | ${data.process}",
-            //                   style: const TextStyle(
-            //                     fontSize: 20,
-            //                     color: Colors.blue,
-            //                     fontWeight: FontWeight.bold,
-            //                   ),
-            //                 ),
-            //                 childrenPadding: const EdgeInsets.all(16),
-            //                 expandedCrossAxisAlignment:
-            //                     CrossAxisAlignment.start,
-            //                 children: [
-            //                   bGradeDataTextWidget(
-            //                     'Date',
-            //                     DateFormat('yyyy-MM-dd').format(data.date),
-            //                   ),
-            //                   bGradeDataTextWidget(
-            //                       'Output', data.output.toString()),
-            //                   bGradeDataTextWidget(
-            //                       'B Grade', data.bGrade.toString()),
-            //                   bGradeDataTextWidget(
-            //                       'Repairs', data.repairs.toString()),
-            //                   bGradeDataTextWidget(
-            //                       'B Grade %', data.bGradePercent.toString()),
-            //                 ],
-            //               ),
-            //             );
-            //           },
-            //         ),
-            // ),
-
-            // Expanded(
-            //     child: groupedData.isEmpty
-            //         ? const Center(child: Text("No data found"))
-            //         : ListView.builder(
-            //             itemCount: groupedData.length,
-            //             itemBuilder: (context, index) {
-            //               final process = groupedData.keys.elementAt(index);
-            //               final items = groupedData[process]!;
-
-            //               return Card(
-            //                 margin: const EdgeInsets.symmetric(
-            //                     vertical: 8, horizontal: 4),
-            //                 elevation: 4,
-            //                 shape: RoundedRectangleBorder(
-            //                   borderRadius: BorderRadius.circular(12),
-            //                 ),
-            //                 child: ExpansionTile(
-            //                   title: Text(
-            //                     "${items.first.department} | $process",
-            //                     style: const TextStyle(
-            //                       fontSize: 20,
-            //                       color: Colors.blue,
-            //                       fontWeight: FontWeight.bold,
-            //                     ),
-            //                   ),
-            //                   childrenPadding: const EdgeInsets.all(16),
-            //                   expandedCrossAxisAlignment:
-            //                       CrossAxisAlignment.start,
-            //                   children: items.map((data) {
-            //                     return Padding(
-            //                       padding: const EdgeInsets.only(bottom: 12.0),
-            //                       child: Column(
-            //                         crossAxisAlignment:
-            //                             CrossAxisAlignment.start,
-            //                         children: [
-            //                           bGradeDataTextWidget(
-            //                             'Date',
-            //                             DateFormat('yyyy-MM-dd')
-            //                                 .format(data.date),
-            //                           ),
-            //                           bGradeDataTextWidget(
-            //                               'Output', data.output.toString()),
-            //                           bGradeDataTextWidget(
-            //                               'B Grade', data.bGrade.toString()),
-            //                           bGradeDataTextWidget(
-            //                               'Repairs', data.repairs.toString()),
-            //                           bGradeDataTextWidget('B Grade %',
-            //                               data.bGradePercent.toString()),
-            //                           const Divider(), // Optional visual separator
-            //                         ],
-            //                       ),
-            //                     );
-            //                   }).toList(),
-            //                 ),
-            //               );
-            //             },
-            //           )),
 
             Expanded(
               child: selectedReport == 'IE Efficiency'
-                  // ? (ieEfficiencyList.isEmpty
-                  //     ? const Center(child: Text("No data found"))
-                  //     : ListView.builder(
-                  //         itemCount: ieEfficiencyList.length,
-                  //         itemBuilder: (context, index) {
-                  //           final data = ieEfficiencyList[index];
-                  //           return Card(
-                  //             margin: const EdgeInsets.symmetric(
-                  //                 vertical: 8, horizontal: 4),
-                  //             elevation: 4,
-                  //             shape: RoundedRectangleBorder(
-                  //               borderRadius: BorderRadius.circular(12),
-                  //             ),
-                  //             child: Padding(
-                  //               padding: const EdgeInsets.all(16.0),
-                  //               child: Column(
-                  //                 crossAxisAlignment: CrossAxisAlignment.start,
-                  //                 children: [
-                  //                   // Text(
-                  //                   //   data.prodLine,
-                  //                   //   style: const TextStyle(
-                  //                   //     fontSize: 18,
-                  //                   //     fontWeight: FontWeight.bold,
-                  //                   //     color: Colors.blue,
-                  //                   //   ),
-                  //                   // ),
-
-                  //                   const SizedBox(height: 8),
-                  //                   // Text("Date: ${data.prodDate}"),
-                  //                     reportsDataTextWidget(
-                  //                       'Line', data.prodLine.toString()),
-                  //                   reportsDataTextWidget(
-                  //                       'Date', data.prodDate.toString()),
-                  //                   reportsDataTextWidget('Standard Manhours',
-                  //                       data.standardManhours.toString()),
-                  //                   reportsDataTextWidget('Actual Manhours',
-                  //                       data.actualManhours.toString()),
-                  //                   reportsDataTextWidget(
-                  //                       'IE', "${data.ie.toStringAsFixed(2)}%"),
-                  //                 ],
-                  //               ),
-                  //             ),
-                  //           );
-                  //         },
-                  //       ))
-
                   ? (groupedIEData.isEmpty
                       ? const Center(child: Text("No data found"))
                       : ListView.builder(
@@ -770,7 +598,68 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                 );
                               },
                             ))
-                      : const Center(child: Text("Please select a report")),
+                      : selectedReport == 'RFT Report'
+                          ? (groupedRFTData.isEmpty
+                              ? const Center(child: Text("No data found"))
+                              : ListView.builder(
+                                  itemCount: groupedRFTData.length,
+                                  itemBuilder: (context, index) {
+                                    final processCode =
+                                        groupedRFTData.keys.elementAt(index);
+                                    final items = groupedRFTData[processCode]!;
+
+                                    return Card(
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 4),
+                                      elevation: 4,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: ExpansionTile(
+                                        title: Text(
+                                          getFullProcessName(processCode),
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.blue,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        childrenPadding:
+                                            const EdgeInsets.all(16),
+                                        expandedCrossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: items.map((data) {
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 12.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                reportsDataTextWidget(
+                                                    'Line',
+                                                    data.productionLineCode ??
+                                                        ''),
+                                                reportsDataTextWidget('Date',
+                                                    data.createdate ?? ''),
+                                                reportsDataTextWidget(
+                                                    'Total Qty',
+                                                    data.totalQty ?? ''),
+                                                reportsDataTextWidget(
+                                                    'Qualified Qty',
+                                                    data.qualifiedQty ?? ''),
+                                                reportsDataTextWidget('RFT',
+                                                    '${data.rft ?? '0'}%'),
+                                                const Divider(),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    );
+                                  },
+                                ))
+                          : const Center(child: Text("Please select a report")),
             ),
           ],
         ),

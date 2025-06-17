@@ -119,6 +119,11 @@ IconData getIconForPage(Page page) {
       return Icons.remove_circle_outline;
     case 'Assembly Output':
       return Icons.output;
+    case 'Reports':
+      return Icons.production_quantity_limits;
+
+    case 'Asset Management':
+      return Icons.store;
 
     default:
       return Icons.help_outline; // Fallback icon
