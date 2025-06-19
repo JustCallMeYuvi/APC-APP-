@@ -391,6 +391,13 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                 setState(() {
                   selectedReport = suggestion;
                   _reportSearchController.text = suggestion;
+                  // Set date based on report
+                  if (selectedReport == 'IE Efficiency') {
+                    selectedDate =
+                        DateTime.now().subtract(const Duration(days: 5));
+                  } else {
+                    selectedDate = DateTime.now();
+                  }
                 });
               },
               displayAllSuggestionWhenTap: true,
@@ -453,18 +460,66 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
               isMultiSelectDropdown: false,
             ),
             const SizedBox(height: 16),
+
             // ElevatedButton(
-            //   onPressed: fetchBGradeData,
+            //   onPressed: () {
+            //     if (selectedReport == 'B-Grade') {
+            //       fetchBGradeData();
+            //     } else if (selectedReport == 'IE Efficiency') {
+            //       fetchIEEfficiencyData();
+            //     } else if (selectedReport == 'RFT Report') {
+            //       fetchRFTReportData(); // ✅ call RFT report function
+            //     } else {
+            //       ScaffoldMessenger.of(context).showSnackBar(
+            //         const SnackBar(
+            //             content: Text('Please select a report to fetch data.')),
+            //       );
+            //     }
+            //   },
             //   child: const Text("Search"),
             // ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (selectedReport == 'B-Grade') {
-                  fetchBGradeData();
-                } else if (selectedReport == 'IE Efficiency') {
-                  fetchIEEfficiencyData();
+                  await fetchBGradeData();
+                  if (bGradeList.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content:
+                              Text("No B-Grade report found for selection")),
+                    );
+                  }
+                }
+                // else if (selectedReport == 'IE Efficiency') {
+                //   await fetchIEEfficiencyData();
+                //   if (ieEfficiencyList.isEmpty) {
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(
+                //           content: Text(
+                //               "No IE Efficiency report found for selection")),
+                //     );
+                //   }
+                // }
+                else if (selectedReport == 'IE Efficiency') {
+                  await fetchIEEfficiencyData();
+
+                  if (ieEfficiencyList.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "No IE Efficiency data found. Please select a date within the last 5 days.",
+                        ),
+                      ),
+                    );
+                  }
                 } else if (selectedReport == 'RFT Report') {
-                  fetchRFTReportData(); // ✅ call RFT report function
+                  await fetchRFTReportData();
+                  if (rftReportList.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("No RFT report found for selection")),
+                    );
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
