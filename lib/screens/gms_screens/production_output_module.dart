@@ -394,7 +394,7 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                   // Set date based on report
                   if (selectedReport == 'IE Efficiency') {
                     selectedDate =
-                        DateTime.now().subtract(const Duration(days: 5));
+                        DateTime.now().subtract(const Duration(days: 7));
                   } else {
                     selectedDate = DateTime.now();
                   }
@@ -507,7 +507,7 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
-                          "No IE Efficiency data found. Please select a date within the last 5 days.",
+                          "No IE Efficiency data found. Please select a date within the last 7 days.",
                         ),
                       ),
                     );
