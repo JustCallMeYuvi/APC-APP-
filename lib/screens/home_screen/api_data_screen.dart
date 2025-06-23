@@ -44,19 +44,19 @@ import 'package:animated_movies_app/it_modules/asset_management_screen.dart';
 import 'package:animated_movies_app/screens/api_data_screens/production_request_page.dart';
 import 'package:animated_movies_app/screens/api_data_screens/user_approval_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/assembly_output_page.dart';
-import 'package:animated_movies_app/screens/gms_screens/export_tracking.dart';
+import 'package:animated_movies_app/screens/gms_screens/export_approval_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_delete_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/kpi_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/gms_gate_out_vehicles.dart';
+import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_export_approval_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_charts.dart';
 
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_tracking.dart';
 import 'package:animated_movies_app/screens/gms_screens/production_output_module.dart';
-
 
 import 'package:animated_movies_app/screens/home_screen/efficiency_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/employee_feedback_screen.dart';
@@ -146,7 +146,7 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                         // userData: widget.userData,
                                         )
                                     : widget.pageRoute == 'ExportTracking'
-                                        ? ExportTracking(
+                                        ? ExportApprovalPage(
                                             title: widget.pageName,
                                             // userData: widget.userData,
                                           )
@@ -226,16 +226,23 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                         // userData:
                                                                                                         //     widget.userData,
                                                                                                       )
-                                                                                                          : widget.pageRoute == 'ProductionReports'
-                                                                                                    ? ProductionReportsModule(
-                                                                                                        userData: widget.userData,
-                                                                                                        // userData:
-                                                                                                        //     widget.userData,
-                                                                                                      )
-                                                                                                    : Text(
-                                                                                                        'Data for ${widget.pageName} goes here.',
-                                                                                                        style: const TextStyle(fontSize: 20),
-                                                                                                      )
+                                                                                                    : widget.pageRoute == 'ProductionReports'
+                                                                                                        ? ProductionReportsModule(
+                                                                                                            userData: widget.userData,
+                                                                                                            // userData:
+                                                                                                            //     widget.userData,
+                                                                                                          )
+                                                                                                        : widget.pageRoute == 'MaxkingExportApprovals'
+                                                                                                            ? MaxkingExportApprovalPage(
+                                                                                                                title: widget.pageName,
+                                                                                                                // userData: widget.userData,
+                                                                                                                // userData:
+                                                                                                                //     widget.userData,
+                                                                                                              )
+                                                                                                            : Text(
+                                                                                                                'Data for ${widget.pageName} goes here.',
+                                                                                                                style: const TextStyle(fontSize: 20),
+                                                                                                              )
 
             // : SignApprovalPage(
             //     userData: widget.userData,

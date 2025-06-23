@@ -176,7 +176,7 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
         '${ApiHelper.productionUrl}get-B-Grade-data?inputDate=$formattedDate&line=$selectedPlants&process=$process';
 
     final response = await http.get(Uri.parse(url));
-
+    print('B Grade URL ${url}');
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
       setState(() {

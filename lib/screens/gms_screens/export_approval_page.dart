@@ -5,16 +5,16 @@ import 'package:animated_movies_app/screens/gms_screens/export_approval.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class ExportTracking extends StatefulWidget {
+class ExportApprovalPage extends StatefulWidget {
   final String title;
 
-  const ExportTracking({super.key, required this.title});
+  const ExportApprovalPage({super.key, required this.title});
 
   @override
-  State<ExportTracking> createState() => _ExportTrackingState();
+  State<ExportApprovalPage> createState() => _ExportApprovalPageState();
 }
 
-class _ExportTrackingState extends State<ExportTracking> {
+class _ExportApprovalPageState extends State<ExportApprovalPage> {
   TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
   bool _isLoading = true;
