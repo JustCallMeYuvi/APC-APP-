@@ -89,7 +89,7 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
           });
           // Optionally show a message that no vehicles are found (using a snackbar, alert, etc.)
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("No vehicles found.")),
+            const SnackBar(content: Text("No vehicles found.")),
           );
         } 
       } else {
@@ -133,19 +133,19 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
         RefreshIndicator(
           onRefresh: refreshData,
           child: Padding(
-            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
             child: Column(
               children: [
-                SizedBox(
+                const SizedBox(
                   height: 15,
                 ),
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: "Search for a Vehicle...",
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search),
                     suffixIcon: IconButton(
-                      icon: Icon(Icons.clear),
+                      icon: const Icon(Icons.clear),
                       onPressed: () {
                         _searchController.clear();
                         setState(() {
@@ -158,9 +158,9 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 _isLoading
-                    ? Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator())
                     : Expanded(
                         child: ListView.builder(
                           itemCount: _filteredVehicles.length,
@@ -180,7 +180,7 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                                     _isLoading = true;
                                   });
                                   await Future.delayed(
-                                    Duration(seconds: 2),
+                                    const Duration(seconds: 2),
                                   );
                                   setState(() {
                                     _isLoading = false;
@@ -189,16 +189,16 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                                 }
                               },
                               child: Container(
-                                margin: EdgeInsets.only(bottom: 10),
-                                padding: EdgeInsets.all(10),
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                     color: const Color.fromARGB(
                                         255, 248, 244, 244),
                                     border: Border.all(color: Colors.grey),
                                     borderRadius: BorderRadius.circular(10),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
-                                        color: const Color.fromARGB(
+                                        color: Color.fromARGB(
                                             255, 151, 150, 150),
                                         blurRadius: 5.0,
                                         spreadRadius: 0.0,
@@ -212,7 +212,7 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
+                                        const Text(
                                           "Vehicle ID",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
@@ -222,7 +222,7 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                                         ),
                                         Text(
                                           "${_filteredVehicles[index].vehicleID}",
-                                          style: TextStyle(fontSize: 16),
+                                          style: const TextStyle(fontSize: 16),
                                         )
                                       ],
                                     ),
@@ -230,7 +230,7 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
+                                        const Text(
                                           "Vehicle No",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
@@ -240,7 +240,7 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                                         ),
                                         Text(
                                           "${_filteredVehicles[index].vehicleNo}",
-                                          style: TextStyle(fontSize: 16),
+                                          style: const TextStyle(fontSize: 16),
                                         )
                                       ],
                                     ),
@@ -248,7 +248,7 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
+                                        const Text(
                                           "CHA",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
@@ -258,7 +258,7 @@ class _ExportApprovalPageState extends State<ExportApprovalPage> {
                                         ),
                                         Text(
                                           "${_filteredVehicles[index].createdBy}",
-                                          style: TextStyle(fontSize: 16),
+                                          style: const TextStyle(fontSize: 16),
                                         )
                                       ],
                                     ),

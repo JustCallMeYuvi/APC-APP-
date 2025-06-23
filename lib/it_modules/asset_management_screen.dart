@@ -66,6 +66,15 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     fetchAssetDropdown();
     fetchPlantDropdown(); // fetch plants
     loadEmpDetails(widget.userData.empNo);
+    loadInitialData();
+  }
+
+  Future<void> loadInitialData() async {
+    setState(() => isLoading = true);
+    await fetchAssetDropdown();
+    await fetchPlantDropdown();
+    await loadEmpDetails(widget.userData.empNo);
+    setState(() => isLoading = false);
   }
 
   Future<void> loadEmpDetails(String empNo) async {
@@ -116,6 +125,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
   List<File> _selectedImages = [];
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+  bool isLoading = false;
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
@@ -312,7 +322,11 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
     // ✅ Format date here
     // String formattedDate = DateFormat('dd/MM/yyyy').format(selectedDate);
 
-    const url = 'http://10.3.0.70:9093/api/Login/InsertIncidentRecords';
+    // const url = 'http://10.3.0.70:9093/api/Login/InsertIncidentRecords';
+    setState(() => isLoading = true); // 🔁 Show loader
+    const url =
+        'http://10.3.0.70:9042/api/AssetManagement/InsertIncidentRecords';
+
     var request = http.MultipartRequest('POST', Uri.parse(url));
 
     // Add form fields
@@ -410,6 +424,7 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         SnackBar(content: Text('Error submitting incident: $e')),
       );
     }
+    setState(() => isLoading = false); // 🔁 Hide loader
   }
 
   @override
@@ -422,518 +437,530 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       child: Scaffold(
         // appBar: AppBar(title: const Text("Asset Management")),
 
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(25),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Center(
-                //   child: Text(
-                //     widget.userData.empNo,
-                //     style: const TextStyle(
-                //         fontSize: 20, fontWeight: FontWeight.bold),
-                //   ),
-                // ),
-                // const SizedBox(height: 20),
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(25),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Center(
+                      //   child: Text(
+                      //     widget.userData.empNo,
+                      //     style: const TextStyle(
+                      //         fontSize: 20, fontWeight: FontWeight.bold),
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 20),
 
-                /// Date Picker
-                Text('Selected Date',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(child: Text(formattedDate)),
-                    IconButton(
-                      icon: const Icon(Icons.calendar_today,
-                          color: Colors.lightGreen),
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now(),
-                        );
-                        if (picked != null) {
-                          setState(() => selectedDate = picked);
-                        }
-                      },
-                    )
-                  ],
-                ),
+                      /// Date Picker
+                      Text('Selected Date',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Expanded(child: Text(formattedDate)),
+                          IconButton(
+                            icon: const Icon(Icons.calendar_today,
+                                color: Colors.lightGreen),
+                            onPressed: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: selectedDate,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime.now(),
+                              );
+                              if (picked != null) {
+                                setState(() => selectedDate = picked);
+                              }
+                            },
+                          )
+                        ],
+                      ),
 
-                // const SizedBox(height: 10),
-                empDetailsList.isNotEmpty
-                    ? Text(
-                        empDetailsList.first.depTName,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      )
-                    : const Text('Department info not available'),
-                const SizedBox(
-                  height: 10,
-                ),
+                      // const SizedBox(height: 10),
+                      empDetailsList.isNotEmpty
+                          ? Text(
+                              empDetailsList.first.depTName,
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            )
+                          : const Text('Department info not available'),
+                      const SizedBox(
+                        height: 10,
+                      ),
 
-                /// Asset ID Dropdown
-                Text('Asset ID',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
+                      /// Asset ID Dropdown
+                      Text('Asset ID',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 6),
 
-                DropDownSearchField(
-                  textFieldConfiguration: TextFieldConfiguration(
-                    controller:
-                        _assetSearchController, // Add this TextEditingController
-                    autofocus: false,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      labelText: "Search Asset ID",
-                      suffixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: (text) {
-                      setState(() {
-                        if (text.isEmpty) {
-                          selectedAssetId = null; // Reset selection
-                        }
-                      });
-                    },
-                  ),
-                  suggestionsCallback: (pattern) async {
-                    if (pattern.isEmpty) {
-                      return assetItems;
-                    }
-                    // Filter list based on pattern
-                    return assetItems.where((item) {
-                      final combined =
-                          '${item['name']} (${item['id']})'.toLowerCase();
-                      return combined.contains(pattern.toLowerCase());
-                    }).toList();
-                  },
-                  itemBuilder: (context, suggestion) {
-                    return ListTile(
-                      leading: const Icon(Icons.inventory),
-                      title:
-                          Text('${suggestion['name']} (${suggestion['id']})'),
-                    );
-                  },
-                  onSuggestionSelected: (suggestion) {
-                    setState(() {
-                      selectedAssetId = suggestion['id'];
-                      _assetSearchController.text =
-                          '${suggestion['name']} (${suggestion['id']})';
-                    });
-                    print("Selected Asset ID: $selectedAssetId");
-                  },
-                  displayAllSuggestionWhenTap: true,
-                  isMultiSelectDropdown: false,
-                ),
-
-                const SizedBox(height: 20),
-
-                /// Plant Dropdown
-                Text('Select Plant:',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                DropDownSearchField(
-                  textFieldConfiguration: TextFieldConfiguration(
-                    controller:
-                        _plantSearchController, // Define this controller in your state
-                    autofocus: false,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      labelText: "Search Plant",
-                      suffixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: (text) {
-                      setState(() {
-                        if (text.isEmpty) {
-                          selectedPlant = null; // Reset if cleared
-                        }
-                      });
-                    },
-                  ),
-                  suggestionsCallback: (pattern) async {
-                    if (pattern.isEmpty) {
-                      return plantNames;
-                    }
-                    return plantNames
-                        .where((plant) =>
-                            plant.toLowerCase().contains(pattern.toLowerCase()))
-                        .toList();
-                  },
-                  itemBuilder: (context, suggestion) {
-                    return ListTile(
-                      leading: const Icon(Icons.factory),
-                      title: Text(suggestion),
-                    );
-                  },
-                  onSuggestionSelected: (suggestion) {
-                    setState(() {
-                      selectedPlant = suggestion;
-                      _plantSearchController.text = suggestion;
-                    });
-                    print("Selected Plant: $selectedPlant");
-                  },
-                  displayAllSuggestionWhenTap: true,
-                  isMultiSelectDropdown: false,
-                ),
-
-                const SizedBox(height: 20),
-
-                /// Type (Radio)
-                Text('Select Type:',
-                    style: Theme.of(context).textTheme.titleMedium),
-                Row(
-                  children: ['Network', 'Desktop'].map((type) {
-                    return Row(
-                      children: [
-                        Radio<String>(
-                          value: type,
-                          groupValue: selectedType,
-                          onChanged: (value) {
+                      DropDownSearchField(
+                        textFieldConfiguration: TextFieldConfiguration(
+                          controller:
+                              _assetSearchController, // Add this TextEditingController
+                          autofocus: false,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                            labelText: "Search Asset ID",
+                            suffixIcon: Icon(Icons.search),
+                          ),
+                          onChanged: (text) {
                             setState(() {
-                              selectedType = value!;
-                              selectedIssue = null;
+                              if (text.isEmpty) {
+                                selectedAssetId = null; // Reset selection
+                              }
                             });
                           },
                         ),
-                        Text(type),
-                      ],
-                    );
-                  }).toList(),
-                ),
+                        suggestionsCallback: (pattern) async {
+                          if (pattern.isEmpty) {
+                            return assetItems;
+                          }
+                          // Filter list based on pattern
+                          return assetItems.where((item) {
+                            final combined =
+                                '${item['name']} (${item['id']})'.toLowerCase();
+                            return combined.contains(pattern.toLowerCase());
+                          }).toList();
+                        },
+                        itemBuilder: (context, suggestion) {
+                          return ListTile(
+                            leading: const Icon(Icons.inventory),
+                            title: Text(
+                                '${suggestion['name']} (${suggestion['id']})'),
+                          );
+                        },
+                        onSuggestionSelected: (suggestion) {
+                          setState(() {
+                            selectedAssetId = suggestion['id'];
+                            _assetSearchController.text =
+                                '${suggestion['name']} (${suggestion['id']})';
+                          });
+                          print("Selected Asset ID: $selectedAssetId");
+                        },
+                        displayAllSuggestionWhenTap: true,
+                        isMultiSelectDropdown: false,
+                      ),
 
-                const SizedBox(height: 10),
+                      const SizedBox(height: 20),
 
-                /// Issue Dropdown
-                Text('Issue', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                DropdownButtonHideUnderline(
-                  child: DropdownButton2<String>(
-                    isExpanded: true,
-                    hint: const Text('Select an Issue'),
-                    value: selectedIssue,
-                    items: (selectedType == 'Network'
-                            ? networkIssues
-                            : desktopIssues)
-                        .map((issue) {
-                      return DropdownMenuItem(value: issue, child: Text(issue));
-                    }).toList(),
-                    onChanged: (value) => setState(() => selectedIssue = value),
-                    buttonStyleData: ButtonStyleData(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      height: 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey),
+                      /// Plant Dropdown
+                      Text('Select Plant:',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 6),
+                      DropDownSearchField(
+                        textFieldConfiguration: TextFieldConfiguration(
+                          controller:
+                              _plantSearchController, // Define this controller in your state
+                          autofocus: false,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                            labelText: "Search Plant",
+                            suffixIcon: Icon(Icons.search),
+                          ),
+                          onChanged: (text) {
+                            setState(() {
+                              if (text.isEmpty) {
+                                selectedPlant = null; // Reset if cleared
+                              }
+                            });
+                          },
+                        ),
+                        suggestionsCallback: (pattern) async {
+                          if (pattern.isEmpty) {
+                            return plantNames;
+                          }
+                          return plantNames
+                              .where((plant) => plant
+                                  .toLowerCase()
+                                  .contains(pattern.toLowerCase()))
+                              .toList();
+                        },
+                        itemBuilder: (context, suggestion) {
+                          return ListTile(
+                            leading: const Icon(Icons.factory),
+                            title: Text(suggestion),
+                          );
+                        },
+                        onSuggestionSelected: (suggestion) {
+                          setState(() {
+                            selectedPlant = suggestion;
+                            _plantSearchController.text = suggestion;
+                          });
+                          print("Selected Plant: $selectedPlant");
+                        },
+                        displayAllSuggestionWhenTap: true,
+                        isMultiSelectDropdown: false,
                       ),
-                    ),
-                    dropdownStyleData: DropdownStyleData(
-                      width: MediaQuery.of(context).size.width - 70,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ),
 
-                /// Description
-                if (selectedIssue != null) ...[
-                  const SizedBox(height: 20),
-                  Text('Description',
-                      style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  TextField(
-                    onChanged: (value) => setState(() => description = value),
-                    decoration: InputDecoration(
-                      hintText: 'Describe the issue...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                    ),
-                    maxLines: 3,
-                  ),
-                ],
-                const SizedBox(
-                  height: 20,
-                ),
-                DropdownButtonHideUnderline(
-                  child: DropdownButton2<String>(
-                    isExpanded:
-                        true, // 🔥 This makes the button take full available width
-                    hint: const Text(
-                      'Select Priority',
-                      style: TextStyle(
-                        fontSize: 16,
-                        // color: Colors.grey,
-                      ),
-                    ),
-                    items: priorityItems
-                        .map((item) => DropdownMenuItem<String>(
-                              value: item,
-                              child: Text(
-                                item,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                ),
+                      const SizedBox(height: 20),
+
+                      /// Type (Radio)
+                      Text('Select Type:',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      Row(
+                        children: ['Network', 'Desktop'].map((type) {
+                          return Row(
+                            children: [
+                              Radio<String>(
+                                value: type,
+                                groupValue: selectedType,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedType = value!;
+                                    selectedIssue = null;
+                                  });
+                                },
                               ),
-                            ))
-                        .toList(),
-                    value: selectedPriority,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedPriority = value;
-                      });
-                    },
-                    buttonStyleData: ButtonStyleData(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      height: 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey),
+                              Text(type),
+                            ],
+                          );
+                        }).toList(),
                       ),
-                    ),
-                    dropdownStyleData: DropdownStyleData(
-                      width: MediaQuery.of(context).size.width - 70,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
+
+                      const SizedBox(height: 10),
+
+                      /// Issue Dropdown
+                      Text('Issue',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 6),
+                      DropdownButtonHideUnderline(
+                        child: DropdownButton2<String>(
+                          isExpanded: true,
+                          hint: const Text('Select an Issue'),
+                          value: selectedIssue,
+                          items: (selectedType == 'Network'
+                                  ? networkIssues
+                                  : desktopIssues)
+                              .map((issue) {
+                            return DropdownMenuItem(
+                                value: issue, child: Text(issue));
+                          }).toList(),
+                          onChanged: (value) =>
+                              setState(() => selectedIssue = value),
+                          buttonStyleData: ButtonStyleData(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            height: 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.grey),
+                            ),
+                          ),
+                          dropdownStyleData: DropdownStyleData(
+                            width: MediaQuery.of(context).size.width - 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    iconStyleData: const IconStyleData(
-                      icon: Icon(Icons.arrow_drop_down),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const SizedBox(height: 20),
-                Text('Email', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
 
-                TextFormField(
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  onChanged: (value) => setState(() => email = value),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Email is required';
-                    }
-                    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                    if (!emailRegex.hasMatch(value)) {
-                      return 'Enter a valid email';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Enter your email',
-                    suffixIcon: const Icon(Icons.email),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text('Phone', style: Theme.of(context).textTheme.titleMedium),
-
-                const SizedBox(height: 6),
-
-                TextFormField(
-                  controller: phoneController,
-                  keyboardType: TextInputType.phone,
-                  onChanged: (value) => setState(() => phone = value),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Phone number is required';
-                    }
-                    final phoneRegex =
-                        RegExp(r'^\d{10}$'); // Accepts only 10 digits
-                    if (!phoneRegex.hasMatch(value)) {
-                      return 'Enter a valid 10-digit phone number';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Enter your phone number',
-                    suffixIcon: const Icon(Icons.phone),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-
-                // if (_imageFile != null)
-                //   Image.file(_imageFile!, height: 200, fit: BoxFit.cover)
-                // else
-                //   const
-
-                // _imageFile != null
-                //     ? Stack(
-                //         children: [
-                //           Image.file(
-                //             _imageFile!,
-                //             height: 200,
-                //             // width: double.infinity,
-                //             fit: BoxFit.cover,
-                //           ),
-                //           Positioned(
-                //             top: 8,
-                //             right: 8,
-                //             child: GestureDetector(
-                //               onTap: () {
-                //                 setState(() {
-                //                   _imageFile = null;
-                //                 });
-                //               },
-                //               child: Container(
-                //                 decoration: BoxDecoration(
-                //                   color: Colors.black.withOpacity(0.5),
-                //                   shape: BoxShape.circle,
-                //                 ),
-                //                 child: const Padding(
-                //                   padding: EdgeInsets.all(4.0),
-                //                   child: Icon(
-                //                     Icons.close,
-                //                     color: Colors.white,
-                //                     size: 20,
-                //                   ),
-                //                 ),
-                //               ),
-                //             ),
-                //           ),
-                //         ],
-                //       )
-                //     : const Text("No image selected"),
-
-                _selectedImages.isNotEmpty
-                    ? SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: _selectedImages.map((image) {
-                            return Stack(
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.only(right: 8),
-                                  child: Image.file(
-                                    image,
-                                    height: 100,
-                                    width: 100,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 8,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedImages.remove(image);
-                                      });
-                                    },
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        // color: Colors.black.withOpacity(0.6),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Padding(
-                                        padding: EdgeInsets.all(4.0),
-                                        child: Icon(
-                                          Icons.close,
-                                          color: Colors.white,
-                                          size: 18,
-                                        ),
+                      /// Description
+                      if (selectedIssue != null) ...[
+                        const SizedBox(height: 20),
+                        Text('Description',
+                            style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 6),
+                        TextField(
+                          onChanged: (value) =>
+                              setState(() => description = value),
+                          decoration: InputDecoration(
+                            hintText: 'Describe the issue...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 12),
+                          ),
+                          maxLines: 3,
+                        ),
+                      ],
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      DropdownButtonHideUnderline(
+                        child: DropdownButton2<String>(
+                          isExpanded:
+                              true, // 🔥 This makes the button take full available width
+                          hint: const Text(
+                            'Select Priority',
+                            style: TextStyle(
+                              fontSize: 16,
+                              // color: Colors.grey,
+                            ),
+                          ),
+                          items: priorityItems
+                              .map((item) => DropdownMenuItem<String>(
+                                    value: item,
+                                    child: Text(
+                                      item,
+                                      style: const TextStyle(
+                                        fontSize: 16,
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                                  ))
+                              .toList(),
+                          value: selectedPriority,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedPriority = value;
+                            });
+                          },
+                          buttonStyleData: ButtonStyleData(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            height: 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.grey),
+                            ),
+                          ),
+                          dropdownStyleData: DropdownStyleData(
+                            width: MediaQuery.of(context).size.width - 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          iconStyleData: const IconStyleData(
+                            icon: Icon(Icons.arrow_drop_down),
+                          ),
                         ),
-                      )
-                    : const Center(child: Text("No images selected")),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const SizedBox(height: 20),
+                      Text('Email',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 6),
 
-                const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  width: double.infinity, // Makes the button take full width
-                  child: ElevatedButton.icon(
-                    icon: const Icon(
-                      Icons.image,
-                      size: 24,
-                      color: Colors.white,
-                    ),
-                    label: const Text(
-                      "Choose Image",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
+                      TextFormField(
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: (value) => setState(() => email = value),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Email is required';
+                          }
+                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (!emailRegex.hasMatch(value)) {
+                            return 'Enter a valid email';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Enter your email',
+                          suffixIcon: const Icon(Icons.email),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                        ),
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      padding: const EdgeInsets.all(
-                          14), // Equal padding on all sides
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      const SizedBox(height: 20),
+                      Text('Phone',
+                          style: Theme.of(context).textTheme.titleMedium),
+
+                      const SizedBox(height: 6),
+
+                      TextFormField(
+                        controller: phoneController,
+                        keyboardType: TextInputType.phone,
+                        onChanged: (value) => setState(() => phone = value),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Phone number is required';
+                          }
+                          final phoneRegex =
+                              RegExp(r'^\d{10}$'); // Accepts only 10 digits
+                          if (!phoneRegex.hasMatch(value)) {
+                            return 'Enter a valid 10-digit phone number';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Enter your phone number',
+                          suffixIcon: const Icon(Icons.phone),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 12),
+                        ),
                       ),
-                      elevation: 4,
-                    ),
-                    onPressed: () => _showPickerOptions(context),
+                      const SizedBox(
+                        height: 20,
+                      ),
+
+                      // if (_imageFile != null)
+                      //   Image.file(_imageFile!, height: 200, fit: BoxFit.cover)
+                      // else
+                      //   const
+
+                      // _imageFile != null
+                      //     ? Stack(
+                      //         children: [
+                      //           Image.file(
+                      //             _imageFile!,
+                      //             height: 200,
+                      //             // width: double.infinity,
+                      //             fit: BoxFit.cover,
+                      //           ),
+                      //           Positioned(
+                      //             top: 8,
+                      //             right: 8,
+                      //             child: GestureDetector(
+                      //               onTap: () {
+                      //                 setState(() {
+                      //                   _imageFile = null;
+                      //                 });
+                      //               },
+                      //               child: Container(
+                      //                 decoration: BoxDecoration(
+                      //                   color: Colors.black.withOpacity(0.5),
+                      //                   shape: BoxShape.circle,
+                      //                 ),
+                      //                 child: const Padding(
+                      //                   padding: EdgeInsets.all(4.0),
+                      //                   child: Icon(
+                      //                     Icons.close,
+                      //                     color: Colors.white,
+                      //                     size: 20,
+                      //                   ),
+                      //                 ),
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       )
+                      //     : const Text("No image selected"),
+
+                      _selectedImages.isNotEmpty
+                          ? SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: _selectedImages.map((image) {
+                                  return Stack(
+                                    children: [
+                                      Container(
+                                        margin: const EdgeInsets.only(right: 8),
+                                        child: Image.file(
+                                          image,
+                                          height: 100,
+                                          width: 100,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 4,
+                                        right: 8,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedImages.remove(image);
+                                            });
+                                          },
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                              // color: Colors.black.withOpacity(0.6),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Padding(
+                                              padding: EdgeInsets.all(4.0),
+                                              child: Icon(
+                                                Icons.close,
+                                                color: Colors.red,
+                                                size: 18,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            )
+                          : const Center(child: Text("No images selected")),
+
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      SizedBox(
+                        width:
+                            double.infinity, // Makes the button take full width
+                        child: ElevatedButton.icon(
+                          icon: const Icon(
+                            Icons.image,
+                            size: 24,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            "Choose Image",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            padding: const EdgeInsets.all(
+                                14), // Equal padding on all sides
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          onPressed: () => _showPickerOptions(context),
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Center(
+                        child: MaterialButton(
+                          onPressed: () {
+                            if (_formKey.currentState?.validate() ?? false) {
+                              // Your logic here
+                              submitAssetData();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        'Please fix validation errors before submitting.')),
+                              );
+                            }
+                          },
+                          color: Colors.blueAccent,
+                          elevation: 6,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'Submit',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-
-                const SizedBox(
-                  height: 20,
-                ),
-                Center(
-                  child: MaterialButton(
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        // Your logic here
-                        submitAssetData();
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Please fix validation errors before submitting.')),
-                        );
-                      }
-                    },
-                    color: Colors.blueAccent,
-                    elevation: 6,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Submit',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
     );
   }
