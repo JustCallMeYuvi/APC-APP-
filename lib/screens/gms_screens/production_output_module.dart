@@ -569,19 +569,19 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
+                                        reportsDataTextWidget('🏭 Line',
+                                            data.prodLine.toString()),
+                                        reportsDataTextWidget('📅 Date',
+                                            data.prodDate.toString()),
                                         reportsDataTextWidget(
-                                            'Line', data.prodLine.toString()),
-                                        reportsDataTextWidget(
-                                            'Date', data.prodDate.toString()),
-                                        reportsDataTextWidget(
-                                            'Standard Manhours',
+                                            '⏱️Standard Manhours',
                                             data.standardManhours
                                                 .toStringAsFixed(2)),
                                         reportsDataTextWidget(
-                                            'Actual Manhours',
+                                            '⌛ Actual Manhours',
                                             data.actualManhours
                                                 .toStringAsFixed(2)),
-                                        reportsDataTextWidget('IE',
+                                        reportsDataTextWidget('⚙️ IE',
                                             "${data.ie.toStringAsFixed(2)}%"),
                                         const Divider(),
                                       ],
@@ -629,20 +629,21 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            reportsDataTextWidget('Line',
+                                            reportsDataTextWidget('🏭 Line',
                                                 data.department.toString()),
                                             reportsDataTextWidget(
-                                              'Date',
+                                              '📅 Date',
                                               DateFormat('yyyy-MM-dd')
                                                   .format(data.date),
                                             ),
-                                            reportsDataTextWidget('Output',
+                                            reportsDataTextWidget('📦 Output',
                                                 data.output.toString()),
-                                            reportsDataTextWidget('B Grade',
+                                            reportsDataTextWidget('🅱️ B Grade',
                                                 data.bGrade.toString()),
-                                            reportsDataTextWidget('Repairs',
+                                            reportsDataTextWidget('🛠️ Repairs',
                                                 data.repairs.toString()),
-                                            reportsDataTextWidget('B Grade %',
+                                            reportsDataTextWidget(
+                                                '📉 B Grade %',
                                                 data.bGradePercent.toString()),
                                             const Divider(),
                                           ],
@@ -692,18 +693,18 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 reportsDataTextWidget(
-                                                    'Line',
+                                                    '🏭 Line',
                                                     data.productionLineCode ??
                                                         ''),
-                                                reportsDataTextWidget('Date',
+                                                reportsDataTextWidget('📅 Date',
                                                     data.createdate ?? ''),
                                                 reportsDataTextWidget(
-                                                    'Total Qty',
+                                                    '📦 Total Qty',
                                                     data.totalQty ?? ''),
                                                 reportsDataTextWidget(
-                                                    'Qualified Qty',
+                                                    '✅ Qualified Qty',
                                                     data.qualifiedQty ?? ''),
-                                                reportsDataTextWidget('RFT',
+                                                reportsDataTextWidget('🎯 RFT',
                                                     '${data.rft ?? '0'}%'),
                                                 const Divider(),
                                               ],
@@ -731,14 +732,15 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style:
+                  const TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
             ),
           ),
         ],

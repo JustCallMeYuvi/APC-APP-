@@ -401,18 +401,20 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Asset Data submitted successfully!')),
         );
-
         setState(() {
-          _assetSearchController.clear();
-          _plantSearchController.clear();
-          selectedAssetId = null;
-          selectedPlant = null;
-          selectedIssue = null;
-          description = null;
-          emailController.clear();
-          phoneController.clear();
-          _selectedImages.clear();
+          _clearFormFields();
         });
+        // setState(() {
+        //   _assetSearchController.clear();
+        //   _plantSearchController.clear();
+        //   selectedAssetId = null;
+        //   selectedPlant = null;
+        //   selectedIssue = null;
+        //   description = null;
+        //   emailController.clear();
+        //   phoneController.clear();
+        //   _selectedImages.clear();
+        // });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -425,6 +427,18 @@ class _AssetManagementScreenState extends State<AssetManagementScreen> {
       );
     }
     setState(() => isLoading = false); // 🔁 Hide loader
+  }
+
+  void _clearFormFields() {
+    _assetSearchController.clear();
+    _plantSearchController.clear();
+    selectedAssetId = null;
+    selectedPlant = null;
+    selectedIssue = null;
+    description = null;
+    emailController.clear();
+    phoneController.clear();
+    _selectedImages.clear();
   }
 
   @override
