@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 class OrderInfoPage extends StatefulWidget {
   final LoginModelApi userData;
@@ -20,7 +23,9 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
   final TextEditingController _typeController = TextEditingController();
 
   String? selectedCompany;
-  int? selectedCompanyId;
+  // int? selectedCompanyId;
+  Object?
+      selectedCompanyId; // or dynamic This way you can store both int and String values.
   String? selectedYear;
   String? selectedSeason;
   String? selectedMonth;
@@ -28,13 +33,17 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
   late Map<String, int> monthNameToNumber;
   late List<String> months;
 
+  List<Map<String, dynamic>> fetchedOrders = [];
+  bool isLoading = false;
+
   final List<Map<String, dynamic>> companies = [
-    {'name': 'APC', 'id': 5000},
-    {'name': 'Maxking', 'id': 5001},
+    {'name': 'ALL', 'id': 'ALL'},
+    {'name': 'APC', 'id': '5000'},
+    {'name': 'Maxking', 'id': '5010'},
   ];
 
   final List<String> seasons = [
-    'All',
+    'ALL',
     'Spring Summer',
     'Following Winter',
   ];
@@ -55,10 +64,61 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
 
     // Create map like {'Jan': 1, 'Feb': 2, ...}
     monthNameToNumber = {
-      for (var i = 1; i <= 12; i++) DateFormat.MMM().format(DateTime(0, i)): i,
+      for (var i = 01; i <= 12; i++) DateFormat.MMM().format(DateTime(0, i)): i,
     };
 
     months = monthNameToNumber.keys.toList();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchOrderInfo() async {
+    String baseUrl = 'http://10.3.0.70:9042/api/Production/get-Order-Info';
+    String company = selectedCompanyId.toString(); // handle int or string
+    String year = selectedYear ?? DateTime.now().year.toString();
+    String type = _typeController.text;
+    String season = type == 'Season' ? selectedSeason ?? 'null' : 'null';
+    String month = 'null';
+
+    if (type == 'Month' && selectedMonth != null) {
+      int? numericMonth = monthNameToNumber[selectedMonth!];
+      if (numericMonth != null) {
+        month = numericMonth.toString().padLeft(2, '0'); // e.g., 05
+      }
+    }
+
+    final Uri uri = Uri.parse(
+      '$baseUrl?company=$company&year=$year&season=$season&month=$month&type=$type',
+    );
+
+    final response = await http.get(uri);
+    print('Order INfo Url $uri');
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Failed to fetch order info');
+    }
+  }
+
+  Widget buildOrderCard(Map<String, dynamic> order) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Model: ${order['model']}",
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text("Plant: ${order['plant']}"),
+            Text("Quantity: ${order['quantity']}"),
+            Text("Month: ${order['month']}"),
+            Text("Article: ${order['artile']}"),
+            Text("Percentage: ${order['percentage']}%"),
+            Text("Total Quantity: ${order['totalQuantity']}"),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -104,35 +164,6 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
 
               const SizedBox(height: 16),
 
-              /// Year DropdownSearch
-              // DropDownSearchField(
-              //   textFieldConfiguration: TextFieldConfiguration(
-              //     controller: _yearController,
-              //     decoration: const InputDecoration(
-              //       labelText: "Select Year",
-              //       border: OutlineInputBorder(),
-              //       suffixIcon: Icon(Icons.calendar_today),
-              //     ),
-              //   ),
-              //   suggestionsCallback: (pattern) async {
-              //     return years
-              //         .where((y) =>
-              //             y.toLowerCase().contains(pattern.toLowerCase()))
-              //         .toList();
-              //   },
-              //   itemBuilder: (context, suggestion) {
-              //     return ListTile(title: Text(suggestion));
-              //   },
-              //   onSuggestionSelected: (suggestion) {
-              //     setState(() {
-              //       selectedYear = suggestion;
-              //       _yearController.text = suggestion;
-              //     });
-              //   },
-              //   displayAllSuggestionWhenTap: true,
-              //   isMultiSelectDropdown: false,
-              // ),
-              /// Year Dropdown using dropdown_search
               DropdownSearch<String>(
                 items: years,
                 selectedItem: selectedYear,
@@ -152,65 +183,6 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
 
               const SizedBox(height: 16),
 
-              /// Season DropdownSearch
-              // DropDownSearchField(
-              //   textFieldConfiguration: TextFieldConfiguration(
-              //     controller: _seasonController,
-              //     decoration: const InputDecoration(
-              //       labelText: "Select Season",
-              //       border: OutlineInputBorder(),
-              //       suffixIcon: Icon(Icons.wb_sunny),
-              //     ),
-              //   ),
-              //   suggestionsCallback: (pattern) async {
-              //     return seasons
-              //         .where((s) =>
-              //             s.toLowerCase().contains(pattern.toLowerCase()))
-              //         .toList();
-              //   },
-              //   itemBuilder: (context, suggestion) {
-              //     return ListTile(title: Text(suggestion));
-              //   },
-              //   onSuggestionSelected: (suggestion) {
-              //     setState(() {
-              //       selectedSeason = suggestion;
-              //       _seasonController.text = suggestion;
-              //     });
-              //   },
-              //   displayAllSuggestionWhenTap: true,
-              //   isMultiSelectDropdown: false,
-              // ),
-
-              // const SizedBox(height: 16),
-
-              // /// Month DropdownSearch
-              // DropDownSearchField(
-              //   textFieldConfiguration: TextFieldConfiguration(
-              //     controller: _monthController,
-              //     decoration: const InputDecoration(
-              //       labelText: "Select Month",
-              //       border: OutlineInputBorder(),
-              //       suffixIcon: Icon(Icons.calendar_month),
-              //     ),
-              //   ),
-              //   suggestionsCallback: (pattern) async {
-              //     return months
-              //         .where((m) =>
-              //             m.toLowerCase().contains(pattern.toLowerCase()))
-              //         .toList();
-              //   },
-              //   itemBuilder: (context, suggestion) {
-              //     return ListTile(title: Text(suggestion));
-              //   },
-              //   onSuggestionSelected: (suggestion) {
-              //     setState(() {
-              //       selectedMonth = suggestion;
-              //       _monthController.text = suggestion;
-              //     });
-              //   },
-              //   displayAllSuggestionWhenTap: true,
-              //   isMultiSelectDropdown: false,
-              // ),
               DropDownSearchField(
                 textFieldConfiguration: TextFieldConfiguration(
                   controller: _typeController,
@@ -301,6 +273,45 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                   displayAllSuggestionWhenTap: true,
                   isMultiSelectDropdown: false,
                 ),
+              const SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  try {
+                    final data = await fetchOrderInfo();
+                    setState(() {
+                      fetchedOrders = data;
+                      isLoading = false;
+                    });
+                  } catch (e) {
+                    setState(() {
+                      isLoading = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error fetching data: $e')),
+                    );
+                  }
+                },
+                child: const Text("Fetch Orders"),
+              ),
+              const SizedBox(height: 16),
+
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : fetchedOrders.isNotEmpty
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: fetchedOrders.length,
+                          itemBuilder: (context, index) {
+                            return buildOrderCard(fetchedOrders[index]);
+                          },
+                        )
+                      : const Text("No data fetched yet."),
             ],
           ),
         ),
