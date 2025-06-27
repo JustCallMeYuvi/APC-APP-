@@ -6,6 +6,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class OrderInfoPage extends StatefulWidget {
   final LoginModelApi userData;
@@ -99,6 +100,27 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
     }
   }
 
+  // Widget buildOrderCard(Map<String, dynamic> order) {
+  //   return Card(
+  //     margin: const EdgeInsets.symmetric(vertical: 8),
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16.0),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text("Model: ${order['model']}",
+  //               style: const TextStyle(fontWeight: FontWeight.bold)),
+  //           Text("Plant: ${order['plant']}"),
+  //           Text("Quantity: ${order['quantity']}"),
+  //           Text("Month: ${order['month']}"),
+  //           Text("Article: ${order['artile']}"),
+  //           Text("Percentage: ${order['percentage']}%"),
+  //           Text("Total Quantity: ${order['totalQuantity']}"),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
   Widget buildOrderCard(Map<String, dynamic> order) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -107,18 +129,102 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Model: ${order['model']}",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text("Plant: ${order['plant']}"),
-            Text("Quantity: ${order['quantity']}"),
-            Text("Month: ${order['month']}"),
-            Text("Article: ${order['artile']}"),
-            Text("Percentage: ${order['percentage']}%"),
-            Text("Total Quantity: ${order['totalQuantity']}"),
+            buildInfoRow("Model", order['model']),
+            buildInfoRow("Plant", order['plant']),
+            buildInfoRow("Quantity", order['quantity']),
+            buildInfoRow("Month", order['month']),
+            buildInfoRow("Article", order['artile']),
+            buildInfoRow("Percentage", "${order['percentage']}%"),
+            buildInfoRow("Total Quantity", order['totalQuantity']),
           ],
         ),
       ),
     );
+  }
+
+  Widget buildInfoRow(String label, dynamic value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 130, // Fixed width to align labels
+            child: Text(
+              "$label:",
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value.toString(),
+              style: TextStyle(
+                  fontWeight:
+                      label == "Model" ? FontWeight.bold : FontWeight.normal),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // List<ChartData> prepareChartData(List<Map<String, dynamic>> orders) {
+  //   List<ChartData> chartData = [];
+
+  //   // Sort orders by percentage descending
+  //   List<Map<String, dynamic>> sorted = [...orders];
+  //   sorted.sort(
+  //       (a, b) => (b['percentage'] as num).compareTo(a['percentage'] as num));
+
+  //   // Get top 3 with model + artile
+  //   List<Map<String, dynamic>> top3 = sorted.take(3).toList();
+  //   List<Map<String, dynamic>> others = sorted.skip(3).toList();
+
+  //   for (var item in top3) {
+  //     String label = "${item['model']} (${item['artile']})";
+  //     double perc = (item['percentage'] as num).toDouble();
+  //     chartData.add(ChartData(label, perc));
+  //   }
+
+  //   // Sum percentage of others
+  //   double otherPerc = others.fold(
+  //       0.0, (sum, item) => sum + (item['percentage'] as num).toDouble());
+
+  //   if (otherPerc > 0) {
+  //     chartData.add(ChartData("Others", otherPerc));
+  //   }
+
+  //   return chartData;
+  // }
+
+  List<ChartData> prepareChartData(List<Map<String, dynamic>> orders) {
+    List<ChartData> chartData = [];
+
+    // Sort orders by percentage descending
+    List<Map<String, dynamic>> sorted = [...orders];
+    sorted.sort(
+      (a, b) => (b['percentage'] as num).compareTo(a['percentage'] as num),
+    );
+
+    // Get top 3 items
+    List<Map<String, dynamic>> top3 = sorted.take(3).toList();
+
+    double top3Sum = 0;
+
+    for (var item in top3) {
+      String label = "${item['model']} (${item['artile']})";
+      double perc = (item['percentage'] as num).toDouble();
+      top3Sum += perc;
+      chartData.add(ChartData(label, perc));
+    }
+
+    // Calculate balance out of 100%
+    double othersPerc = 100.0 - top3Sum;
+
+    if (othersPerc > 0) {
+      chartData.add(ChartData("Others", othersPerc));
+    }
+
+    return chartData;
   }
 
   @override
@@ -298,18 +404,50 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                 },
                 child: const Text("Fetch Orders"),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
 
               isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : fetchedOrders.isNotEmpty
-                      ? ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: fetchedOrders.length,
-                          itemBuilder: (context, index) {
-                            return buildOrderCard(fetchedOrders[index]);
-                          },
+                      ? Column(
+                          children: [
+                            // SizedBox(
+                            //   height: 400,
+                            //   child: buildMainPercentageChart(
+                            //       chartDataResult.top3WithOthers),
+                            // ),
+                            SizedBox(
+                              height: 400,
+                              child: SfCircularChart(
+                                title: const ChartTitle(text: 'Top 3 Orders'),
+                                legend: const Legend(
+                                  isVisible: true,
+                                  position: LegendPosition.bottom,
+                                  overflowMode: LegendItemOverflowMode.wrap,
+                                ),
+                                series: <CircularSeries>[
+                                  PieSeries<ChartData, String>(
+                                    dataSource: prepareChartData(fetchedOrders),
+                                    xValueMapper: (ChartData data, _) =>
+                                        data.label,
+                                    yValueMapper: (ChartData data, _) =>
+                                        data.percentage,
+                                    dataLabelSettings: const DataLabelSettings(
+                                        isVisible: true),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: fetchedOrders.length,
+                              itemBuilder: (context, index) {
+                                return buildOrderCard(fetchedOrders[index]);
+                              },
+                            ),
+                          ],
                         )
                       : const Text("No data fetched yet."),
             ],
@@ -318,4 +456,11 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
       ),
     );
   }
+}
+
+class ChartData {
+  final String label;
+  final double percentage;
+
+  ChartData(this.label, this.percentage);
 }
