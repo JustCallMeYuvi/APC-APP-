@@ -43,6 +43,9 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
   List<Map<String, dynamic>> allModels = [];
   String? selectedModelValue; // <- to store "GZ5922", "IE4034", etc.
   List<Map<String, dynamic>> top3Orders = []; // <- Declare globally
+  int totalApiQuantity = 0; // <- holds the API's totalQuantity
+  bool isModelandArticleLoading = false;
+  bool isClearFilterLoading = false;
 
   final List<Map<String, dynamic>> companies = [
     {'name': 'ALL', 'id': 'ALL'},
@@ -83,85 +86,6 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
       setState(() {});
     });
   }
-
-  // Future<List<Map<String, dynamic>>> fetchOrderInfo() async {
-  //   String baseUrl = 'http://10.3.0.70:9042/api/Production/get-Order-Info';
-  //   String company = selectedCompanyId.toString(); // handle int or string
-  //   String year = selectedYear ?? DateTime.now().year.toString();
-  //   String type = _typeController.text;
-  //   String season = type == 'Season' ? selectedSeason ?? 'null' : 'null';
-  //   String month = 'null';
-
-  //   if (type == 'Month' && selectedMonth != null) {
-  //     int? numericMonth = monthNameToNumber[selectedMonth!];
-  //     if (numericMonth != null) {
-  //       month = numericMonth.toString().padLeft(2, '0'); // e.g., 05
-  //     }
-  //   }
-
-  //   final Uri uri = Uri.parse(
-  //     '$baseUrl?company=$company&year=$year&season=$season&month=$month&type=$type',
-  //   );
-
-  //   final response = await http.get(uri);
-  //   print('Order INfo Url $uri');
-  //   if (response.statusCode == 200) {
-  //     final List<dynamic> data = jsonDecode(response.body);
-  //     print(response.body);
-  //     return data.cast<Map<String, dynamic>>();
-  //   } else {
-  //     throw Exception('Failed to fetch order info');
-  //   }
-  // }
-
-  // Future<List<Map<String, dynamic>>> fetchOrderInfo() async {
-  //   try {
-  //     String baseUrl = 'http://10.3.0.70:9042/api/Production/get-Order-Info';
-  //     String company = selectedCompanyId.toString();
-  //     String year = selectedYear ?? DateTime.now().year.toString();
-  //     String type = _typeController.text;
-  //     String season = type == 'Season' ? selectedSeason ?? 'null' : 'null';
-  //     String month = 'null';
-
-  //     if (type == 'Month' && selectedMonth != null) {
-  //       int? numericMonth = monthNameToNumber[selectedMonth!];
-  //       if (numericMonth != null) {
-  //         month = numericMonth.toString().padLeft(2, '0');
-  //       }
-  //     }
-
-  //     final Uri uri = Uri.parse(
-  //       '$baseUrl?company=$company&year=$year&season=$season&month=$month&type=$type',
-  //     );
-
-  //     final response = await http.get(uri);
-  //     print('Order Info URL: $uri');
-
-  //     if (response.statusCode == 200) {
-  //       final Map<String, dynamic> jsonBody = jsonDecode(response.body);
-
-  //       // ✅ Assign allModels here
-  //       if (jsonBody.containsKey('allModels')) {
-  //         allModels = List<Map<String, dynamic>>.from(jsonBody['allModels']);
-  //         print('Fetched models: ${allModels.length}');
-  //       }
-
-  //       else {
-  //         print('No allModels found in response');
-  //       }
-
-  //       final List<dynamic> resultList = jsonBody['result'] ?? [];
-
-  //       return resultList.cast<Map<String, dynamic>>();
-  //     } else {
-  //       throw Exception(
-  //           'Failed to fetch order info. Status: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching order info: $e');
-  //     return [];
-  //   }
-  // }
 
   Future<List<Map<String, dynamic>>> fetchOrderInfo() async {
     try {
@@ -209,6 +133,11 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
         }
 
         final List<dynamic> resultList = jsonBody['result'] ?? [];
+        // ✅ Safely extract totalQuantity from first item (as all have same)
+        if (resultList.isNotEmpty && resultList[0]['totalQuantity'] != null) {
+          totalApiQuantity =
+              int.tryParse(resultList[0]['totalQuantity'].toString()) ?? 0;
+        }
         return resultList.cast<Map<String, dynamic>>();
       } else {
         throw Exception(
@@ -220,27 +149,6 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
     }
   }
 
-  // Widget buildOrderCard(Map<String, dynamic> order) {
-  //   return Card(
-  //     margin: const EdgeInsets.symmetric(vertical: 8),
-  //     child: Padding(
-  //       padding: const EdgeInsets.all(16.0),
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           Text("Model: ${order['model']}",
-  //               style: const TextStyle(fontWeight: FontWeight.bold)),
-  //           Text("Plant: ${order['plant']}"),
-  //           Text("Quantity: ${order['quantity']}"),
-  //           Text("Month: ${order['month']}"),
-  //           Text("Article: ${order['artile']}"),
-  //           Text("Percentage: ${order['percentage']}%"),
-  //           Text("Total Quantity: ${order['totalQuantity']}"),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
   Widget buildOrderCard(Map<String, dynamic> order) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -287,65 +195,6 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
     );
   }
 
-  // List<ChartData> prepareChartData(List<Map<String, dynamic>> orders) {
-  //   List<ChartData> chartData = [];
-
-  //   // Sort orders by percentage descending
-  //   List<Map<String, dynamic>> sorted = [...orders];
-  //   sorted.sort(
-  //       (a, b) => (b['percentage'] as num).compareTo(a['percentage'] as num));
-
-  //   // Get top 3 with model + artile
-  //   List<Map<String, dynamic>> top3 = sorted.take(3).toList();
-  //   List<Map<String, dynamic>> others = sorted.skip(3).toList();
-
-  //   for (var item in top3) {
-  //     String label = "${item['model']} (${item['artile']})";
-  //     double perc = (item['percentage'] as num).toDouble();
-  //     chartData.add(ChartData(label, perc));
-  //   }
-
-  //   // Sum percentage of others
-  //   double otherPerc = others.fold(
-  //       0.0, (sum, item) => sum + (item['percentage'] as num).toDouble());
-
-  //   if (otherPerc > 0) {
-  //     chartData.add(ChartData("Others", otherPerc));
-  //   }
-
-  //   return chartData;
-  // }
-
-  // List<ChartData> prepareChartData(List<Map<String, dynamic>> orders) {
-  //   List<ChartData> chartData = [];
-
-  //   // Sort orders by percentage descending
-  //   List<Map<String, dynamic>> sorted = [...orders];
-  //   sorted.sort(
-  //     (a, b) => (b['percentage'] as num).compareTo(a['percentage'] as num),
-  //   );
-
-  //   // Get top 3 items
-  //   List<Map<String, dynamic>> top3 = sorted.take(3).toList();
-
-  //   double top3Sum = 0;
-
-  //   for (var item in top3) {
-  //     String label = "${item['model']} (${item['artile']})";
-  //     double perc = (item['percentage'] as num).toDouble();
-  //     top3Sum += perc;
-  //     chartData.add(ChartData(label, perc));
-  //   }
-
-  //   // Calculate balance out of 100%
-  //   double othersPerc = 100.0 - top3Sum;
-
-  //   if (othersPerc > 0) {
-  //     chartData.add(ChartData("Others", othersPerc));
-  //   }
-
-  //   return chartData;
-  // }
   List<ChartData> prepareChartData(List<Map<String, dynamic>> top3Orders) {
     List<ChartData> chartData = [];
 
@@ -362,6 +211,24 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
 
   @override
   Widget build(BuildContext context) {
+    // // ✅ Filtering logic based on selected model/article
+    // final List<Map<String, dynamic>> filteredOrders =
+    //     selectedModelValue == null || selectedModelValue == "ALL"
+    //         ? fetchedOrders
+    //         : selectedModelValue == "Top3"
+    //             ? top3Orders
+    //             : fetchedOrders
+    //                 .where((order) =>
+    //                     order['artile']?.toString().toLowerCase() ==
+    //                     selectedModelValue?.toLowerCase())
+    //                 .toList();
+    // // final int totalQty = filteredOrders.fold(
+    // //   0,
+    // //   (sum, order) =>
+    // //       sum + (int.tryParse(order['quantity']?.toString() ?? '0') ?? 0),
+    // // );
+
+// using filter total quantity is based upon order fetch info api bases
     // ✅ Filtering logic based on selected model/article
     final List<Map<String, dynamic>> filteredOrders =
         selectedModelValue == null || selectedModelValue == "ALL"
@@ -373,11 +240,7 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                         order['artile']?.toString().toLowerCase() ==
                         selectedModelValue?.toLowerCase())
                     .toList();
-    final int totalQty = filteredOrders.fold(
-      0,
-      (sum, order) =>
-          sum + (int.tryParse(order['quantity']?.toString() ?? '0') ?? 0),
-    );
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -563,33 +426,10 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                       ? Column(
                           children: [
                             Text(
-                              'Total Quantity: $totalQty',
+                              'Total Quantity: $totalApiQuantity',
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20),
+                                  fontWeight: FontWeight.bold, fontSize: 24),
                             ),
-
-                            // SizedBox(
-                            //   height: 400,
-                            //   child: SfCircularChart(
-                            //     title: const ChartTitle(text: 'Top 3 Orders'),
-                            //     legend: const Legend(
-                            //       isVisible: true,
-                            //       position: LegendPosition.bottom,
-                            //       overflowMode: LegendItemOverflowMode.wrap,
-                            //     ),
-                            //     series: <CircularSeries>[
-                            //       PieSeries<ChartData, String>(
-                            //         dataSource: prepareChartData(fetchedOrders),
-                            //         xValueMapper: (ChartData data, _) =>
-                            //             data.label,
-                            //         yValueMapper: (ChartData data, _) =>
-                            //             data.percentage,
-                            //         dataLabelSettings: const DataLabelSettings(
-                            //             isVisible: true),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
 
                             SizedBox(
                               height: 400,
@@ -622,56 +462,128 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                               height: 10,
                             ),
 
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _modelController.clear();
-                                  selectedModelValue = null;
-                                });
-                              },
-                              child: const Text("Clear Filter"),
+                            // TextButton(
+                            //   onPressed: () async {
+                            //     setState(() {
+                            //       // isLoading = true; // Show loading spinner
+                            //       isModelandArticleLoading =
+                            //           true; // Show loading spinner
+                            //     });
+                            //     await Future.delayed(const Duration(
+                            //         milliseconds: 300)); // Optional delay
+                            //     setState(() {
+                            //       isLoading = true; // Show loading
+                            //       _modelController.clear();
+                            //       selectedModelValue = null;
+                            //       // isLoading = false; // Hide loading spinner
+                            //       isModelandArticleLoading =
+                            //           false; // Hide loading spinner
+                            //     });
+                            //   },
+                            //   child: const Text("Clear Filter"),
+                            // ),
+
+                            // 🧹 Clear Filter Button with its own loader
+                            SizedBox(
+                              width: 150,
+                              child: TextButton.icon(
+                                icon: isClearFilterLoading
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.clear),
+                                label: const Text("Clear Filter"),
+                                onPressed: isClearFilterLoading
+                                    ? null
+                                    : () async {
+                                        setState(() {
+                                          isClearFilterLoading = true;
+                                        });
+
+                                        await Future.delayed(
+                                            const Duration(milliseconds: 500));
+
+                                        setState(() {
+                                          _modelController.clear();
+                                          selectedModelValue = null;
+                                          isClearFilterLoading = false;
+                                        });
+                                      },
+                              ),
                             ),
                             // ✅ Your model & article dropdown
-                            DropDownSearchField(
-                              textFieldConfiguration: TextFieldConfiguration(
-                                controller: _modelController,
-                                decoration: const InputDecoration(
-                                  labelText: "Search Model and Article",
-                                  border: OutlineInputBorder(),
-                                  suffixIcon: Icon(Icons.search),
-                                ),
-                              ),
-                              suggestionsCallback: (pattern) async {
-                                return allModels
-                                    .where((m) => m['label']
-                                        .toLowerCase()
-                                        .contains(pattern.toLowerCase()))
-                                    .toList();
-                              },
-                              itemBuilder: (context, suggestion) {
-                                return ListTile(
-                                  title: Text(suggestion['label']),
-                                );
-                              },
-                              // onSuggestionSelected: (suggestion) async {
-                              //   setState(() {
-                              //     _modelController.text = suggestion['label'];
-                              //     selectedModelValue = suggestion['value'];
-                              //   });
+                            Stack(
+                              children: [
+                                DropDownSearchField(
+                                  textFieldConfiguration:
+                                      TextFieldConfiguration(
+                                    controller: _modelController,
+                                    decoration: const InputDecoration(
+                                      labelText: "Search Model and Article",
+                                      border: OutlineInputBorder(),
+                                      suffixIcon: Icon(Icons.search),
+                                    ),
+                                  ),
+                                  suggestionsCallback: (pattern) async {
+                                    return allModels
+                                        .where((m) => m['label']
+                                            .toLowerCase()
+                                            .contains(pattern.toLowerCase()))
+                                        .toList();
+                                  },
+                                  itemBuilder: (context, suggestion) {
+                                    return ListTile(
+                                      title: Text(suggestion['label']),
+                                    );
+                                  },
+                                  // onSuggestionSelected: (suggestion) async {
+                                  //   setState(() {
+                                  //     _modelController.text = suggestion['label'];
+                                  //     selectedModelValue = suggestion['value'];
+                                  //   });
 
-                              //   // Optional: re-fetch order info after selecting model
-                              //   fetchedOrders = await fetchOrderInfo();
-                              //   setState(() {});
-                              // },
-                              onSuggestionSelected: (suggestion) {
-                                setState(() {
-                                  _modelController.text = suggestion['label'];
-                                  selectedModelValue =
-                                      suggestion['value']; // E.g., "GZ5922"
-                                });
-                              },
-                              displayAllSuggestionWhenTap: true,
-                              isMultiSelectDropdown: false,
+                                  //   // Optional: re-fetch order info after selecting model
+                                  //   fetchedOrders = await fetchOrderInfo();
+                                  //   setState(() {});
+                                  // },
+                                  onSuggestionSelected: (suggestion) async {
+                                    setState(() {
+                                      // isLoading = true; // Show loading
+
+                                      isModelandArticleLoading = true;
+                                    });
+
+                                    await Future.delayed(const Duration(
+                                        milliseconds:
+                                            300)); // Optional small delay for UI feedback
+
+                                    setState(() {
+                                      _modelController.text =
+                                          suggestion['label'];
+                                      selectedModelValue =
+                                          suggestion['value']; // E.g., "GZ5922"
+                                      // isLoading = false; // Hide loading
+                                      isModelandArticleLoading = false;
+                                    });
+                                  },
+                                  displayAllSuggestionWhenTap: true,
+                                  isMultiSelectDropdown: false,
+                                ),
+
+                                // 👇 Circular Progress Indicator overlay
+                                if (isModelandArticleLoading)
+                                  Positioned.fill(
+                                    child: Container(
+                                      color: Colors.white.withOpacity(0.5),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
 
                             // ListView.builder(

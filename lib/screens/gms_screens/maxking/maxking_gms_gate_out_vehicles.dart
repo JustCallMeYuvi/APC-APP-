@@ -1,22 +1,27 @@
+import 'dart:convert';
+
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/model/gate_out_vehicles_model.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_files_page.dart';
+import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_files_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
-class GMSGateOutVehiclesPage extends StatefulWidget {
+class MaxkingGMSGateOutVehiclesPage extends StatefulWidget {
   final LoginModelApi userData;
 
-  const GMSGateOutVehiclesPage({Key? key, required this.userData})
+  const MaxkingGMSGateOutVehiclesPage({Key? key, required this.userData})
       : super(key: key);
 
   @override
-  State<GMSGateOutVehiclesPage> createState() => _GMSGateOutVehiclesPageState();
+  State<MaxkingGMSGateOutVehiclesPage> createState() =>
+      _MaxkingGMSGateOutVehiclesPageState();
 }
 
-class _GMSGateOutVehiclesPageState extends State<GMSGateOutVehiclesPage> {
+class _MaxkingGMSGateOutVehiclesPageState
+    extends State<MaxkingGMSGateOutVehiclesPage> {
   DateTime? _fromDate;
   DateTime? _toDate;
   bool _isLoading = false;
@@ -28,6 +33,8 @@ class _GMSGateOutVehiclesPageState extends State<GMSGateOutVehiclesPage> {
     final today = DateTime.now();
     _toDate = today;
     _fromDate = today.subtract(const Duration(days: 2));
+    //  _fromDate = today.subtract(const Duration(days: 2));
+
     _fetchGateOutVehicles();
   }
 
@@ -40,7 +47,7 @@ class _GMSGateOutVehiclesPageState extends State<GMSGateOutVehiclesPage> {
     final toDateStr = DateFormat('yyyy-MM-dd').format(_toDate!);
 
     final url =
-        "${ApiHelper.gmsUrl}getoutvehicles?fromdate=$fromDateStr&todate=$toDateStr";
+        "${ApiHelper.maxkingGMSUrl}getoutvehicles?fromdate=$fromDateStr&todate=$toDateStr";
     print('Gate Out Vehicles URL ${url}');
     try {
       final response = await http.get(Uri.parse(url));
@@ -49,7 +56,15 @@ class _GMSGateOutVehiclesPageState extends State<GMSGateOutVehiclesPage> {
           _vehicles = gateOutVehiclesModelFromJson(response.body);
         });
       } else {
-        _showError("Failed to load vehicles");
+        // _showError("Failed to load vehicles");
+        // Try to parse the error message
+        try {
+          final Map<String, dynamic> jsonData = json.decode(response.body);
+          final message = jsonData['message'] ?? 'Failed to load vehicles';
+          _showError(message);
+        } catch (e) {
+          _showError("Failed to load vehicles (invalid error response)");
+        }
       }
     } catch (e) {
       _showError("Something went wrong: $e");
@@ -74,7 +89,8 @@ class _GMSGateOutVehiclesPageState extends State<GMSGateOutVehiclesPage> {
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().subtract(const Duration(days: 2)),
+      // lastDate: DateTime.now().subtract(const Duration(days: 2)),
+      lastDate: _toDate ?? DateTime.now(), // Allow dates up to the selected _toDate
     );
 
     if (picked != null) {
@@ -126,7 +142,8 @@ class _GMSGateOutVehiclesPageState extends State<GMSGateOutVehiclesPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => GmsFilesPage(vehicleId: vehicle.vehicleId),
+              // builder: (_) => GmsFilesPage(vehicleId: vehicle.vehicleId),
+              builder: (_) => MaxkingGmsFilesPage(vehicleId: vehicle.vehicleId),
             ),
           );
         },
@@ -140,9 +157,9 @@ class _GMSGateOutVehiclesPageState extends State<GMSGateOutVehiclesPage> {
               _buildInfoRow("Vehicle ID:", vehicle.vehicleId),
               const SizedBox(height: 8),
               _buildInfoRow(
-                  "Main Gate Entry:", vehicle.mainGateEntry.toString()),
+                  "Fire Gate Entry:", vehicle.fireGateEntry.toString()),
               const SizedBox(height: 8),
-              _buildInfoRow("Main Gate Exit:", vehicle.mainGateExit.toString()),
+              _buildInfoRow("Fire Gate Exit:", vehicle.fireGateExit.toString()),
             ],
           ),
         ),

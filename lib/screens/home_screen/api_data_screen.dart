@@ -50,7 +50,7 @@ import 'package:animated_movies_app/screens/gms_screens/gms_delete_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/kpi_screen.dart';
-import 'package:animated_movies_app/screens/gms_screens/maxking/gms_gate_out_vehicles.dart';
+import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_gate_out_vehicles.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_export_approval_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_charts.dart';
 
@@ -222,7 +222,7 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                     //     widget.userData,
                                                                                                   )
                                                                                                 : widget.pageRoute == 'MaxKingGateOutVehicles'
-                                                                                                    ? GMSGateOutVehiclesPage(
+                                                                                                    ? MaxkingGMSGateOutVehiclesPage(
                                                                                                         userData: widget.userData,
                                                                                                         // userData:
                                                                                                         //     widget.userData,
