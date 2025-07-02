@@ -23,7 +23,8 @@ class _MaxkingExportApproveState extends State<MaxkingExportApprove> {
   }
 
   Future<void> fetchVehicleDetails(int vehicleID) async {
-    final uri = Uri.parse('${ApiHelper.maxkingGMSUrl}ExportArrovals?id=$vehicleID');
+    final uri =
+        Uri.parse('${ApiHelper.maxkingGMSUrl}ExportArrovals?id=$vehicleID');
 
     print('vehicles apis $uri');
     try {
@@ -193,8 +194,8 @@ class _MaxkingExportApproveState extends State<MaxkingExportApprove> {
         title: const Text("Vehicle Details"),
         centerTitle: true,
         // backgroundColor: Colors.green[700],
-         backgroundColor: Colors.lightGreen,
-        
+        backgroundColor: Colors.lightGreen,
+
         elevation: 5,
       ),
       bottomNavigationBar: MaterialButton(
@@ -228,8 +229,8 @@ class _MaxkingExportApproveState extends State<MaxkingExportApprove> {
                             _buildDetailText(
                                 "Vehicle ID", _vehicle!.id.toString()),
                             _buildDetailText("Vehicle No", _vehicle!.vehicleNo),
-                            _buildDetailText(
-                                "Carrier Book No", _vehicle!.carrierBookNo),
+                            // _buildDetailText(
+                            //     "Carrier Book No", _vehicle!.carrierBookNo),
                             _buildDetailText("Container Number",
                                 _vehicle!.containerNumberIN),
                             _buildDetailText(
@@ -246,7 +247,7 @@ class _MaxkingExportApproveState extends State<MaxkingExportApprove> {
                             _buildDetailText(
                                 "Vehicle Type", _vehicle!.vehicleTypeIN),
                             _buildDetailText("Created By", _vehicle!.createdBy),
-                            _buildDetailText("Ship Mode", _vehicle!.shipMode),
+                            // _buildDetailText("Ship Mode", _vehicle!.shipMode),
                             _buildDetailText("Created Date",
                                 _vehicle!.createdDate.toString()),
                           ],

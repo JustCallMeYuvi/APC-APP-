@@ -158,10 +158,10 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildInfoRow("Model", order['model']),
-            buildInfoRow("Plant", order['plant']),
+            buildInfoRow("Article", order['artile']),
+            buildInfoRow("Company Code", order['plant']),
             buildInfoRow("Quantity", order['quantity']),
             buildInfoRow("Month", order['month']),
-            buildInfoRow("Article", order['artile']),
             buildInfoRow("Percentage", "${order['percentage']}%"),
             buildInfoRow("Total Quantity", order['totalQuantity']),
           ],
@@ -171,6 +171,16 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
   }
 
   Widget buildInfoRow(String label, dynamic value) {
+    // Hide row if label is Percentage and value is "0%"
+    if (label == "Percentage" && (value == "0%" || value == "0.0%")) {
+      return const SizedBox.shrink();
+    }
+
+    // Hide row if label is Total Quantity and value is 0 or "0"
+    if (label == "Total Quantity" && (value == 0 || value == "0")) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -186,8 +196,9 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
             child: Text(
               value.toString(),
               style: TextStyle(
-                  fontWeight:
-                      label == "Model" ? FontWeight.bold : FontWeight.normal),
+                  fontWeight: (label == "Model" || label == "Article")
+                      ? FontWeight.bold
+                      : FontWeight.normal),
             ),
           ),
         ],
@@ -308,10 +319,29 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                   setState(() {
                     _dateSelectionMode = suggestion;
                     _typeController.text = suggestion;
-                    selectedSeason = null;
-                    selectedMonth = null;
-                    _seasonController.clear();
-                    _monthController.clear();
+                    // selectedSeason = null;
+                    // selectedMonth = null;
+                    // _seasonController.clear();
+                    // _monthController.clear();
+                    if (suggestion == 'Season') {
+                      // Clear month and year fields
+                      selectedMonth = null;
+                      selectedYear = null;
+                      _monthController.clear();
+
+                      // Also clear season (optional, in case of previous leftover)
+                      selectedSeason = null;
+                      _seasonController.clear();
+                    } else if (suggestion == 'Month') {
+                      // Clear season field
+                      selectedSeason = null;
+                      _seasonController.clear();
+
+                      // Also clear month and year just in case
+                      selectedMonth = null;
+                      selectedYear = null;
+                      _monthController.clear();
+                    }
                   });
                 },
                 displayAllSuggestionWhenTap: true,
@@ -396,16 +426,90 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
               const SizedBox(
                 height: 10,
               ),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     setState(() {
+              //       isLoading = true;
+              //     });
+              //     try {
+              //       final data = await fetchOrderInfo();
+              //       setState(() {
+              //         fetchedOrders = data;
+              //         isLoading = false;
+              //       });
+              //     } catch (e) {
+              //       setState(() {
+              //         isLoading = false;
+              //       });
+              //       ScaffoldMessenger.of(context).showSnackBar(
+              //         SnackBar(content: Text('Error fetching data: $e')),
+              //       );
+              //     }
+              //   },
+              //   child: const Text("Submit"),
+              // ),
+
               ElevatedButton(
                 onPressed: () async {
+                  // Validation logic
+                  if (selectedCompanyId == null ||
+                      _companyController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select a company.')),
+                    );
+                    return;
+                  }
+
+                  if (_typeController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select a type.')),
+                    );
+                    return;
+                  }
+
+                  if (_dateSelectionMode == 'Season' &&
+                      (selectedSeason == null ||
+                          _seasonController.text.isEmpty)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select a season.')),
+                    );
+                    return;
+                  }
+
+                  if (_dateSelectionMode == 'Month' &&
+                      (selectedMonth == null ||
+                          _monthController.text.isEmpty ||
+                          selectedYear == null)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Please select year and month.')),
+                    );
+                    return;
+                  }
+
+                  // Proceed to fetch data
                   setState(() {
                     isLoading = true;
                   });
+
                   try {
                     final data = await fetchOrderInfo();
                     setState(() {
                       fetchedOrders = data;
                       isLoading = false;
+
+                      // Reset all fields after success
+                      // _companyController.clear();
+                      // _typeController.clear();
+                      // _seasonController.clear();
+                      // _monthController.clear();
+
+                      // selectedCompanyId = null;
+                      // selectedCompany = null;
+                      // // _dateSelectionMode = null;
+                      // selectedSeason = null;
+                      // selectedMonth = null;
+                      // selectedYear = null;
                     });
                   } catch (e) {
                     setState(() {
@@ -418,6 +522,7 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                 },
                 child: const Text("Submit"),
               ),
+
               const SizedBox(height: 10),
 
               isLoading
@@ -522,7 +627,7 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                                       TextFieldConfiguration(
                                     controller: _modelController,
                                     decoration: const InputDecoration(
-                                      labelText: "Search Model and Article",
+                                      labelText: "Search Model Or Article",
                                       border: OutlineInputBorder(),
                                       suffixIcon: Icon(Icons.search),
                                     ),

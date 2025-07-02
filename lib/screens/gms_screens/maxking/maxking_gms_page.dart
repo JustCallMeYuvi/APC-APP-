@@ -6,6 +6,7 @@ import 'package:animated_movies_app/screens/gms_screens/custom_switch_button.dar
 import 'package:animated_movies_app/screens/gms_screens/gms_files_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/inspected_barcodes.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_files_page.dart';
+import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_inspection_barcode_widget.dart';
 
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -1333,7 +1334,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                       const SizedBox(
                         height: 10,
                       ),
-                      InspectedBarcodesWidget(
+                      MaxkingInspectedBarcodesWidget(
                         onBarcodeSelected: (selectedBarcode) {
                           setState(() {
                             _selectedInspectedBarcode = selectedBarcode;
@@ -1690,7 +1691,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                   const SizedBox(
                     height: 10,
                   ),
-                  InspectedBarcodesWidget(
+                  MaxkingInspectedBarcodesWidget(
                     onBarcodeSelected: (selectedBarcode) {
                       setState(() {
                         _selectedInspectedBarcode = selectedBarcode;
@@ -1757,7 +1758,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                   const SizedBox(
                     height: 10,
                   ),
-                  InspectedBarcodesWidget(
+                  MaxkingInspectedBarcodesWidget(
                     onBarcodeSelected: (selectedBarcode) {
                       setState(() {
                         _selectedInspectedBarcode = selectedBarcode;
@@ -2143,7 +2144,7 @@ class _MaxkingGMSPageState extends State<MaxkingGMSPage> {
                       const SizedBox(
                         height: 10,
                       ),
-                      InspectedBarcodesWidget(
+                      MaxkingInspectedBarcodesWidget(
                         onBarcodeSelected: (selectedBarcode) {
                           setState(() {
                             _selectedInspectedBarcode = selectedBarcode;
