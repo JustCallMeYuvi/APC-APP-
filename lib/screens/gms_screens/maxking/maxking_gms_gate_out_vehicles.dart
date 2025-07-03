@@ -223,6 +223,7 @@ class _MaxkingGMSGateOutVehiclesPageState
                     suggestionsCallback: (pattern) async {
                       return _vehicles
                           .map((e) => e.vehicleNumber)
+                          .toSet() // 👈 Removes duplicates
                           .where((number) => number
                               .toLowerCase()
                               .contains(pattern.toLowerCase()))
