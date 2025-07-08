@@ -448,269 +448,274 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
               //   },
               //   child: const Text("Submit"),
               // ),
+              isLoading
+                  ? const Center(
+                      child:
+                          CircularProgressIndicator()) // Show only one loader
+                  : ElevatedButton(
+                      onPressed: () async {
+                        // Validation logic
+                        if (selectedCompanyId == null ||
+                            _companyController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Please select a company.')),
+                          );
+                          return;
+                        }
 
-              ElevatedButton(
-                onPressed: () async {
-                  // Validation logic
-                  if (selectedCompanyId == null ||
-                      _companyController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select a company.')),
-                    );
-                    return;
-                  }
+                        if (_typeController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Please select a type.')),
+                          );
+                          return;
+                        }
 
-                  if (_typeController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select a type.')),
-                    );
-                    return;
-                  }
+                        if (_dateSelectionMode == 'Season' &&
+                            (selectedSeason == null ||
+                                _seasonController.text.isEmpty)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Please select a season.')),
+                          );
+                          return;
+                        }
 
-                  if (_dateSelectionMode == 'Season' &&
-                      (selectedSeason == null ||
-                          _seasonController.text.isEmpty)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select a season.')),
-                    );
-                    return;
-                  }
+                        if (_dateSelectionMode == 'Month' &&
+                            (selectedMonth == null ||
+                                _monthController.text.isEmpty ||
+                                selectedYear == null)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Please select year and month.')),
+                          );
+                          return;
+                        }
 
-                  if (_dateSelectionMode == 'Month' &&
-                      (selectedMonth == null ||
-                          _monthController.text.isEmpty ||
-                          selectedYear == null)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Please select year and month.')),
-                    );
-                    return;
-                  }
+                        // Proceed to fetch data
+                        setState(() {
+                          isLoading = true;
+                        });
 
-                  // Proceed to fetch data
-                  setState(() {
-                    isLoading = true;
-                  });
+                        try {
+                          final data = await fetchOrderInfo();
+                          setState(() {
+                            fetchedOrders = data;
+                            isLoading = false;
 
-                  try {
-                    final data = await fetchOrderInfo();
-                    setState(() {
-                      fetchedOrders = data;
-                      isLoading = false;
+                            // Reset all fields after success
+                            // _companyController.clear();
+                            // _typeController.clear();
+                            // _seasonController.clear();
+                            // _monthController.clear();
 
-                      // Reset all fields after success
-                      // _companyController.clear();
-                      // _typeController.clear();
-                      // _seasonController.clear();
-                      // _monthController.clear();
-
-                      // selectedCompanyId = null;
-                      // selectedCompany = null;
-                      // // _dateSelectionMode = null;
-                      // selectedSeason = null;
-                      // selectedMonth = null;
-                      // selectedYear = null;
-                    });
-                  } catch (e) {
-                    setState(() {
-                      isLoading = false;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error fetching data: $e')),
-                    );
-                  }
-                },
-                child: const Text("Submit"),
-              ),
+                            // selectedCompanyId = null;
+                            // selectedCompany = null;
+                            // // _dateSelectionMode = null;
+                            // selectedSeason = null;
+                            // selectedMonth = null;
+                            // selectedYear = null;
+                          });
+                        } catch (e) {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error fetching data: $e')),
+                          );
+                        }
+                      },
+                      child: const Text("Submit"),
+                    ),
 
               const SizedBox(height: 10),
 
-              isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : fetchedOrders.isNotEmpty
-                      ? Column(
-                          children: [
-                            Text(
-                              'Total Quantity: $totalApiQuantity',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 24),
-                            ),
+              // isLoading
+              //     ? const Center(child: CircularProgressIndicator())
+              //     :
 
-                            SizedBox(
-                              height: 400,
-                              child: SfCircularChart(
-                                title: const ChartTitle(text: 'Top 3 Orders'),
-                                legend: const Legend(
-                                  isVisible: true,
-                                  position: LegendPosition.bottom,
-                                  overflowMode: LegendItemOverflowMode.wrap,
-                                ),
-                                tooltipBehavior: TooltipBehavior(enable: true),
-                                series: <CircularSeries>[
-                                  PieSeries<ChartData, String>(
-                                    dataSource: prepareChartData(
-                                        top3Orders), // <- use top3Orders
-                                    xValueMapper: (ChartData data, _) =>
-                                        data.label,
-                                    yValueMapper: (ChartData data, _) =>
-                                        data.percentage,
-                                    dataLabelMapper: (ChartData data, _) =>
-                                        '${data.label}\nQty: ${data.totalQuantity}',
-                                    dataLabelSettings: const DataLabelSettings(
-                                        isVisible: true),
-                                  ),
-                                ],
-                              ),
-                            ),
+              //  fetchedOrders.isNotEmpty
+              //     ?
+              if (fetchedOrders.isNotEmpty) ...[
+                Text(
+                  'Total Quantity: $totalApiQuantity',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 24),
+                ),
 
-                            const SizedBox(
-                              height: 10,
-                            ),
+                SizedBox(
+                  height: 400,
+                  child: SfCircularChart(
+                    title: const ChartTitle(text: 'Top 3 Orders'),
+                    legend: const Legend(
+                      isVisible: true,
+                      position: LegendPosition.bottom,
+                      overflowMode: LegendItemOverflowMode.wrap,
+                    ),
+                    tooltipBehavior: TooltipBehavior(enable: true),
+                    series: <CircularSeries>[
+                      PieSeries<ChartData, String>(
+                        dataSource:
+                            prepareChartData(top3Orders), // <- use top3Orders
+                        xValueMapper: (ChartData data, _) => data.label,
+                        yValueMapper: (ChartData data, _) => data.percentage,
+                        dataLabelMapper: (ChartData data, _) =>
+                            '${data.label}\nQty: ${data.totalQuantity}',
+                        dataLabelSettings:
+                            const DataLabelSettings(isVisible: true),
+                      ),
+                    ],
+                  ),
+                ),
 
-                            // TextButton(
-                            //   onPressed: () async {
-                            //     setState(() {
-                            //       // isLoading = true; // Show loading spinner
-                            //       isModelandArticleLoading =
-                            //           true; // Show loading spinner
-                            //     });
-                            //     await Future.delayed(const Duration(
-                            //         milliseconds: 300)); // Optional delay
-                            //     setState(() {
-                            //       isLoading = true; // Show loading
-                            //       _modelController.clear();
-                            //       selectedModelValue = null;
-                            //       // isLoading = false; // Hide loading spinner
-                            //       isModelandArticleLoading =
-                            //           false; // Hide loading spinner
-                            //     });
-                            //   },
-                            //   child: const Text("Clear Filter"),
-                            // ),
+                const SizedBox(
+                  height: 10,
+                ),
 
-                            // 🧹 Clear Filter Button with its own loader
-                            SizedBox(
-                              width: 150,
-                              child: TextButton.icon(
-                                icon: isClearFilterLoading
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2),
-                                      )
-                                    : const Icon(Icons.clear),
-                                label: const Text("Clear Filter"),
-                                onPressed: isClearFilterLoading
-                                    ? null
-                                    : () async {
-                                        setState(() {
-                                          isClearFilterLoading = true;
-                                        });
+                // TextButton(
+                //   onPressed: () async {
+                //     setState(() {
+                //       // isLoading = true; // Show loading spinner
+                //       isModelandArticleLoading =
+                //           true; // Show loading spinner
+                //     });
+                //     await Future.delayed(const Duration(
+                //         milliseconds: 300)); // Optional delay
+                //     setState(() {
+                //       isLoading = true; // Show loading
+                //       _modelController.clear();
+                //       selectedModelValue = null;
+                //       // isLoading = false; // Hide loading spinner
+                //       isModelandArticleLoading =
+                //           false; // Hide loading spinner
+                //     });
+                //   },
+                //   child: const Text("Clear Filter"),
+                // ),
 
-                                        await Future.delayed(
-                                            const Duration(milliseconds: 500));
+                // 🧹 Clear Filter Button with its own loader
+                SizedBox(
+                  width: 150,
+                  child: TextButton.icon(
+                    icon: isClearFilterLoading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.clear),
+                    label: const Text("Clear Filter"),
+                    onPressed: isClearFilterLoading
+                        ? null
+                        : () async {
+                            setState(() {
+                              isClearFilterLoading = true;
+                            });
 
-                                        setState(() {
-                                          _modelController.clear();
-                                          selectedModelValue = null;
-                                          isClearFilterLoading = false;
-                                        });
-                                      },
-                              ),
-                            ),
-                            // ✅ Your model & article dropdown
-                            Stack(
-                              children: [
-                                DropDownSearchField(
-                                  textFieldConfiguration:
-                                      TextFieldConfiguration(
-                                    controller: _modelController,
-                                    decoration: const InputDecoration(
-                                      labelText: "Search Model Or Article",
-                                      border: OutlineInputBorder(),
-                                      suffixIcon: Icon(Icons.search),
-                                    ),
-                                  ),
-                                  suggestionsCallback: (pattern) async {
-                                    return allModels
-                                        .where((m) => m['label']
-                                            .toLowerCase()
-                                            .contains(pattern.toLowerCase()))
-                                        .toList();
-                                  },
-                                  itemBuilder: (context, suggestion) {
-                                    return ListTile(
-                                      title: Text(suggestion['label']),
-                                    );
-                                  },
-                                  // onSuggestionSelected: (suggestion) async {
-                                  //   setState(() {
-                                  //     _modelController.text = suggestion['label'];
-                                  //     selectedModelValue = suggestion['value'];
-                                  //   });
+                            await Future.delayed(
+                                const Duration(milliseconds: 500));
 
-                                  //   // Optional: re-fetch order info after selecting model
-                                  //   fetchedOrders = await fetchOrderInfo();
-                                  //   setState(() {});
-                                  // },
-                                  onSuggestionSelected: (suggestion) async {
-                                    setState(() {
-                                      // isLoading = true; // Show loading
+                            setState(() {
+                              _modelController.clear();
+                              selectedModelValue = null;
+                              isClearFilterLoading = false;
+                            });
+                          },
+                  ),
+                ),
+                // ✅ Your model & article dropdown
+                Stack(
+                  children: [
+                    DropDownSearchField(
+                      textFieldConfiguration: TextFieldConfiguration(
+                        controller: _modelController,
+                        decoration: const InputDecoration(
+                          labelText: "Search Model Or Article",
+                          border: OutlineInputBorder(),
+                          suffixIcon: Icon(Icons.search),
+                        ),
+                      ),
+                      suggestionsCallback: (pattern) async {
+                        return allModels
+                            .where((m) => m['label']
+                                .toLowerCase()
+                                .contains(pattern.toLowerCase()))
+                            .toList();
+                      },
+                      itemBuilder: (context, suggestion) {
+                        return ListTile(
+                          title: Text(suggestion['label']),
+                        );
+                      },
+                      // onSuggestionSelected: (suggestion) async {
+                      //   setState(() {
+                      //     _modelController.text = suggestion['label'];
+                      //     selectedModelValue = suggestion['value'];
+                      //   });
 
-                                      isModelandArticleLoading = true;
-                                    });
+                      //   // Optional: re-fetch order info after selecting model
+                      //   fetchedOrders = await fetchOrderInfo();
+                      //   setState(() {});
+                      // },
+                      onSuggestionSelected: (suggestion) async {
+                        setState(() {
+                          // isLoading = true; // Show loading
 
-                                    await Future.delayed(const Duration(
-                                        milliseconds:
-                                            300)); // Optional small delay for UI feedback
+                          isModelandArticleLoading = true;
+                        });
 
-                                    setState(() {
-                                      _modelController.text =
-                                          suggestion['label'];
-                                      selectedModelValue =
-                                          suggestion['value']; // E.g., "GZ5922"
-                                      // isLoading = false; // Hide loading
-                                      isModelandArticleLoading = false;
-                                    });
-                                  },
-                                  displayAllSuggestionWhenTap: true,
-                                  isMultiSelectDropdown: false,
-                                ),
+                        await Future.delayed(const Duration(
+                            milliseconds:
+                                300)); // Optional small delay for UI feedback
 
-                                // 👇 Circular Progress Indicator overlay
-                                if (isModelandArticleLoading)
-                                  Positioned.fill(
-                                    child: Container(
-                                      color: Colors.white.withOpacity(0.5),
-                                      child: const Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                        setState(() {
+                          _modelController.text = suggestion['label'];
+                          selectedModelValue =
+                              suggestion['value']; // E.g., "GZ5922"
+                          // isLoading = false; // Hide loading
+                          isModelandArticleLoading = false;
+                        });
+                      },
+                      displayAllSuggestionWhenTap: true,
+                      isMultiSelectDropdown: false,
+                    ),
 
-                            // ListView.builder(
-                            //   shrinkWrap: true,
-                            //   physics: const NeverScrollableScrollPhysics(),
-                            //   itemCount: fetchedOrders.length,
-                            //   itemBuilder: (context, index) {
-                            //     return buildOrderCard(fetchedOrders[index]);
-                            //   },
-                            // ),
-                            // ✅ Use filteredOrders here instead of fetchedOrders
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: filteredOrders.length,
-                              itemBuilder: (context, index) {
-                                return buildOrderCard(filteredOrders[index]);
-                              },
-                            ),
-                          ],
-                        )
-                      : const Text("No data fetched yet."),
+                    // 👇 Circular Progress Indicator overlay
+                    if (isModelandArticleLoading)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.white.withOpacity(0.5),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+
+                // ListView.builder(
+                //   shrinkWrap: true,
+                //   physics: const NeverScrollableScrollPhysics(),
+                //   itemCount: fetchedOrders.length,
+                //   itemBuilder: (context, index) {
+                //     return buildOrderCard(fetchedOrders[index]);
+                //   },
+                // ),
+                // ✅ Use filteredOrders here instead of fetchedOrders
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredOrders.length,
+                  itemBuilder: (context, index) {
+                    return buildOrderCard(filteredOrders[index]);
+                  },
+                )
+              ]
+
+              // :
+              else
+                const Text("No data fetched yet."),
             ],
           ),
         ),

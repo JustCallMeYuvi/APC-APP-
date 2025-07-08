@@ -50,8 +50,8 @@ String gateOutVehiclesModelToJson(List<GateOutVehiclesModel> data) => json.encod
 class GateOutVehiclesModel {
     String vehicleNumber;
     String vehicleId;
-    DateTime fireGateEntry;
-    DateTime fireGateExit;
+    String fireGateEntry;
+    String fireGateExit;
 
     GateOutVehiclesModel({
         required this.vehicleNumber,
@@ -63,14 +63,14 @@ class GateOutVehiclesModel {
     factory GateOutVehiclesModel.fromJson(Map<String, dynamic> json) => GateOutVehiclesModel(
         vehicleNumber: json["vehicleNumber"],
         vehicleId: json["vehicleId"],
-        fireGateEntry: DateTime.parse(json["fireGateEntry"]),
-        fireGateExit: DateTime.parse(json["fireGateExit"]),
+        fireGateEntry: (json["fireGateEntry"]),
+        fireGateExit: (json["fireGateExit"]),
     );
 
     Map<String, dynamic> toJson() => {
         "vehicleNumber": vehicleNumber,
         "vehicleId": vehicleId,
-        "fireGateEntry": fireGateEntry.toIso8601String(),
-        "fireGateExit": fireGateExit.toIso8601String(),
+        "fireGateEntry": fireGateEntry,
+        "fireGateExit": fireGateExit,
     };
 }

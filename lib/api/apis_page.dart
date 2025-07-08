@@ -20,12 +20,14 @@ class ApiHelper {
   static String _maxkingGMSUrl =
       'http://10.3.0.70:9042/api/Maxking_GMS_/'; // 70 maxking URL
 
+  // static String _productionUrl =
+  //     'http://203.153.32.85:54329/api/Production/'; //global url
+
   // Production base URL
-  static const String _productionUrl = 'http://10.3.0.70:9042/api/Production/';
+  static  String _productionUrl = 'http://10.3.0.70:9042/api/Production/';
 
   // Getter for Production URL (optional)
   static String get productionUrl => _productionUrl;
-
 
   static String get baseUrl => _baseUrl; // Public getter
 
@@ -44,6 +46,7 @@ class ApiHelper {
         _baseUrl = 'http://10.3.0.208:8084/api/HR/';
         _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
         _maxkingGMSUrl = 'http://10.3.0.208:8084/api/Maxking_GMS_/';
+        _productionUrl = 'http://10.3.0.208:9042/api/Production/';
 
         urlGlobalOrLocalCheck = '10.3.0.208';
       } else {
@@ -51,6 +54,7 @@ class ApiHelper {
         _baseUrl = 'http://203.153.32.85:54329/api/HR/';
         _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
         _maxkingGMSUrl = 'http://203.153.32.85:54329/api/Maxking_GMS_/';
+        _productionUrl = 'http://203.153.32.85:54329/api/Production/';
 
         urlGlobalOrLocalCheck = '203.153.32.85';
       }
