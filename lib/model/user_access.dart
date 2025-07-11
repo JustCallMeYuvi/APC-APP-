@@ -125,6 +125,11 @@ IconData getIconForPage(Page page) {
     case 'Asset Management':
       return Icons.store;
 
+    case 'Bussiness Info':
+      return Icons.business_center;
+
+    case 'Order Info':
+      return Icons.factory;
     default:
       return Icons.help_outline; // Fallback icon
   }

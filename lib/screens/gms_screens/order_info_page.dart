@@ -56,7 +56,7 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
   final List<String> seasons = [
     // 'ALL',
     'Spring Summer',
-    'Flowing Winter',
+    'Falling Winter',
   ];
 
   late final List<String> years;
@@ -70,7 +70,10 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
   void initState() {
     super.initState();
     final currentYear = DateTime.now().year;
-    years = [currentYear.toString(), (currentYear - 1).toString()];
+    // years = [currentYear.toString(), (currentYear - 1).toString()];
+
+    // From currentYear - 2 to currentYear + 2 (i.e., 5 years total)
+    years = List.generate(5, (index) => (currentYear - 2 + index).toString());
     _yearController.text = years.first;
 
     // Create map like {'Jan': 1, 'Feb': 2, ...}
@@ -348,23 +351,23 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                 isMultiSelectDropdown: false,
               ),
               const SizedBox(height: 16),
-              if (_dateSelectionMode == 'Month')
-                DropdownSearch<String>(
-                  items: years,
-                  selectedItem: selectedYear,
-                  dropdownDecoratorProps: const DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      labelText: "Select Year",
-                      border: OutlineInputBorder(),
-                      // suffixIcon: Icon(Icons.calendar_today),
-                    ),
+              // if (_dateSelectionMode == 'Month') // for when month onwords select year shows logic
+              DropdownSearch<String>(
+                items: years,
+                selectedItem: selectedYear,
+                dropdownDecoratorProps: const DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: "Select Year",
+                    border: OutlineInputBorder(),
+                    // suffixIcon: Icon(Icons.calendar_today),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedYear = value!;
-                    });
-                  },
                 ),
+                onChanged: (value) {
+                  setState(() {
+                    selectedYear = value!;
+                  });
+                },
+              ),
               const SizedBox(height: 16),
 
               if (_dateSelectionMode == 'Season')
@@ -544,26 +547,62 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                       fontWeight: FontWeight.bold, fontSize: 24),
                 ),
 
+                // SizedBox(
+                //   height: 400,
+                //   child: SfCircularChart(
+                //     title: const ChartTitle(text: 'Top 3 Orders'),
+                //     legend: const Legend(
+                //       isVisible: true,
+                //       position: LegendPosition.bottom,
+                //       overflowMode: LegendItemOverflowMode.wrap,
+                //     ),
+                //     tooltipBehavior: TooltipBehavior(enable: true),
+                //     series: <CircularSeries>[
+                //       PieSeries<ChartData, String>(
+                //         dataSource:
+                //             prepareChartData(top3Orders), // <- use top3Orders
+                //         xValueMapper: (ChartData data, _) => data.label,
+                //         yValueMapper: (ChartData data, _) => data.percentage,
+                //         dataLabelMapper: (ChartData data, _) =>
+                //             '${data.label}\nQty: ${data.totalQuantity}',
+                //         dataLabelSettings:
+                //             const DataLabelSettings(isVisible: true),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+
                 SizedBox(
                   height: 400,
-                  child: SfCircularChart(
+                  child: SfCartesianChart(
                     title: const ChartTitle(text: 'Top 3 Orders'),
+                    primaryXAxis: const CategoryAxis(
+                      labelIntersectAction: AxisLabelIntersectAction.rotate45,
+                    ),
+                    primaryYAxis:
+                        const NumericAxis(title: AxisTitle(text: 'Quantity')),
+                    tooltipBehavior: TooltipBehavior(enable: true),
                     legend: const Legend(
                       isVisible: true,
                       position: LegendPosition.bottom,
                       overflowMode: LegendItemOverflowMode.wrap,
                     ),
-                    tooltipBehavior: TooltipBehavior(enable: true),
-                    series: <CircularSeries>[
-                      PieSeries<ChartData, String>(
-                        dataSource:
-                            prepareChartData(top3Orders), // <- use top3Orders
+                    onTooltipRender: (TooltipArgs args) {
+                      final ChartData data = prepareChartData(
+                          top3Orders)[args.pointIndex!.toInt()];
+                      args.text =
+                          '${data.label}\nQty: ${data.totalQuantity}\nPercentage: (${data.percentage.toStringAsFixed(1)}%)';
+                    },
+                    series: <CartesianSeries>[
+                      ColumnSeries<ChartData, String>(
+                        dataSource: prepareChartData(top3Orders),
                         xValueMapper: (ChartData data, _) => data.label,
-                        yValueMapper: (ChartData data, _) => data.percentage,
-                        dataLabelMapper: (ChartData data, _) =>
-                            '${data.label}\nQty: ${data.totalQuantity}',
+                        yValueMapper: (ChartData data, _) =>
+                            data.totalQuantity.toDouble(),
                         dataLabelSettings:
                             const DataLabelSettings(isVisible: true),
+                        name: 'Qty',
+                        enableTooltip: true,
                       ),
                     ],
                   ),

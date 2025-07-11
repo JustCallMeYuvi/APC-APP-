@@ -18,6 +18,14 @@ allprojects {
         google()
         mavenCentral()
     }
+    
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.appcompat:appcompat:1.6.1'
+            force 'androidx.appcompat:appcompat-resources:1.6.1'
+        }
+    }
+
 }
 
 rootProject.buildDir = '../build'
