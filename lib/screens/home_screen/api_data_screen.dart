@@ -49,6 +49,7 @@ import 'package:animated_movies_app/screens/gms_screens/export_approval_page.dar
 import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_delete_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
+import 'package:animated_movies_app/screens/gms_screens/gms_gate_out-vehicles_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/kpi_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_gate_out_vehicles.dart';
@@ -249,6 +250,12 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                   )
                                                                                                                 : widget.pageRoute == 'Bussiness_Info'
                                                                                                                     ? BussinessInfoPage(
+                                                                                                                        userData: widget.userData,
+                                                                                                                        // userData:
+                                                                                                                        //     widget.userData,
+                                                                                                                      )
+                                                                                                                      : widget.pageRoute == 'APCGateOutVehicles'
+                                                                                                                    ? GmsGateOutVehiclesScreen(
                                                                                                                         userData: widget.userData,
                                                                                                                         // userData:
                                                                                                                         //     widget.userData,
