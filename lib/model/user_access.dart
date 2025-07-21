@@ -121,15 +121,18 @@ IconData getIconForPage(Page page) {
       return Icons.output;
     case 'Reports':
       return Icons.production_quantity_limits;
-
     case 'Asset Management':
       return Icons.store;
-
     case 'Bussiness Info':
       return Icons.business_center;
-
     case 'Order Info':
       return Icons.factory;
+    case 'Out Vehicles':
+      return Icons.fire_truck_outlined;
+    case 'Gate Out Vehicles':
+      return Icons.fire_truck_outlined;
+    case 'Remove Vehicle':
+      return Icons.remove_circle_outline_sharp;
     default:
       return Icons.help_outline; // Fallback icon
   }
