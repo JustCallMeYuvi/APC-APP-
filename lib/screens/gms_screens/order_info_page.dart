@@ -166,7 +166,8 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
             buildInfoRow("Quantity", order['quantity']),
             buildInfoRow("Month", order['month']),
             buildInfoRow("Shipped Qty", "${order['shippeD_QTY']}"),
-            buildInfoRow("Shipped Percentage", "${order['shipmenT_PERCENTAGE']}%"),
+            buildInfoRow(
+                "Shipped Percentage", "${order['shipmenT_PERCENTAGE']}%"),
             buildInfoRow("Overall Percentage", "${order['percentage']}%"),
             buildInfoRow("Total Quantity", order['totalQuantity']),
           ],
