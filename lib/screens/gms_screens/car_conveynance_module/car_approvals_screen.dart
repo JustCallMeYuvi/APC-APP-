@@ -18,6 +18,7 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
 
   String? _selectedCarType;
   String? _selectedStatus;
+  bool _isLoading = false;
 
   final List<String> carTypes = ["NORMAL", "VIP", "EMERGENCY"];
   final List<String> statusTypes = ["PENDING", "APPROVED", "REJECTED"];
@@ -159,10 +160,42 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
             const SizedBox(height: 30),
 
             // Apply Button
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: ElevatedButton(
+            //     onPressed: () {
+            //       ScaffoldMessenger.of(context).showSnackBar(
+            //         SnackBar(
+            //           content: Text(
+            //             "From: $fromDate | To: $toDate | Car: $_selectedCarType | Status: $_selectedStatus",
+            //           ),
+            //         ),
+            //       );
+            //     },
+            //     style: ElevatedButton.styleFrom(
+            //       padding: const EdgeInsets.symmetric(vertical: 14),
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(12),
+            //       ),
+            //     ),
+            //     child: const Text("Apply", style: TextStyle(fontSize: 18)),
+            //   ),
+            // ),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  setState(() {
+                    _isLoading = true;
+                  });
+
+                  await Future.delayed(const Duration(seconds: 3));
+
+                  setState(() {
+                    _isLoading = false;
+                  });
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -179,7 +212,27 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
                 ),
                 child: const Text("Apply", style: TextStyle(fontSize: 18)),
               ),
-            )
+            ),
+            const SizedBox(height: 20),
+
+            if (_isLoading)
+              SizedBox(
+                height: 150,
+                child: Image.asset(
+                  'assets/car.gif',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            const SizedBox(height: 20),
+
+            // Car Animation
+            SizedBox(
+              height: 150,
+              child: Image.asset(
+                'assets/car.gif',
+                fit: BoxFit.contain,
+              ),
+            ),
           ],
         ),
       ),
