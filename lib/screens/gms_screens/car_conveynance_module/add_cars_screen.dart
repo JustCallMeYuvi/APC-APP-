@@ -347,15 +347,19 @@ class _AddCarsScreenState extends State<AddCarsScreen> {
               // ),
               // Your text fields here
 
-              isUpdate
-                  ? ElevatedButton(
-                      onPressed: updateCar,
-                      child: const Text("Update"),
-                    )
-                  : ElevatedButton(
-                      onPressed: addNewCar,
-                      child: const Text("Add Car"),
-                    ),
+              // isUpdate
+              //     ? ElevatedButton(
+              //         onPressed: updateCar,
+              //         child: const Text("Update"),
+              //       )
+              //     : ElevatedButton(
+              //         onPressed: addNewCar,
+              //         child: const Text("Add Car"),
+              //       ),
+              ElevatedButton(
+                onPressed: addNewCar,
+                child: const Text("Add Car"),
+              )
             ],
           ),
         ),

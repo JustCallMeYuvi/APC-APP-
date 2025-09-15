@@ -49,6 +49,7 @@ import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/a
 import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_approvals_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_availability_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_charts_scree.dart';
+import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/incharge_add_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/export_approval_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_delete_page.dart';
@@ -64,6 +65,7 @@ import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_page
 import 'package:animated_movies_app/screens/gms_screens/maxking/maxking_gms_tracking.dart';
 import 'package:animated_movies_app/screens/gms_screens/order_info_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/production_output_module.dart';
+import 'package:animated_movies_app/screens/home_screen/add_edit_delete_cars_screen.dart';
 
 import 'package:animated_movies_app/screens/home_screen/efficiency_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/employee_feedback_screen.dart';
@@ -283,15 +285,22 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                         //     widget.userData,
                                                                                                                                         )
                                                                                                                                     : widget.pageRoute == 'Cars_Add'
-                                                                                                                                        ? AddCarsScreen(
+                                                                                                                                        // ? AddCarsScreen(
+                                                                                                                                        ? AddEditDeleteCarsScreen(
                                                                                                                                             userData: widget.userData,
                                                                                                                                             // userData:
                                                                                                                                             //     widget.userData,
                                                                                                                                           )
-                                                                                                                                        : Text(
-                                                                                                                                            'Data for ${widget.pageName} goes here.',
-                                                                                                                                            style: const TextStyle(fontSize: 20),
-                                                                                                                                          )
+                                                                                                                                        : widget.pageRoute == 'Incharges_Add'
+                                                                                                                                            ? InchargeAddScreen(
+                                                                                                                                                userData: widget.userData,
+                                                                                                                                                // userData:
+                                                                                                                                                //     widget.userData,
+                                                                                                                                              )
+                                                                                                                                            : Text(
+                                                                                                                                                'Data for ${widget.pageName} goes here.',
+                                                                                                                                                style: const TextStyle(fontSize: 20),
+                                                                                                                                              )
 
             // : SignApprovalPage(
             //     userData: widget.userData,

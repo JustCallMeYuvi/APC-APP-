@@ -225,14 +225,14 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
               ),
             const SizedBox(height: 20),
 
-            // Car Animation
-            SizedBox(
-              height: 150,
-              child: Image.asset(
-                'assets/car.gif',
-                fit: BoxFit.contain,
-              ),
-            ),
+            // // Car Animation
+            // SizedBox(
+            //   height: 150,
+            //   child: Image.asset(
+            //     'assets/car.gif',
+            //     fit: BoxFit.contain,
+            //   ),
+            // ),
           ],
         ),
       ),
