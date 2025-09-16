@@ -19,9 +19,9 @@ class _AddEditDeleteCarsScreenState extends State<AddEditDeleteCarsScreen>
   late TabController _tabController;
 
   final List<Tab> myTabs = const [
-    Tab(text: 'Add cars'),
-    Tab(text: 'Edit cars'),
-    Tab(text: 'Delete cars'),
+    Tab(text: 'Add'),
+    Tab(text: 'Update'),
+    Tab(text: 'Delete'),
   ];
 
   @override
@@ -41,7 +41,7 @@ class _AddEditDeleteCarsScreenState extends State<AddEditDeleteCarsScreen>
     return Scaffold(
       body: Column(
         children: [
-          const SizedBox(height: 30),
+          const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ClipRRect(
@@ -49,11 +49,11 @@ class _AddEditDeleteCarsScreenState extends State<AddEditDeleteCarsScreen>
               child: Container(
                 color: Colors.lightBlue.shade100,
                 child: TabBar(
-                  tabAlignment: TabAlignment.start,
+                  // tabAlignment: TabAlignment.start,
                   indicatorSize: TabBarIndicatorSize.tab,
                   controller: _tabController,
                   tabs: myTabs,
-                  isScrollable: true,
+                  isScrollable: false,
                   indicator: BoxDecoration(
                     color: Colors.blue,
                     borderRadius: BorderRadius.circular(10),

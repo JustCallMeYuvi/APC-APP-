@@ -1,6 +1,6 @@
-import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/add_cars_screen.dart';
-import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/delete_car_screen.dart';
-import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/edit_car_screen.dart';
+import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/add_incharge_screen.dart';
+import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/delete_incharge_screen.dart';
+import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/edit_incharge_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 
@@ -17,9 +17,9 @@ class _InchargeAddScreenState extends State<InchargeAddScreen>
   late TabController _tabController;
 
   final List<Tab> myTabs = const [
-    Tab(text: 'Add cars'),
-    Tab(text: 'Edit cars'),
-    Tab(text: 'Delete cars'),
+    Tab(text: 'Add'),
+    Tab(text: 'Update'),
+    Tab(text: 'Delete'),
   ];
 
   @override
@@ -39,7 +39,7 @@ class _InchargeAddScreenState extends State<InchargeAddScreen>
     return Scaffold(
       body: Column(
         children: [
-          const SizedBox(height: 30), // Top spacing if needed
+          const SizedBox(height: 10), // Top spacing if needed
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ClipRRect(
@@ -48,11 +48,11 @@ class _InchargeAddScreenState extends State<InchargeAddScreen>
                 color: Colors
                     .lightBlue.shade100, // Background color for the tab bar
                 child: TabBar(
-                  tabAlignment: TabAlignment.start,
+                  // tabAlignment: TabAlignment.start,
                   indicatorSize: TabBarIndicatorSize.tab,
                   controller: _tabController,
                   tabs: myTabs,
-                  isScrollable: true,
+                  isScrollable: false,
                   indicator: BoxDecoration(
                     color: Colors.blue,
                     borderRadius: BorderRadius.circular(10),
@@ -68,9 +68,9 @@ class _InchargeAddScreenState extends State<InchargeAddScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                AddCarsScreen(userData: widget.userData),
-                EditCarScreen(userData: widget.userData),
-                DeleteCarScreen(userData: widget.userData),
+                AddInchargeScreen(userData: widget.userData),
+                EditInchargeScreen(userData: widget.userData),
+                DeleteInchargeScreen(userData: widget.userData),
               ],
             ),
           ),

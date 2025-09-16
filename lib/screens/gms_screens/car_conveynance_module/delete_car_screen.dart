@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:animated_movies_app/model/get_cars_details_model.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';

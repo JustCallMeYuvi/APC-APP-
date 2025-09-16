@@ -40,7 +40,7 @@ class _EditCarScreenState extends State<EditCarScreen> {
   }
 
   Future<void> updateCar(Datum car) async {
-    const String url = "http://10.3.0.70:9042/api/Car_Conveyance_/NewcarsAdd";
+    const String url = "http://10.3.0.70:9042/api/Car_Conveyance_/UpdateCar";
 
     final Map<String, dynamic> body = {
       "caR_NAME": nameController.text.trim(),
@@ -49,7 +49,7 @@ class _EditCarScreenState extends State<EditCarScreen> {
       "driveR_NAME": driverController.text.trim(),
       "caR_BOOKING_TYPE": car.caRBookingType.name, // or map accordingly
       "inserted_By": widget.userData.empNo, // or appropriate user id
-      "querytype": "update" // assuming backend handles this
+      // "querytype": "update" // assuming backend handles this
     };
 
     final response = await http.post(
@@ -110,6 +110,7 @@ class _EditCarScreenState extends State<EditCarScreen> {
                               noController.text = car.caRNo;
                               capacityController.text = car.capacity;
                               driverController.text = car.driveRName;
+                              showEditCarDialog();
                             });
                           },
                           child: Padding(
@@ -136,62 +137,62 @@ class _EditCarScreenState extends State<EditCarScreen> {
                   },
                 ),
               ),
-              if (selectedCar != null) ...[
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text(
-                          "Edit Car Details",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        buildTextField(nameController, "Car Name"),
-                        const SizedBox(height: 12),
-                        buildTextField(noController, "Car No"),
-                        const SizedBox(height: 12),
-                        buildTextField(capacityController, "Capacity"),
-                        const SizedBox(height: 12),
-                        buildTextField(driverController, "Driver Name"),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed: () {
-                            if (selectedCar != null) {
-                              updateCar(selectedCar!);
-                            }
-                          },
-                          child: const Text(
-                            "Update Car",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ]
+              // if (selectedCar != null) ...[
+              //   Padding(
+              //     padding: const EdgeInsets.all(16.0),
+              //     child: Container(
+              //       padding: const EdgeInsets.all(16.0),
+              //       decoration: BoxDecoration(
+              //         color: Colors.white,
+              //         boxShadow: [
+              //           BoxShadow(
+              //             color: Colors.black.withOpacity(0.1),
+              //             blurRadius: 8,
+              //             offset: const Offset(0, 4),
+              //           ),
+              //         ],
+              //         borderRadius: BorderRadius.circular(12),
+              //       ),
+              //       child: Column(
+              //         crossAxisAlignment: CrossAxisAlignment.stretch,
+              //         children: [
+              //           const Text(
+              //             "Edit Car Details",
+              //             style: TextStyle(
+              //                 fontSize: 18, fontWeight: FontWeight.bold),
+              //             textAlign: TextAlign.center,
+              //           ),
+              //           const SizedBox(height: 20),
+              //           buildTextField(nameController, "Car Name"),
+              //           const SizedBox(height: 12),
+              //           buildTextField(noController, "Car No"),
+              //           const SizedBox(height: 12),
+              //           buildTextField(capacityController, "Capacity"),
+              //           const SizedBox(height: 12),
+              //           buildTextField(driverController, "Driver Name"),
+              //           const SizedBox(height: 20),
+              //           ElevatedButton(
+              //             style: ElevatedButton.styleFrom(
+              //               padding: const EdgeInsets.symmetric(vertical: 14),
+              //               shape: RoundedRectangleBorder(
+              //                 borderRadius: BorderRadius.circular(8),
+              //               ),
+              //             ),
+              //             onPressed: () {
+              //               if (selectedCar != null) {
+              //                 updateCar(selectedCar!);
+              //               }
+              //             },
+              //             child: const Text(
+              //               "Update Car",
+              //               style: TextStyle(fontSize: 16),
+              //             ),
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   ),
+              // ]
             ],
           );
         }
@@ -199,9 +200,100 @@ class _EditCarScreenState extends State<EditCarScreen> {
     );
   }
 
-  Widget buildTextField(TextEditingController controller, String label) {
+  void showEditCarDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User must press buttons to close
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 5,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Edit Car Details",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  buildTextField(noController, "Car No", readOnly: true),
+                  const SizedBox(height: 12),
+                  buildTextField(nameController, "Car Name"),
+                  const SizedBox(height: 12),
+                  buildTextField(capacityController, "Capacity"),
+                  const SizedBox(height: 12),
+                  buildTextField(driverController, "Driver Name"),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close dialog
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                        ),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (selectedCar != null) {
+                            updateCar(selectedCar!);
+                            Navigator.of(context)
+                                .pop(); // Close dialog after updating
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          "Update",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget buildTextField(TextEditingController controller, String label,
+      {bool readOnly = false}) {
     return TextField(
       controller: controller,
+      readOnly: readOnly,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
