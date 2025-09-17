@@ -14,9 +14,12 @@ class EditInchargeScreen extends StatefulWidget {
 }
 
 class _EditInchargeScreenState extends State<EditInchargeScreen> {
-  List<Datum> cars = []; // Local list of cars
+  List<Datum> inchargeData = []; // Local list of cars
   bool isLoading = true; // For initial loading
   Datum? selectedCar;
+
+  TextEditingController searchController = TextEditingController();
+  List<Datum> filteredInchargeData = [];
 
 // Controllers for editing the incharge car details
   final TextEditingController barcodeController = TextEditingController();
@@ -30,6 +33,22 @@ class _EditInchargeScreenState extends State<EditInchargeScreen> {
   void initState() {
     super.initState();
     fetchInchargeCars();
+    searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    final query = searchController.text.trim().toLowerCase();
+    setState(() {
+      filteredInchargeData = inchargeData
+          .where((car) => car.dept.toLowerCase().contains(query))
+          .toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   // Fetch incharge cars from API
@@ -42,8 +61,9 @@ class _EditInchargeScreenState extends State<EditInchargeScreen> {
       if (response.statusCode == 200) {
         final model = getInchargeCarsDetailsModelFromJson(response.body);
         setState(() {
-          cars = model.data;
+          inchargeData = model.data;
           isLoading = false;
+          filteredInchargeData = inchargeData; // Initially show all cars
         });
       } else {
         throw Exception("Failed to load incharge cars");
@@ -80,15 +100,15 @@ class _EditInchargeScreenState extends State<EditInchargeScreen> {
 
       if (response.statusCode == 200) {
         // Update local list immediately6
-        int index = cars.indexWhere((c) => c.barcode == car.barcode);
+        int index = inchargeData.indexWhere((c) => c.barcode == car.barcode);
         if (index != -1) {
           setState(() {
-            cars[index].barcode = barcodeController.text.trim();
-            cars[index].name = nameController.text.trim();
-            cars[index].dept = deptController.text.trim();
-            cars[index].email = emailController.text.trim();
-            cars[index].email2 = email2Controller.text.trim();
-            cars[index].insertedBy = widget.userData.empNo;
+            inchargeData[index].barcode = barcodeController.text.trim();
+            inchargeData[index].name = nameController.text.trim();
+            inchargeData[index].dept = deptController.text.trim();
+            inchargeData[index].email = emailController.text.trim();
+            inchargeData[index].email2 = email2Controller.text.trim();
+            inchargeData[index].insertedBy = widget.userData.empNo;
           });
         }
         return true;
@@ -107,55 +127,126 @@ class _EditInchargeScreenState extends State<EditInchargeScreen> {
     return Scaffold(
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : cars.isEmpty
-              ? const Center(child: Text("No data available"))
-              : ListView.builder(
-                  itemCount: cars.length,
-                  itemBuilder: (context, index) {
-                    final car = cars[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () {
-                            selectedCar = car;
-                            nameController.text = car.name;
-                            barcodeController.text = car.barcode;
-                            deptController.text = car.dept;
-                            emailController.text = car.email;
-                            email2Controller.text =
-                                car.email2; // <-- populate email2
-                            showEditCarDialog();
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  car.name,
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                buildDetailRow("Barcode:", car.barcode),
-                                buildDetailRow("Department:", car.dept),
-                                buildDetailRow("Email:", car.email),
-                                buildDetailRow("Email2:", car.email2),
-                              ],
-                            ),
-                          ),
-                        ),
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      labelText: "Search by Department",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    );
-                  },
+                      prefixIcon: const Icon(Icons.search),
+                    ),
+                  ),
                 ),
+                Expanded(
+                  child: filteredInchargeData.isEmpty
+                      ? const Center(child: Text("No matching barcode found"))
+                      : ListView.builder(
+                          itemCount: filteredInchargeData.length,
+                          itemBuilder: (context, index) {
+                            final car = filteredInchargeData[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8.0),
+                              child: Card(
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(10),
+                                  onTap: () {
+                                    selectedCar = car;
+                                    nameController.text = car.name;
+                                    barcodeController.text = car.barcode;
+                                    deptController.text = car.dept;
+                                    emailController.text = car.email;
+                                    email2Controller.text = car.email2;
+                                    showEditCarDialog();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          car.dept,
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        buildDetailRow("Barcode:", car.barcode),
+                                        // buildDetailRow("Department:", car.dept),
+                                        buildDetailRow("Name:", car.name),
+
+                                        buildDetailRow("Email:", car.email),
+                                        buildDetailRow("Email2:", car.email2),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+
+      // cars.isEmpty
+      //     ? const Center(child: Text("No data available"))
+      //     : ListView.builder(
+      //         itemCount: cars.length,
+      //         itemBuilder: (context, index) {
+      //           final car = cars[index];
+      //           return Padding(
+      //             padding: const EdgeInsets.symmetric(
+      //                 horizontal: 16.0, vertical: 8.0),
+      //             child: Card(
+      //               elevation: 4,
+      //               shape: RoundedRectangleBorder(
+      //                   borderRadius: BorderRadius.circular(10)),
+      //               child: InkWell(
+      //                 borderRadius: BorderRadius.circular(10),
+      //                 onTap: () {
+      //                   selectedCar = car;
+      //                   nameController.text = car.name;
+      //                   barcodeController.text = car.barcode;
+      //                   deptController.text = car.dept;
+      //                   emailController.text = car.email;
+      //                   email2Controller.text =
+      //                       car.email2; // <-- populate email2
+      //                   showEditCarDialog();
+      //                 },
+      //                 child: Padding(
+      //                   padding: const EdgeInsets.all(16.0),
+      //                   child: Column(
+      //                     crossAxisAlignment: CrossAxisAlignment.center,
+      //                     children: [
+      //                       Text(
+      //                         car.name,
+      //                         style: const TextStyle(
+      //                             fontSize: 18,
+      //                             fontWeight: FontWeight.bold),
+      //                       ),
+      //                       const SizedBox(height: 8),
+      //                       buildDetailRow("Barcode:", car.barcode),
+      //                       buildDetailRow("Department:", car.dept),
+      //                       buildDetailRow("Email:", car.email),
+      //                       buildDetailRow("Email2:", car.email2),
+      //                     ],
+      //                   ),
+      //                 ),
+      //               ),
+      //             ),
+      //           );
+      //         },
+      //       ),
     );
   }
 

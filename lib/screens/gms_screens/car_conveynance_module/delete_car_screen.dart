@@ -13,18 +13,42 @@ class DeleteCarScreen extends StatefulWidget {
 
 class _DeleteCarScreenState extends State<DeleteCarScreen> {
   late Future<GetCarsDetailsModel> _futureCars;
+  List<Datum> _allCars = [];
+  List<Datum> _filteredCars = [];
 
+  final TextEditingController _searchController = TextEditingController();
   @override
   void initState() {
     super.initState();
     _futureCars = fetchCars();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredCars = _allCars.where((car) {
+        return car.caRNo.toLowerCase().contains(query);
+      }).toList();
+    });
   }
 
   Future<GetCarsDetailsModel> fetchCars() async {
     const String url = "http://10.3.0.70:9042/api/Car_Conveyance_/Get_Cars";
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
-      return getCarsDetailsModelFromJson(response.body);
+      final carsModel = getCarsDetailsModelFromJson(response.body);
+      _allCars = carsModel.data;
+      _filteredCars = List.from(_allCars);
+      return carsModel;
+      // return getCarsDetailsModelFromJson(response.body);
     } else {
       throw Exception("Failed to load cars");
     }
@@ -83,36 +107,60 @@ class _DeleteCarScreenState extends State<DeleteCarScreen> {
           return Center(child: Text("Error: ${snapshot.error}"));
         } else {
           final cars = snapshot.data!.data;
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: cars.length,
-            itemBuilder: (context, index) {
-              final car = cars[index];
-              return Card(
-                elevation: 4,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  title: Text(car.caRName,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("No: ${car.caRNo}"),
-                      Text("Capacity: ${car.capacity}"),
-                      Text("Driver: ${car.driveRName}"),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => confirmDelete(context, car.caRNo),
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: "Search by Car No",
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
-              );
-            },
+              ),
+              Expanded(
+                child: _filteredCars.isEmpty
+                    ? const Center(child: Text("No cars found"))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _filteredCars.length,
+                        itemBuilder: (context, index) {
+                          final car = _filteredCars[index];
+                          return Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(16),
+                              title: Text(car.caRName,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("No: ${car.caRNo}"),
+                                  Text("Capacity: ${car.capacity}"),
+                                  Text("Driver: ${car.driveRName}"),
+                                ],
+                              ),
+                              trailing: IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () =>
+                                    confirmDelete(context, car.caRNo),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         }
       },

@@ -22,11 +22,34 @@ class _EditCarScreenState extends State<EditCarScreen> {
   final TextEditingController noController = TextEditingController();
   final TextEditingController capacityController = TextEditingController();
   final TextEditingController driverController = TextEditingController();
+// Dropdown for booking type
+  String? selectedBookingType;
+  final List<String> bookingTypes = ["NORMAL", "VIP", "EMERGENCY"];
+
+  TextEditingController searchController = TextEditingController();
+  List<Datum> filteredCars = [];
+  List<Datum> snapshotData = [];
 
   @override
   void initState() {
     super.initState();
     _futureCars = fetchCars();
+    searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final query = searchController.text.trim().toLowerCase();
+    setState(() {
+      filteredCars = (snapshotData ?? [])
+          .where((car) => car.caRNo.toLowerCase().contains(query))
+          .toList();
+    });
   }
 
   Future<GetCarsDetailsModel> fetchCars() async {
@@ -47,7 +70,9 @@ class _EditCarScreenState extends State<EditCarScreen> {
       "caR_NO": noController.text.trim(),
       "capacity": capacityController.text.trim(),
       "driveR_NAME": driverController.text.trim(),
-      "caR_BOOKING_TYPE": car.caRBookingType.name, // or map accordingly
+      // "caR_BOOKING_TYPE": car.caRBookingType.name, // or map accordingly
+      "caR_BOOKING_TYPE": selectedBookingType ??
+          car.caRBookingType.name, // ✅ Use updated booking type
       "inserted_By": widget.userData.empNo, // or appropriate user id
       // "querytype": "update" // assuming backend handles this
     };
@@ -85,114 +110,137 @@ class _EditCarScreenState extends State<EditCarScreen> {
         } else if (snapshot.hasError) {
           return Center(child: Text("Error: ${snapshot.error}"));
         } else {
-          final cars = snapshot.data!.data;
+          // final cars = snapshot.data!.data;
+          snapshotData = snapshot.data!.data;
+          filteredCars = searchController.text.isEmpty
+              ? snapshotData
+              : snapshotData
+                  .where((car) => car.caRNo
+                      .toLowerCase()
+                      .contains(searchController.text.trim().toLowerCase()))
+                  .toList();
+
           return Column(
             children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: cars.length,
-                  itemBuilder: (context, index) {
-                    final car = cars[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () {
-                            setState(() {
-                              selectedCar = car;
-                              nameController.text = car.caRName;
-                              noController.text = car.caRNo;
-                              capacityController.text = car.capacity;
-                              driverController.text = car.driveRName;
-                              showEditCarDialog();
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  car.caRName,
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Text("Car No: ${car.caRNo}"),
-                                Text("Capacity: ${car.capacity}"),
-                                Text("Driver: ${car.driveRName}"),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    labelText: "Search by Car No",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    prefixIcon: const Icon(Icons.search),
+                  ),
                 ),
               ),
-              // if (selectedCar != null) ...[
-              //   Padding(
-              //     padding: const EdgeInsets.all(16.0),
-              //     child: Container(
-              //       padding: const EdgeInsets.all(16.0),
-              //       decoration: BoxDecoration(
-              //         color: Colors.white,
-              //         boxShadow: [
-              //           BoxShadow(
-              //             color: Colors.black.withOpacity(0.1),
-              //             blurRadius: 8,
-              //             offset: const Offset(0, 4),
+              // Expanded(
+              //   child: ListView.builder(
+              //     itemCount: cars.length,
+              //     itemBuilder: (context, index) {
+              //       final car = cars[index];
+              //       return Padding(
+              //         padding: const EdgeInsets.symmetric(
+              //             horizontal: 16.0, vertical: 8.0),
+              //         child: Card(
+              //           elevation: 4,
+              //           shape: RoundedRectangleBorder(
+              //             borderRadius: BorderRadius.circular(10),
               //           ),
-              //         ],
-              //         borderRadius: BorderRadius.circular(12),
-              //       ),
-              //       child: Column(
-              //         crossAxisAlignment: CrossAxisAlignment.stretch,
-              //         children: [
-              //           const Text(
-              //             "Edit Car Details",
-              //             style: TextStyle(
-              //                 fontSize: 18, fontWeight: FontWeight.bold),
-              //             textAlign: TextAlign.center,
-              //           ),
-              //           const SizedBox(height: 20),
-              //           buildTextField(nameController, "Car Name"),
-              //           const SizedBox(height: 12),
-              //           buildTextField(noController, "Car No"),
-              //           const SizedBox(height: 12),
-              //           buildTextField(capacityController, "Capacity"),
-              //           const SizedBox(height: 12),
-              //           buildTextField(driverController, "Driver Name"),
-              //           const SizedBox(height: 20),
-              //           ElevatedButton(
-              //             style: ElevatedButton.styleFrom(
-              //               padding: const EdgeInsets.symmetric(vertical: 14),
-              //               shape: RoundedRectangleBorder(
-              //                 borderRadius: BorderRadius.circular(8),
+              //           child: InkWell(
+              //             borderRadius: BorderRadius.circular(10),
+              //             onTap: () {
+              //               setState(() {
+              //                 selectedCar = car;
+              //                 nameController.text = car.caRName;
+              //                 noController.text = car.caRNo;
+              //                 capacityController.text = car.capacity;
+              //                 driverController.text = car.driveRName;
+              //                 showEditCarDialog();
+              //               });
+              //             },
+              //             child: Padding(
+              //               padding: const EdgeInsets.all(16.0),
+              //               child: Column(
+              //                 crossAxisAlignment: CrossAxisAlignment.start,
+              //                 children: [
+              //                   Text(
+              //                     car.caRName,
+              //                     style: const TextStyle(
+              //                         fontSize: 18,
+              //                         fontWeight: FontWeight.bold),
+              //                   ),
+              //                   const SizedBox(height: 8),
+              //                   Text("Car No: ${car.caRNo}"),
+              //                   Text("Capacity: ${car.capacity}"),
+              //                   Text("Driver: ${car.driveRName}"),
+              //                 ],
               //               ),
               //             ),
-              //             onPressed: () {
-              //               if (selectedCar != null) {
-              //                 updateCar(selectedCar!);
-              //               }
-              //             },
-              //             child: const Text(
-              //               "Update Car",
-              //               style: TextStyle(fontSize: 16),
-              //             ),
               //           ),
-              //         ],
-              //       ),
-              //     ),
+              //         ),
+              //       );
+              //     },
               //   ),
-              // ]
+              // ),
+              Expanded(
+                child: filteredCars.isEmpty
+                    ? const Center(child: Text("No matching car number found"))
+                    : ListView.builder(
+                        itemCount: filteredCars.length,
+                        itemBuilder: (context, index) {
+                          final car = filteredCars[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8.0),
+                            child: Card(
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(10),
+                                onTap: () {
+                                  setState(() {
+                                    selectedCar = car;
+                                    nameController.text = car.caRName;
+                                    noController.text = car.caRNo;
+                                    capacityController.text = car.capacity;
+                                    driverController.text = car.driveRName;
+                                    selectedBookingType = car.caRBookingType
+                                        .name; // ✅ Set the booking type here
+
+                                    showEditCarDialog(car);
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        car.caRName,
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text("Car No: ${car.caRNo}"),
+                                      Text("Capacity: ${car.capacity}"),
+                                      Text("Driver: ${car.driveRName}"),
+                                      Text(
+                                          "Booking Type: ${car.caRBookingType.name}"),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
             ],
           );
         }
@@ -200,10 +248,107 @@ class _EditCarScreenState extends State<EditCarScreen> {
     );
   }
 
-  void showEditCarDialog() {
+  // void showEditCarDialog() {
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false, // User must press buttons to close
+  //     builder: (BuildContext context) {
+  //       return Dialog(
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(20),
+  //         ),
+  //         elevation: 5,
+  //         backgroundColor: Colors.transparent,
+  //         child: Container(
+  //           padding: const EdgeInsets.all(20),
+  //           decoration: BoxDecoration(
+  //             color: Colors.white,
+  //             borderRadius: BorderRadius.circular(20),
+  //             boxShadow: [
+  //               BoxShadow(
+  //                 color: Colors.black.withOpacity(0.2),
+  //                 blurRadius: 10,
+  //                 offset: const Offset(0, 5),
+  //               ),
+  //             ],
+  //           ),
+  //           child: SingleChildScrollView(
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: [
+  //                 const Text(
+  //                   "Edit Car Details",
+  //                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+  //                 ),
+  //                 const SizedBox(height: 20),
+  //                 buildTextField(noController, "Car No", readOnly: true),
+  //                 const SizedBox(height: 12),
+  //                 buildTextField(nameController, "Car Name"),
+  //                 const SizedBox(height: 12),
+  //                 buildTextField(capacityController, "Capacity"),
+  //                 const SizedBox(height: 12),
+  //                 buildTextField(driverController, "Driver Name"),
+  //                 const SizedBox(height: 20),
+  //                 buildTextField(driverController, "Driver Name"),
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.end,
+  //                   children: [
+  //                     TextButton(
+  //                       onPressed: () {
+  //                         Navigator.of(context).pop(); // Close dialog
+  //                       },
+  //                       style: TextButton.styleFrom(
+  //                         padding: const EdgeInsets.symmetric(
+  //                             horizontal: 20, vertical: 12),
+  //                       ),
+  //                       child: const Text(
+  //                         "Cancel",
+  //                         style: TextStyle(fontSize: 16),
+  //                       ),
+  //                     ),
+  //                     const SizedBox(width: 10),
+  //                     ElevatedButton(
+  //                       onPressed: () {
+  //                         if (selectedCar != null) {
+  //                           updateCar(selectedCar!);
+  //                           Navigator.of(context)
+  //                               .pop(); // Close dialog after updating
+  //                         }
+  //                       },
+  //                       style: ElevatedButton.styleFrom(
+  //                         padding: const EdgeInsets.symmetric(
+  //                             horizontal: 20, vertical: 12),
+  //                         shape: RoundedRectangleBorder(
+  //                           borderRadius: BorderRadius.circular(8),
+  //                         ),
+  //                       ),
+  //                       child: const Text(
+  //                         "Update",
+  //                         style: TextStyle(fontSize: 16),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
+  void showEditCarDialog(Datum car) {
+    // Initialize the fields
+    noController.text = car.caRNo;
+    nameController.text = car.caRName;
+    capacityController.text = car.capacity;
+    driverController.text = car.driveRName;
+    selectedBookingType = car.caRBookingType.name;
+
     showDialog(
       context: context,
-      barrierDismissible: false, // User must press buttons to close
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -240,13 +385,35 @@ class _EditCarScreenState extends State<EditCarScreen> {
                   buildTextField(capacityController, "Capacity"),
                   const SizedBox(height: 12),
                   buildTextField(driverController, "Driver Name"),
+                  const SizedBox(height: 12),
+
+                  // Booking Type Dropdown
+                  DropdownButtonFormField<String>(
+                    value: selectedBookingType,
+                    decoration: const InputDecoration(
+                      labelText: "Booking Type",
+                      border: OutlineInputBorder(),
+                    ),
+                    items: bookingTypes.map((type) {
+                      return DropdownMenuItem<String>(
+                        value: type,
+                        child: Text(type),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedBookingType = value;
+                      });
+                    },
+                  ),
+
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).pop(); // Close dialog
+                          Navigator.of(context).pop();
                         },
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
@@ -260,10 +427,14 @@ class _EditCarScreenState extends State<EditCarScreen> {
                       const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () {
-                          if (selectedCar != null) {
-                            updateCar(selectedCar!);
-                            Navigator.of(context)
-                                .pop(); // Close dialog after updating
+                          if (selectedBookingType != null) {
+                            updateCar(car);
+                            Navigator.of(context).pop();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text("Please select booking type")),
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(

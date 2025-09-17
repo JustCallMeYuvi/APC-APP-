@@ -13,13 +13,32 @@ class DeleteInchargeScreen extends StatefulWidget {
 }
 
 class _DeleteInchargeScreenState extends State<DeleteInchargeScreen> {
-  List<Datum> cars = []; // Local list of cars
+  List<Datum> inchargeDataList = []; // Local list of cars
   bool isLoading = true; // For initial loading
+
+  TextEditingController searchController = TextEditingController();
+  List<Datum> filteredData = []; // Filtered list based on search
 
   @override
   void initState() {
     super.initState();
     fetchInchargeCars();
+    searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final query = searchController.text.trim().toLowerCase();
+    setState(() {
+      filteredData = inchargeDataList
+          .where((car) => car.dept.toLowerCase().contains(query))
+          .toList();
+    });
   }
 
   // Fetch incharge cars from API
@@ -32,8 +51,9 @@ class _DeleteInchargeScreenState extends State<DeleteInchargeScreen> {
       if (response.statusCode == 200) {
         final model = getInchargeCarsDetailsModelFromJson(response.body);
         setState(() {
-          cars = model.data;
+          inchargeDataList = model.data;
           isLoading = false;
+          filteredData = model.data; // Initially show all data
         });
       } else {
         throw Exception("Failed to load incharge cars");
@@ -78,40 +98,94 @@ class _DeleteInchargeScreenState extends State<DeleteInchargeScreen> {
     return Scaffold(
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: cars.length,
-              itemBuilder: (context, index) {
-                final car = cars[index];
-                return Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    title: Text(car.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Barcode: ${car.barcode}"),
-                        Text("Department: ${car.dept}"),
-                        Text("Email: ${car.email}"),
-                        Text("Email2: ${car.email2}"),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => confirmDelete(
-                          context, car.dept), // use dept or caRNo as needed
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      labelText: "Search by Department",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      prefixIcon: const Icon(Icons.search),
                     ),
                   ),
-                );
-              },
+                ),
+                Expanded(
+                  child: filteredData.isEmpty
+                      ? const Center(child: Text("No matching barcode found"))
+                      : ListView.builder(
+                          itemCount: filteredData.length,
+                          itemBuilder: (context, index) {
+                            final car = inchargeDataList[index];
+                            return Card(
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                title: Center(
+                                  child: Text(car.dept,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18)),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
+
+                                    // Text("Barcode: ${car.barcode}"),
+                                    buildDetailRow("Barcode:", car.barcode),
+                                    // Text("Name: ${car.name}"),
+                                    buildDetailRow("Name:", car.name),
+                                    // buildDetailRow("Email:", car.email),
+                                    // buildDetailRow("Email2:", car.email2),
+
+                                    // Text("Email: ${car.email}"),
+                                    // Text("Email2: ${car.email2}"),
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () => confirmDelete(context,
+                                      car.dept), // use dept or caRNo as needed
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
+    );
+  }
+
+  Widget buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100, // Set common width for all labels
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
+      ),
     );
   }
 

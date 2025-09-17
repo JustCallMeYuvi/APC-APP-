@@ -40,6 +40,19 @@ class _AddInchargeScreenState extends State<AddInchargeScreen> {
       return;
     }
 
+    // Validate email format
+    if (!emailController.text.trim().endsWith("@in.apachefootwear.com")) {
+      showAlert(context, "Invalid Email",
+          "Email must end with @in.apachefootwear.com");
+      return;
+    }
+
+    if (!email2Controller.text.trim().endsWith("@in.apachefootwear.com")) {
+      showAlert(context, "Invalid Email",
+          "Email 2 must end with @in.apachefootwear.com");
+      return;
+    }
+
     const String url =
         "http://10.3.0.70:9042/api/Car_Conveyance_/InsertIncharge";
 
