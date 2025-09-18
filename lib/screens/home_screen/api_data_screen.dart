@@ -49,6 +49,7 @@ import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/a
 import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_approvals_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_availability_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_charts_scree.dart';
+import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/cars_in_out_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/incharge_add_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/export_approval_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_charts.dart';
@@ -297,10 +298,16 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                 // userData:
                                                                                                                                                 //     widget.userData,
                                                                                                                                               )
-                                                                                                                                            : Text(
-                                                                                                                                                'Data for ${widget.pageName} goes here.',
-                                                                                                                                                style: const TextStyle(fontSize: 20),
-                                                                                                                                              )
+                                                                                                                                            : widget.pageRoute == 'Ps_Cars'
+                                                                                                                                                ? CarsInOutScreen(
+                                                                                                                                                    userData: widget.userData,
+                                                                                                                                                    // userData:
+                                                                                                                                                    //     widget.userData,
+                                                                                                                                                  )
+                                                                                                                                                : Text(
+                                                                                                                                                    'Data for ${widget.pageName} goes here.',
+                                                                                                                                                    style: const TextStyle(fontSize: 20),
+                                                                                                                                                  )
 
             // : SignApprovalPage(
             //     userData: widget.userData,
