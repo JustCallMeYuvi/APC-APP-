@@ -265,6 +265,120 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // Future<void> loginApiBarcode() async {
+  //   final barcode = _barcodeController.text;
+  //   final password = _passwordController.text;
+
+  //   setState(() {
+  //     _isLoginLoading = true; // Show loading indicator
+  //   });
+
+  //   // await ApiHelper.initializeBaseUrl();
+
+  //   // await ApiHelper.initializeUrls();
+
+  //   if (barcode.isEmpty || password.isEmpty) {
+  //     setState(() {
+  //       _isLoginLoading = false; // Hide loading indicator if fields are empty
+  //     });
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Barcode and password cannot be empty.'),
+  //       ),
+  //     );
+  //     return;
+  //   }
+
+  //   // final url = Uri.parse(
+  //   //     'http://10.3.0.70:9042/api/HR/LoginApi?empNo=$barcode&password=$password');
+
+  //   // Use the ApiHelper to get the URL
+  //   final url = Uri.parse(ApiHelper.login(barcode, password));
+  //   print('Login URL: $url');
+
+  //   // Start a timer to show an alert if loading exceeds 1 minute
+  //   Timer? _loadingTimer = Timer(const Duration(minutes: 1), () {
+  //     if (_isLoginLoading) {
+  //       _showLoadingAlert();
+  //     }
+  //   });
+  //   try {
+  //     final response = await http.post(
+  //       url,
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: jsonEncode({
+  //         'barcode': barcode,
+  //         'password': password,
+  //       }),
+  //     );
+
+  //     print('Response status: ${response.statusCode}');
+  //     print('Response body: ${response.body}');
+
+  //     if (response.statusCode == 200) {
+  //       // Parse the JSON response
+  //       final List<LoginModelApi> loginResponse =
+  //           loginModelApiFromJson(response.body);
+
+  //       if (loginResponse.isNotEmpty) {
+  //         final loginData = loginResponse.first;
+
+  //         if (loginData.success) {
+  //           // Display success message
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             SnackBar(content: Text(loginData.message)),
+  //           );
+
+  //           if (loginData.token != null && loginData.token!.isNotEmpty) {
+  //             // Use Provider to update login state
+  //             Provider.of<AuthProvider>(context, listen: false)
+  //                 .login(loginData);
+
+  //             // Call the method to update URLs based on network
+  //             // await ApiHelper.updateUrlsBasedOnNetwork();
+
+  //             // Navigate to HomeScreen with loginData
+  //             Navigator.pushReplacement(
+  //               context,
+  //               MaterialPageRoute(
+  //                 builder: (context) => HomeScreen(userData: loginData),
+  //               ),
+  //             );
+  //           }
+  //         } else {
+  //           // Handle unsuccessful login
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             SnackBar(content: Text(loginData.message)),
+  //           );
+  //         }
+  //       } else {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(content: Text('Invalid barcode or password.')),
+  //         );
+  //       }
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('An error occurred. Please try again.')),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text(
+  //             'Something went wrong, server issue detected Please Contact IT'),
+  //       ),
+  //     );
+  //   } finally {
+  //     _loadingTimer?.cancel();
+  //     setState(() {
+  //       _isLoginLoading = false; // Hide loading indicator
+  //     });
+  //   }
+  // }
+
   Future<void> loginApiBarcode() async {
     final barcode = _barcodeController.text;
     final password = _passwordController.text;
@@ -273,13 +387,9 @@ class _LoginPageState extends State<LoginPage> {
       _isLoginLoading = true; // Show loading indicator
     });
 
-    // await ApiHelper.initializeBaseUrl();
-
-    // await ApiHelper.initializeUrls();
-
     if (barcode.isEmpty || password.isEmpty) {
       setState(() {
-        _isLoginLoading = false; // Hide loading indicator if fields are empty
+        _isLoginLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -289,20 +399,21 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // final url = Uri.parse(
-    //     'http://10.3.0.70:9042/api/HR/LoginApi?empNo=$barcode&password=$password');
-
-    // Use the ApiHelper to get the URL
-    final url = Uri.parse(ApiHelper.login(barcode, password));
-    print('Login URL: $url');
-
     // Start a timer to show an alert if loading exceeds 1 minute
     Timer? _loadingTimer = Timer(const Duration(minutes: 1), () {
       if (_isLoginLoading) {
         _showLoadingAlert();
       }
     });
+
     try {
+      // 👇 Ensure URLs are updated based on Wi-Fi network first
+      await ApiHelper.updateUrlsBasedOnNetwork();
+
+      // 👇 Now build login URL with the correct base URL
+      final url = Uri.parse(ApiHelper.login(barcode, password));
+      print('Login URL: $url');
+
       final response = await http.post(
         url,
         headers: {
@@ -318,7 +429,6 @@ class _LoginPageState extends State<LoginPage> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // Parse the JSON response
         final List<LoginModelApi> loginResponse =
             loginModelApiFromJson(response.body);
 
@@ -326,20 +436,15 @@ class _LoginPageState extends State<LoginPage> {
           final loginData = loginResponse.first;
 
           if (loginData.success) {
-            // Display success message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(loginData.message)),
             );
 
             if (loginData.token != null && loginData.token!.isNotEmpty) {
-              // Use Provider to update login state
               Provider.of<AuthProvider>(context, listen: false)
                   .login(loginData);
 
-              // Call the method to update URLs based on network
-              // await ApiHelper.updateUrlsBasedOnNetwork();
-
-              // Navigate to HomeScreen with loginData
+              // ✅ At this point, API URLs are already updated based on network
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
@@ -348,7 +453,6 @@ class _LoginPageState extends State<LoginPage> {
               );
             }
           } else {
-            // Handle unsuccessful login
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(loginData.message)),
             );
@@ -368,7 +472,7 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-              'Something went wrong, server issue detected Please Contact IT'),
+              'Something went wrong, server issue detected. Please Contact IT'),
         ),
       );
     } finally {

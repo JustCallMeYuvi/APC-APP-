@@ -20,6 +20,17 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
 
   final List<String> statusOptions = ["In", "Out"];
 
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Set default as OUT
+    _selectedStatus = "Out";
+    _statusController.text = "Out";
+
+    // ✅ Fetch OUT cars initially
+    _fetchCars("Out");
+  }
+
   Future<void> _fetchCars(String status) async {
     setState(() => _isLoading = true);
 
@@ -36,29 +47,45 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
 
-        // ✅ Always map with key "data"
         if (decoded is Map && decoded.containsKey("data")) {
-          setState(() {
-            _cars = decoded["data"] as List<dynamic>;
-          });
+          final data = decoded["data"];
+
+          if (data == null || (data is List && data.isEmpty)) {
+            // ✅ No records case
+            setState(() => _cars = []);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("No cars found")),
+            );
+          } else if (data is List) {
+            // ✅ Valid list of cars
+            setState(() => _cars = data);
+          } else {
+            // ✅ Unexpected format
+            setState(() => _cars = []);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Unexpected API format")),
+            );
+          }
         } else {
           setState(() => _cars = []);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Unexpected API format")),
+            const SnackBar(content: Text("Invalid API response")),
           );
         }
       } else {
         setState(() => _cars = []);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  "Error ${response.statusCode}: ${response.reasonPhrase}")),
+            content:
+                Text("Error ${response.statusCode}: ${response.reasonPhrase}"),
+          ),
         );
       }
     } catch (e) {
       setState(() => _cars = []);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Exception: $e")),
+        const SnackBar(
+            content: Text("Something went wrong. Please try again.")),
       );
       debugPrint("Exception: $e");
     }

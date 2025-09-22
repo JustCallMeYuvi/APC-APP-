@@ -322,44 +322,32 @@ class _AddCarsScreenState extends State<AddCarsScreen> {
                 displayAllSuggestionWhenTap: true,
                 isMultiSelectDropdown: false,
               ),
-              const SizedBox(height: 30),
+              SizedBox(
+                height: MediaQuery.of(context).size.height *
+                    0.30, // 3% of screen height
+              ),
 
-              // Submit Button
-              // ElevatedButton(
-              //   onPressed: () {
-              //     String carName = _carNameController.text;
-              //     String carNo = _carNoController.text;
-              //     String capacity = _capacityController.text;
-              //     String driverName = _driverNameController.text;
-              //     String carType = _selectedCarType ?? "";
-
-              //     submitForm();
-              //     print("Emp No: ${widget.userData.empNo}");
-              //     print("Car Name: $carName");
-              //     print("Car No: $carNo");
-              //     print("Capacity: $capacity");
-              //     print("Driver Name: $driverName");
-              //     print("Car Type: $carType");
-
-              //     // Here you can call an API to insert the data using widget.userData.empNo
-              //   },
-              //   child: const Text("Submit"),
-              // ),
-              // Your text fields here
-
-              // isUpdate
-              //     ? ElevatedButton(
-              //         onPressed: updateCar,
-              //         child: const Text("Update"),
-              //       )
-              //     : ElevatedButton(
-              //         onPressed: addNewCar,
-              //         child: const Text("Add Car"),
-              //       ),
-              ElevatedButton(
-                onPressed: addNewCar,
-                child: const Text("Add Car"),
-              )
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal, // 🔹 button color
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: addNewCar,
+                  child: const Text(
+                    "Add Car",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // text color
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

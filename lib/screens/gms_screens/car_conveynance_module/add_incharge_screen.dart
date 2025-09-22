@@ -180,12 +180,32 @@ class _AddInchargeScreenState extends State<AddInchargeScreen> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(
+                height: MediaQuery.of(context).size.height *
+                    0.30, // 3% of screen height
+              ),
 
-              ElevatedButton(
-                onPressed: addInchargeNewCar,
-                child: const Text("Add Car"),
-              )
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal, // 🔹 button color
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: addInchargeNewCar,
+                  child: const Text(
+                    "Add",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // text color
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
