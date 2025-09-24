@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
@@ -20,6 +21,9 @@ class _AddInchargeScreenState extends State<AddInchargeScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController email2Controller = TextEditingController();
 
+  // List<String> barcodes = []; // store fetched barcodes
+  List<Map<String, dynamic>> barcodeData = [];
+
   final List<String> carTypes = ["NORMAL", "VIP", "EMERGENCY"];
   String? _selectedCarType;
   bool isUpdate = false;
@@ -27,6 +31,50 @@ class _AddInchargeScreenState extends State<AddInchargeScreen> {
   @override
   void initState() {
     super.initState();
+    fetchBarcodes();
+  }
+
+  // Future<void> fetchBarcodes() async {
+  //   const String url = "http://10.3.0.70:9042/api/Car_Conveyance_/barcodes";
+
+  //   try {
+  //     final response = await http.get(Uri.parse(url));
+
+  //     if (response.statusCode == 200) {
+  //       final List<dynamic> data = jsonDecode(response.body);
+
+  //       setState(() {
+  //         // ✅ Only keep the barcode field
+  //         barcodes = data.map((item) => item['barcode'].toString()).toList();
+  //       });
+  //     } else {
+  //       showAlert(context, "Error", "Failed to fetch barcodes");
+  //     }
+  //   } catch (e) {
+  //     showAlert(context, "Exception", "Error: $e");
+  //   }
+  // }
+
+  Future<void> fetchBarcodes() async {
+    // const String url = "http://10.3.0.70:9042/api/Car_Conveyance_/barcodes";
+    final String url = '${ApiHelper.carConveynanceUrl}barcodes';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+
+        setState(() {
+          // ✅ Keep full map (barcode + name + dept + email...)
+          barcodeData = List<Map<String, dynamic>>.from(data);
+        });
+      } else {
+        showAlert(context, "Error", "Failed to fetch barcodes");
+      }
+    } catch (e) {
+      showAlert(context, "Exception", "Error: $e");
+    }
   }
 
   Future<void> addInchargeNewCar() async {
@@ -53,8 +101,10 @@ class _AddInchargeScreenState extends State<AddInchargeScreen> {
       return;
     }
 
-    const String url =
-        "http://10.3.0.70:9042/api/Car_Conveyance_/InsertIncharge";
+    // const String url =
+    //     "http://10.3.0.70:9042/api/Car_Conveyance_/InsertIncharge";
+
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}InsertIncharge');
 
     final Map<String, dynamic> body = {
       "barcode": barcodeController.text.trim(),
@@ -69,7 +119,8 @@ class _AddInchargeScreenState extends State<AddInchargeScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse(url),
+        // Uri.parse(url),
+        url, // ✅ already parsed
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
@@ -133,17 +184,83 @@ class _AddInchargeScreenState extends State<AddInchargeScreen> {
           child: Column(
             children: [
               // Barcode
-              TextField(
-                controller: barcodeController,
-                decoration: const InputDecoration(
-                  labelText: "Barcode",
-                  border: OutlineInputBorder(),
+              // TextField(
+              //   controller: barcodeController,
+              //   decoration: const InputDecoration(
+              //     labelText: "Barcode",
+              //     border: OutlineInputBorder(),
+              //   ),
+              // ),
+
+              // DropDownSearchField(
+              //   textFieldConfiguration: TextFieldConfiguration(
+              //     controller: barcodeController,
+              //     decoration: const InputDecoration(
+              //       border: OutlineInputBorder(),
+              //       labelText: "Select Barcode",
+              //       suffixIcon: Icon(Icons.arrow_drop_down),
+              //     ),
+              //   ),
+              //   suggestionsCallback: (pattern) async {
+              //     return barcodes
+              //         .where((barcode) =>
+              //             barcode.toLowerCase().contains(pattern.toLowerCase()))
+              //         .toList();
+              //   },
+              //   itemBuilder: (context, suggestion) {
+              //     return ListTile(title: Text(suggestion)); // ✅ Only barcode
+              //   },
+              //   onSuggestionSelected: (suggestion) {
+              //     setState(() {
+              //       barcodeController.text = suggestion;
+              //     });
+
+              //     // Later you can fetch details (name, dept, email...) based on barcode
+              //   },
+              //   displayAllSuggestionWhenTap: true,
+              //   isMultiSelectDropdown: false,
+              // ),
+
+              DropDownSearchField(
+                textFieldConfiguration: TextFieldConfiguration(
+                  controller: barcodeController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Select Barcode",
+                    suffixIcon: Icon(Icons.arrow_drop_down),
+                  ),
                 ),
+                suggestionsCallback: (pattern) async {
+                  return barcodeData
+                      .where((item) => item['barcode']
+                          .toString()
+                          .toLowerCase()
+                          .contains(pattern.toLowerCase()))
+                      .toList();
+                },
+                itemBuilder: (context, suggestion) {
+                  return ListTile(
+                    title: Text(suggestion['barcode']
+                        .toString()), // ✅ Show only barcode
+                  );
+                },
+                onSuggestionSelected: (suggestion) {
+                  setState(() {
+                    barcodeController.text = suggestion['barcode'].toString();
+                    nameController.text =
+                        suggestion['name'].toString(); // ✅ Auto-fill name
+                    // you can also fill dept, email, etc. here if needed
+                  });
+                },
+                displayAllSuggestionWhenTap: true,
+                isMultiSelectDropdown: false,
               ),
+
               const SizedBox(height: 16),
 
 // Name
               TextField(
+                readOnly: true,
                 controller: nameController,
                 decoration: const InputDecoration(
                   labelText: "Name",

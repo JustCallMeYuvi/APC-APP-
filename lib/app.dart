@@ -4,12 +4,8 @@ import 'package:animated_movies_app/auth_provider.dart';
 import 'package:animated_movies_app/methods/update_helper.dart';
 import 'package:animated_movies_app/screens/home_screen/home_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/onboarding_screen.dart';
-import 'package:animated_movies_app/screens/splash_screen/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
 
 // class App extends StatefulWidget {
 //   const App({Key? key});

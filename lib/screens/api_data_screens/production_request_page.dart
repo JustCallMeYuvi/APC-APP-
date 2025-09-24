@@ -41,14 +41,11 @@
 
 import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
-import 'package:animated_movies_app/constants/ui_constant.dart';
-import 'package:animated_movies_app/screens/home_screen/api_data_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 //import 'package:intl/intl.dart';

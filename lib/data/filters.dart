@@ -16,16 +16,10 @@
 import 'package:animated_movies_app/constants/images_path.dart';
 import 'package:animated_movies_app/model/filters_model.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_tracking_page.dart';
-import 'package:animated_movies_app/screens/home_screen/charts_screen.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_export_page.dart';
-import 'package:animated_movies_app/screens/home_screen/graphs_sceen.dart';
 import 'package:animated_movies_app/screens/home_screen/reviews_screen.dart';
-import 'package:animated_movies_app/screens/home_screen/patrolling_screen.dart';
 
-import 'package:animated_movies_app/screens/home_screen/shoes_screen.dart';
-import 'package:animated_movies_app/screens/home_screen/skill_mapping.dart';
 import 'package:animated_movies_app/screens/home_screen/t_codes_screen.dart';
-import 'package:animated_movies_app/screens/home_screen/token_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart'; // Import the model for userData
 
 class FiltersData {

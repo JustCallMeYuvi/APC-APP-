@@ -1,9 +1,7 @@
 import 'dart:ui';
 
-import 'package:animated_movies_app/constants/images_path.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 
 // Movie cover and play button widget used in details screen
 class MovieCoverAndPlayButton extends StatelessWidget {

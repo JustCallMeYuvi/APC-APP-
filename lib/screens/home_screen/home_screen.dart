@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:animated_movies_app/api/apis_page.dart';
-import 'package:animated_movies_app/screens/home_screen/about_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/account_screen.dart';
 
-import 'package:animated_movies_app/screens/home_screen/contacts_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/home_content_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/multiple_forms.dart';
 import 'package:animated_movies_app/screens/home_screen/widgets/bottom_nav_bar.dart';

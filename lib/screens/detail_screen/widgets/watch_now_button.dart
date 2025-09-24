@@ -1,7 +1,6 @@
 import 'package:animated_movies_app/constants/images_path.dart';
 
 import 'package:flutter/material.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 // For using launchUrlString
 // Watch now button in detail screen

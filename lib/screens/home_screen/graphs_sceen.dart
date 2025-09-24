@@ -4,7 +4,6 @@ import 'package:animated_movies_app/screens/home_screen/po_completion_page.dart'
 import 'package:animated_movies_app/screens/home_screen/rft_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/sales_graph.dart';
 import 'package:animated_movies_app/screens/home_screen/target_output_report_page.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class GraphsScreen extends StatefulWidget {

@@ -39,6 +39,8 @@ class ApiHelper {
   // static String _productionUrl =
   //     'http://apc-gms.apachefootwear.com:8084/api/Production/'; // using new link
 
+  static String _carConveynanceUrl = 'http://10.3.0.70:9042/api/Car_Conveyance_/';
+
   // Getter for Production URL (optional)
   static String get productionUrl => _productionUrl;
 
@@ -47,6 +49,8 @@ class ApiHelper {
   static String get gmsUrl => _gmsUrl;
 
   static String get maxkingGMSUrl => _maxkingGMSUrl; // Maxking URL
+
+  static String get carConveynanceUrl => _carConveynanceUrl;
 
   static String urlGlobalOrLocalCheck = '';
 
@@ -60,6 +64,8 @@ class ApiHelper {
         _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
         _maxkingGMSUrl = 'http://10.3.0.208:8084/api/Maxking_GMS_/';
         _productionUrl = 'http://10.3.0.208:9042/api/Production/';
+        _carConveynanceUrl = 'http://10.3.0.208:9042/api/Car_Conveyance_/';
+
 
         urlGlobalOrLocalCheck = '10.3.0.208';
       } else {
@@ -68,6 +74,8 @@ class ApiHelper {
         _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
         _maxkingGMSUrl = 'http://203.153.32.85:54329/api/Maxking_GMS_/';
         _productionUrl = 'http://203.153.32.85:54329/api/Production/';
+        _carConveynanceUrl = 'http://10.3.0.70:9042/api/Car_Conveyance_/';
+
 
         // _baseUrl = 'http://apc-gms.apachefootwear.com:8084/api/HR/';
         // _gmsUrl = 'http://apc-gms.apachefootwear.com:8084/api/GMS/';

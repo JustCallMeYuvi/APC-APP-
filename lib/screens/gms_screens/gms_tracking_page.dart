@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/gms_files_page.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
-import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:material_symbols_icons/symbols.dart';
 
 class GMSTrackingPage extends StatefulWidget {
   const GMSTrackingPage({Key? key}) : super(key: key);

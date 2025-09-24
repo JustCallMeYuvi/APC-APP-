@@ -6,7 +6,6 @@ import 'package:animated_movies_app/auth_provider.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/screens/home_screen/home_screen.dart';
 
-import 'package:animated_movies_app/screens/onboarding_screen/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:install_plugin/install_plugin.dart';

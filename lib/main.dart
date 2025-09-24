@@ -49,20 +49,15 @@
 // below  fcm token inside debug console
 
 import 'dart:async';
-import 'dart:convert';
-import 'package:animated_movies_app/it_modules/bloc/asset_bloc.dart';
 import 'package:animated_movies_app/services/feedback_provider.dart';
 import 'package:animated_movies_app/services/provider_services.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:animated_movies_app/app.dart';
 import 'package:animated_movies_app/auth_provider.dart';
-import 'package:http/http.dart' as http;
 
 // Global instance for FlutterLocalNotificationsPlugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
