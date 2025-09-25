@@ -1,3 +1,4 @@
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/model/get_cars_details_model.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
@@ -41,8 +42,10 @@ class _DeleteCarScreenState extends State<DeleteCarScreen> {
   }
 
   Future<GetCarsDetailsModel> fetchCars() async {
-    const String url = "http://10.3.0.70:9042/api/Car_Conveyance_/Get_Cars";
-    final response = await http.get(Uri.parse(url));
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}Get_Cars');
+
+    // const String url = "http://10.3.0.70:9042/api/Car_Conveyance_/Get_Cars";
+    final response = await http.get(url);
     if (response.statusCode == 200) {
       final carsModel = getCarsDetailsModelFromJson(response.body);
       _allCars = carsModel.data;
@@ -55,8 +58,10 @@ class _DeleteCarScreenState extends State<DeleteCarScreen> {
   }
 
   Future<void> deleteCar(String carNo) async {
-    final String url = "http://10.3.0.70:9042/api/Car_Conveyance_/car/$carNo";
-    final response = await http.delete(Uri.parse(url));
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}car/$carNo');
+
+    // final String url = "http://10.3.0.70:9042/api/Car_Conveyance_/car/$carNo";
+    final response = await http.delete(url);
 
     if (response.statusCode == 200 || response.statusCode == 204) {
       ScaffoldMessenger.of(context).showSnackBar(

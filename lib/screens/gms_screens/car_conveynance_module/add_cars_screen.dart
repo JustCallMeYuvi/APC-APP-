@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
@@ -77,7 +78,9 @@ class _AddCarsScreenState extends State<AddCarsScreen> {
   // }
 
   Future<void> updateCar() async {
-    final String url = "http://10.3.0.70:9042/api/Car_Conveyance_/NewcarsAdd";
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}NewcarsAdd');
+
+    // final String url = "http://10.3.0.70:9042/api/Car_Conveyance_/NewcarsAdd";
 
     final Map<String, dynamic> body = {
       "caR_NAME": _carNameController.text.trim(),
@@ -94,7 +97,8 @@ class _AddCarsScreenState extends State<AddCarsScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse(url),
+        // Uri.parse(url),
+        url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
@@ -173,7 +177,9 @@ class _AddCarsScreenState extends State<AddCarsScreen> {
       showAlert(context, "Validation Error", "Please fill in all fields.");
       return;
     }
-    final String url = "http://10.3.0.70:9042/api/Car_Conveyance_/NewcarsAdd";
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}NewcarsAdd');
+
+    // final String url = "http://10.3.0.70:9042/api/Car_Conveyance_/NewcarsAdd";
 
     final Map<String, dynamic> body = {
       "caR_NAME": _carNameController.text.trim(),
@@ -187,7 +193,8 @@ class _AddCarsScreenState extends State<AddCarsScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse(url),
+        // Uri.parse(url),
+        url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );

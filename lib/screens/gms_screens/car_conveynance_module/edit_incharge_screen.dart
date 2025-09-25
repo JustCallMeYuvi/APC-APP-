@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/model/get_incharge_car_details_model.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
@@ -53,10 +54,12 @@ class _EditInchargeScreenState extends State<EditInchargeScreen> {
 
   // Fetch incharge cars from API
   Future<void> fetchInchargeCars() async {
-    const String url =
-        "http://10.3.0.70:9042/api/Car_Conveyance_/Get_Incharges";
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}Get_Incharges');
+
+    // const String url =
+    //     "http://10.3.0.70:9042/api/Car_Conveyance_/Get_Incharges";
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final model = getInchargeCarsDetailsModelFromJson(response.body);
@@ -79,8 +82,10 @@ class _EditInchargeScreenState extends State<EditInchargeScreen> {
   } // Update a car
 
   Future<bool> updateCar(Datum car) async {
-    const String url =
-        "http://10.3.0.70:9042/api/Car_Conveyance_/UpdateIncharge";
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}UpdateIncharge');
+
+    // const String url =
+    //     "http://10.3.0.70:9042/api/Car_Conveyance_/UpdateIncharge";
 
     final Map<String, dynamic> body = {
       "barcode": barcodeController.text.trim(),
@@ -93,7 +98,7 @@ class _EditInchargeScreenState extends State<EditInchargeScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse(url),
+        url,
         headers: {"Content-Type": "application/json"},
         body: json.encode(body),
       );

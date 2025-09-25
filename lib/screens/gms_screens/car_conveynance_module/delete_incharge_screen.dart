@@ -1,3 +1,4 @@
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/model/get_incharge_car_details_model.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
@@ -43,10 +44,12 @@ class _DeleteInchargeScreenState extends State<DeleteInchargeScreen> {
 
   // Fetch incharge cars from API
   Future<void> fetchInchargeCars() async {
-    const String url =
-        "http://10.3.0.70:9042/api/Car_Conveyance_/Get_Incharges";
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}Get_Incharges');
+
+    // const String url =
+    //     "http://10.3.0.70:9042/api/Car_Conveyance_/Get_Incharges";
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final model = getInchargeCarsDetailsModelFromJson(response.body);
@@ -70,10 +73,12 @@ class _DeleteInchargeScreenState extends State<DeleteInchargeScreen> {
 
   // Delete incharge car by deptName
   Future<void> deleteInchargeCar(String deptName) async {
-    final String url =
-        "http://10.3.0.70:9042/api/Car_Conveyance_/incharge/$deptName";
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}incharge/$deptName');
+
+    // final String url =
+    //     "http://10.3.0.70:9042/api/Car_Conveyance_/incharge/$deptName";
     try {
-      final response = await http.delete(Uri.parse(url));
+      final response = await http.delete(url);
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(

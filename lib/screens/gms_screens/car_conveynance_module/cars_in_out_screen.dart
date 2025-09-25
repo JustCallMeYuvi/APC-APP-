@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
@@ -33,13 +34,14 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
 
   Future<void> _fetchCars(String status) async {
     setState(() => _isLoading = true);
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}Ps_Cars?status=$status');
 
-    final url =
-        "http://10.3.0.70:9042/api/Car_Conveyance_/Ps_Cars?status=$status";
+    // final url =
+    //     "http://10.3.0.70:9042/api/Car_Conveyance_/Ps_Cars?status=$status";
     debugPrint("Fetching cars from: $url");
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(url);
 
       debugPrint("Status Code: ${response.statusCode}");
       debugPrint("Response Body: ${response.body}");

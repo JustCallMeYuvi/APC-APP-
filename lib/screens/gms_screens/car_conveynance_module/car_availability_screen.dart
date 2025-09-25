@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_booking_screen.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
@@ -102,10 +103,12 @@ class _CarAvailabilityScreenState extends State<CarAvailabilityScreen> {
           "${fromDate!.year}-${fromDate!.month.toString().padLeft(2, '0')}-${fromDate!.day.toString().padLeft(2, '0')}";
       String to =
           "${toDate!.year}-${toDate!.month.toString().padLeft(2, '0')}-${toDate!.day.toString().padLeft(2, '0')}";
-      String url =
-          "http://10.3.0.70:9042/api/Car_Conveyance_/Cars_Availability?selectedBookingType=$_selectedCarType&travelFrom=$from&destinationTo=$to";
+      // String url =
+      //     "http://10.3.0.70:9042/api/Car_Conveyance_/Cars_Availability?selectedBookingType=$_selectedCarType&travelFrom=$from&destinationTo=$to";
+      final url = Uri.parse(
+          '${ApiHelper.carConveynanceUrl}Cars_Availability?selectedBookingType=$_selectedCarType&travelFrom=$from&destinationTo=$to');
 
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(url);
       print('url car availability ${url}');
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);

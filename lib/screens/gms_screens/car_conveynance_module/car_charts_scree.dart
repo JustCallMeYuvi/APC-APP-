@@ -299,6 +299,7 @@
 //   }
 // }
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/model/get_car_in_out_data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -353,10 +354,12 @@ class _CarChartsScreenState extends State<CarChartsScreen> {
   // }
 
   Future<void> _fetchCars(String status) async {
-    final url =
-        "http://10.3.0.70:9042/api/Car_Conveyance_/Ps_Cars?status=$status";
+    final url = Uri.parse('${ApiHelper.carConveynanceUrl}Ps_Cars?status=$status');
+    
+    // final url =
+    //     "http://10.3.0.70:9042/api/Car_Conveyance_/Ps_Cars?status=$status";
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(url);
       if (response.statusCode == 200) {
         final dataModel = getCarInOutDataModelFromJson(response.body);
 
