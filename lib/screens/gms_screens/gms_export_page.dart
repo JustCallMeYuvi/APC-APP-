@@ -1032,6 +1032,8 @@ class _GmsExportPageState extends State<GmsExportPage> {
                 vehicleDetails['outward_Serial_No'].toString() ?? 'N/A';
             _inward_Serial_No =
                 vehicleDetails['inward_Serial_No'].toString() ?? 'N/A';
+            _container_Number_IN =
+                vehicleDetails['container_Number_IN'].toString() ?? 'N/A';
 
             _stageIN = vehicleDetails['stagE_IN'] ?? 'N/A';
             _mainGateEntry = vehicleDetails['maingatE_ENTRY'] ?? '';

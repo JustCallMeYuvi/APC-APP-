@@ -105,7 +105,18 @@ class _SplashScreenWithCheckAppUpdatesState
   Widget build(BuildContext context) {
     if (_isCheckingUpdate) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text(
+              "Checking for latest APK version...",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          ],
+        )),
       );
     }
 

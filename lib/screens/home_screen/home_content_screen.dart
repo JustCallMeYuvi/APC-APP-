@@ -254,6 +254,7 @@ class _HomeContentState extends State<HomeContent> {
     Color backgroundColor;
     String? wifiIpAddress;
     String? gmsUrlToShow;
+    String? urlType; // Local or Public
 
     if (_connectionStatus.contains(ConnectivityResult.none)) {
       message = 'No internet connection';
@@ -269,11 +270,18 @@ class _HomeContentState extends State<HomeContent> {
       }
 
       // Enable the function below when updating the app for live, as it determines whether to use local or global APIs based on Wi-Fi or mobile networks.
-      // await ApiHelper.updateUrlsBasedOnNetwork(); // for wifi apache and apc IT
-      // gmsUrlToShow = ApiHelper.urlGlobalOrLocalCheck; // Fetch GMS URL after update
+      await ApiHelper.updateUrlsBasedOnNetwork(); // for wifi apache and apc IT
+      gmsUrlToShow =
+          ApiHelper.urlGlobalOrLocalCheck; // Fetch GMS URL after update
+      // 👉 Check if it’s local or public
+      if (gmsUrlToShow != null && gmsUrlToShow.contains("10.3.")) {
+        urlType = "Local URL";
+      } else {
+        urlType = "Public URL";
+      }
 
       // 🟢 Now, build the message string with the updated URL
-      message += ' (IP: $wifiIpAddress)\nURL: $gmsUrlToShow';
+      message += ' (IP: $wifiIpAddress)\nURL: $gmsUrlToShow\nURLType: $urlType';
     } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
       message = 'Connected to Mobile Network';
       backgroundColor = Colors.green;
