@@ -353,18 +353,53 @@ class _CarChartsScreenState extends State<CarChartsScreen> {
   //   }
   // }
 
+  // Future<void> _fetchCars(String status) async {
+  //   final url = Uri.parse('${ApiHelper.carConveynanceUrl}Ps_Cars?status=$status');
+
+  //   // final url =
+  //   //     "http://10.3.0.70:9042/api/Car_Conveyance_/Ps_Cars?status=$status";
+  //   print('Cars Charts $url');
+  //   try {
+  //     final response = await http.get(url);
+  //     if (response.statusCode == 200) {
+  //       final dataModel = getCarInOutDataModelFromJson(response.body);
+
+  //       if (dataModel.data.isEmpty) {
+  //         // ✅ No records found
+  //         setState(() => _carData = []);
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(content: Text("No cars found for selected status")),
+  //         );
+  //       } else {
+  //         setState(() => _carData = dataModel.data);
+  //       }
+  //     } else {
+  //       setState(() => _carData = []);
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Failed to load cars")),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //     setState(() => _carData = []);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("No cars")),
+  //     );
+  //   }
+  // }
+
   Future<void> _fetchCars(String status) async {
-    final url = Uri.parse('${ApiHelper.carConveynanceUrl}Ps_Cars?status=$status');
-    
-    // final url =
-    //     "http://10.3.0.70:9042/api/Car_Conveyance_/Ps_Cars?status=$status";
+    final url =
+        Uri.parse('${ApiHelper.carConveynanceUrl}Ps_Cars?status=$status');
+    print('Cars Charts $url');
+
     try {
       final response = await http.get(url);
+
       if (response.statusCode == 200) {
         final dataModel = getCarInOutDataModelFromJson(response.body);
 
         if (dataModel.data.isEmpty) {
-          // ✅ No records found
           setState(() => _carData = []);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("No cars found for selected status")),
@@ -379,10 +414,10 @@ class _CarChartsScreenState extends State<CarChartsScreen> {
         );
       }
     } catch (e) {
-      print(e);
+      print("Error while fetching cars: $e");
       setState(() => _carData = []);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No cars")),
+        const SnackBar(content: Text("Error loading cars")),
       );
     }
   }

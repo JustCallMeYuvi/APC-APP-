@@ -133,6 +133,18 @@ IconData getIconForPage(Page page) {
       return Icons.fire_truck_outlined;
     case 'Remove Vehicle':
       return Icons.remove_circle_outline_sharp;
+    case 'Car Approval':
+      return Icons.car_crash_outlined;
+    case 'Incharges Add':
+      return Icons.add_box;
+    case 'In & Out':
+      return Icons.outbond;
+    case 'Cars Add':
+      return Icons.car_crash_sharp;
+    case 'Car Availability':
+      return Icons.assistant_navigation;
+    case 'Car Conveyance Charts':
+      return Icons.graphic_eq_sharp;
     default:
       return Icons.help_outline; // Fallback icon
   }
