@@ -199,7 +199,7 @@ class _DeleteInchargeScreenState extends State<DeleteInchargeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Confirm Delete"),
-        content: const Text("Are you sure you want to delete this car?"),
+        content: const Text("Are you sure you want to delete this incharge?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

@@ -281,7 +281,7 @@ class _HomeContentState extends State<HomeContent> {
       }
 
       // 🟢 Now, build the message string with the updated URL
-      message += ' (IP: $wifiIpAddress)\nURL: $gmsUrlToShow\nURLType: $urlType';
+      message += ' (URL: $gmsUrlToShow\nURLType: $urlType';
     } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
       message = 'Connected to Mobile Network';
       backgroundColor = Colors.green;

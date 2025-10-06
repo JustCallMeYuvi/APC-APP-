@@ -68,8 +68,8 @@ class ApiHelper {
         _baseUrl = 'http://10.3.0.208:8084/api/HR/';
         _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
         _maxkingGMSUrl = 'http://10.3.0.208:8084/api/Maxking_GMS_/';
-        _productionUrl = 'http://10.3.0.208:9042/api/Production/';
-        _carConveynanceUrl = 'http://10.3.0.208:9042/api/Car_Conveyance_/';
+        _productionUrl = 'http://10.3.0.208:8084/api/Production/';
+        _carConveynanceUrl = 'http://10.3.0.208:8084/api/Car_Conveyance_/';
 
         urlGlobalOrLocalCheck = '10.3.0.208';
       } else {
