@@ -274,10 +274,15 @@ class _HomeContentState extends State<HomeContent> {
       gmsUrlToShow =
           ApiHelper.urlGlobalOrLocalCheck; // Fetch GMS URL after update
       // 👉 Check if it’s local or public
-      if (gmsUrlToShow != null && gmsUrlToShow.contains("10.3.")) {
-        urlType = "Local URL";
+      // if (gmsUrlToShow != null && gmsUrlToShow.contains("10.3.")) {
+      //   urlType = "Local URL";
+      // } else {
+      //   urlType = "Public URL";
+      // }
+      if (gmsUrlToShow.contains('10.3.')) {
+        urlType = 'Local URL';
       } else {
-        urlType = "Public URL";
+        urlType = 'Public URL';
       }
 
       // 🟢 Now, build the message string with the updated URL

@@ -39,12 +39,12 @@ class ApiHelper {
   static String _productionUrl =
       'http://apc-gms.apachefootwear.com:8084/api/Production/'; // using new link
 
-  static String _carConveynanceUrl =
-      'http://10.3.0.70:9042/api/Car_Conveyance_/';
+  // static String _carConveynanceUrl =
+  //     'http://10.3.0.70:9042/api/Car_Conveyance_/';
 
 // Car Conevynance base URL
-  // static String _carConveynanceUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
+  static String _carConveynanceUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
 
   // Getter for Production URL (optional)
   static String get productionUrl => _productionUrl;
