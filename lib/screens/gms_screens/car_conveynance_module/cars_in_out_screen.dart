@@ -34,7 +34,8 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
 
   Future<void> _fetchCars(String status) async {
     setState(() => _isLoading = true);
-    final url = Uri.parse('${ApiHelper.carConveynanceUrl}Ps_Cars?status=$status');
+    final url =
+        Uri.parse('${ApiHelper.carConveynanceUrl}Ps_Cars?status=$status');
 
     // final url =
     //     "http://10.3.0.70:9042/api/Car_Conveyance_/Ps_Cars?status=$status";
@@ -93,6 +94,73 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
     }
 
     setState(() => _isLoading = false);
+  }
+
+// ✅ POST method to update car IN/OUT status
+  Future<void> _updateCarStatus(Map<String, dynamic> car, String action) async {
+    final url = Uri.parse("http://10.3.0.70:9042/api/Car_Conveyance_/PSStatus");
+
+    // Ensure CarStatus is properly formatted (backend might be case-sensitive)
+    final carStatus = (action.toLowerCase() == "in") ? "In" : "Out";
+
+    final body = {
+      "BookindId": car["bookindId"] ?? "", // pass empty string if not available
+      "Cardetails":
+          car["cardetails"] ?? "", // pass empty string if not available
+      "Carouttime": car["carOuttime"] ?? "",
+      "Carstarttime": car["travelfrom"] ?? "",
+      "CarNo": car["car_No"] ?? "",
+      "Traveltime": car["startDate"] ?? "",
+      "Destination": car["designation"] ?? "",
+      "CarStatus": carStatus, // ✅ "In" or "Out"
+    };
+
+    debugPrint("POST URL: $url");
+    debugPrint("Request Body: ${jsonEncode(body)}");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      debugPrint("Status Code: ${response.statusCode}");
+      debugPrint("Response: ${response.body}");
+      debugPrint("Sending CarStatus: $carStatus");
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        if (responseData["message"]?.toString().toLowerCase() ==
+            "invalid car status") {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    "Invalid Car Status — check backend expected values.")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Car marked as $carStatus successfully!")),
+          );
+
+          // ✅ Refresh list after successful update
+          await _fetchCars(_selectedStatus ?? "Out");
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "Failed to mark car as $carStatus. [${response.statusCode}]"),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Something went wrong!")),
+      );
+    }
   }
 
   @override
@@ -358,13 +426,14 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
                                           );
 
                                           if (confirm == true) {
+                                            await _updateCarStatus(car, action);
                                             // ✅ Proceed with API call
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                  content: Text(
-                                                      "Car marked as $action")),
-                                            );
+                                            // ScaffoldMessenger.of(context)
+                                            //     .showSnackBar(
+                                            //   SnackBar(
+                                            //       content: Text(
+                                            //           "Car marked as $action")),
+                                            // );
 
                                             // TODO: Call API for IN/OUT here
                                           }
