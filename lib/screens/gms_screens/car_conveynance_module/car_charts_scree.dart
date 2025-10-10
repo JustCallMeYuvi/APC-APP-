@@ -492,7 +492,7 @@ class _CarChartsScreenState extends State<CarChartsScreen> {
                             padding: const EdgeInsets.all(8),
                             color: Colors.white,
                             child: Text(
-                              "Travellers: ${car.travellers}\nCar: ${car.cardetails}\nStatus: ${car.currentState}\nFrom: ${car.travelfrom}\nTo: ${car.destinationto}",
+                              "Travellers: ${car.travellers}\nCar: ${car.carNo}\nStatus: ${car.currentState}\nFrom: ${car.travelfrom}\nTo: ${car.destinationto}",
                               style: const TextStyle(fontSize: 12),
                             ),
                           );

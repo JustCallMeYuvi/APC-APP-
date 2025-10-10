@@ -98,7 +98,7 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
 
 // ✅ POST method to update car IN/OUT status
   Future<void> _updateCarStatus(Map<String, dynamic> car, String action) async {
-    final url = Uri.parse("http://10.3.0.70:9042/api/Car_Conveyance_/PSStatus");
+    final url = Uri.parse("'${ApiHelper.carConveynanceUrl}/PSStatus");
 
     // Ensure CarStatus is properly formatted (backend might be case-sensitive)
     final carStatus = (action.toLowerCase() == "in") ? "In" : "Out";
@@ -246,7 +246,7 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          "Car No: ${car['cardetails'] ?? '-'}",
+                                          "Car No: ${car['car_No'] ?? '-'}",
                                           style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -339,18 +339,26 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              "Car In Time: ${car['carIntime']?.isEmpty ?? true ? '-' : car['carIntime']}",
-                                              style: const TextStyle(
-                                                  fontSize: 13,
-                                                  color: Colors.green),
-                                            ),
-                                            Text(
-                                              "Car Out Time: ${car['carOuttime'] ?? '-'}",
-                                              style: const TextStyle(
-                                                  fontSize: 13,
-                                                  color: Colors.red),
-                                            ),
+                                            if (car['carIntime'] != null &&
+                                                car['carIntime']
+                                                    .toString()
+                                                    .isNotEmpty)
+                                              Text(
+                                                "Car In Time: ${car['carIntime']?.isEmpty ?? true ? '-' : car['carIntime']}",
+                                                style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.green),
+                                              ),
+                                            if (car['carOuttime'] != null &&
+                                                car['carOuttime']
+                                                    .toString()
+                                                    .isNotEmpty)
+                                              Text(
+                                                "Car Out Time: ${car['carOuttime'] ?? '-'}",
+                                                style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.red),
+                                              ),
                                           ],
                                         ),
                                         Text(

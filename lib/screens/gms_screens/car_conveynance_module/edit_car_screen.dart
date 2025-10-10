@@ -191,61 +191,143 @@ class _EditCarScreenState extends State<EditCarScreen> {
               // ),
               Expanded(
                 child: filteredCars.isEmpty
-                    ? const Center(child: Text("No matching car number found"))
+                    ? const Center(
+                        child: Text(
+                          "No matching car number found",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: filteredCars.length,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         itemBuilder: (context, index) {
                           final car = filteredCars[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8.0),
-                            child: Card(
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(10),
-                                onTap: () {
-                                  setState(() {
-                                    selectedCar = car;
-                                    nameController.text = car.caRName;
-                                    noController.text = car.caRNo;
-                                    capacityController.text = car.capacity;
-                                    driverController.text = car.driveRName;
-                                    selectedBookingType = car.caRBookingType
-                                        .name; // ✅ Set the booking type here
 
-                                    showEditCarDialog(car);
-                                  });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        car.caRName,
-                                        style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
+                          return Card(
+                            elevation: 5,
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            shadowColor: Colors.black.withOpacity(0.2),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(15),
+                              onTap: () {
+                                setState(() {
+                                  selectedCar = car;
+                                  nameController.text = car.caRName;
+                                  noController.text = car.caRNo;
+                                  capacityController.text = car.capacity;
+                                  driverController.text = car.driveRName;
+                                  selectedBookingType = car.caRBookingType.name;
+                                  showEditCarDialog(car);
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Car Name
+                                    Text(
+                                      car.caRName,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blueAccent,
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text("Car No: ${car.caRNo}"),
-                                      Text("Capacity: ${car.capacity}"),
-                                      Text("Driver: ${car.driveRName}"),
-                                      Text(
-                                          "Booking Type: ${car.caRBookingType.name}"),
-                                    ],
-                                  ),
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    // Car Details Section
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Car No:",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                        Text(
+                                          car.caRNo,
+                                          style: const TextStyle(
+                                              color: Colors.black87),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Capacity:",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                        Text(
+                                          car.capacity,
+                                          style: const TextStyle(
+                                              color: Colors.black87),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Driver:",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                        Text(
+                                          car.driveRName,
+                                          style: const TextStyle(
+                                              color: Colors.black87),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Booking Type:",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                        Text(
+                                          car.caRBookingType.name,
+                                          style: const TextStyle(
+                                              color: Colors.black87),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           );
                         },
                       ),
-              ),
+              )
             ],
           );
         }

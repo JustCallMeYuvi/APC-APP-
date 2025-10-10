@@ -6,45 +6,45 @@ class ApiHelper {
 
   // static String _baseUrl = 'http://203.153.32.85:54329/api/HR/'; //global url
 
-  static String _baseUrl = 'http://10.3.0.70:9042/api/HR/'; // 70 local url
+  // static String _baseUrl = 'http://10.3.0.70:9042/api/HR/'; // 70 local url
 
-  // static String _baseUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/HR/'; // using new link local url
+  static String _baseUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/HR/'; // using new link local url
 
   //  static const String _gmsUrl = 'http://10.3.0.208:8084/api/GMS/'; // 208 local url
 
   // static String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/'; //global url
 
-  static String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/'; // 70 local url
+  // static String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/'; // 70 local url
 
-  // static String _gmsUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/GMS/'; // using new link local url
+  static String _gmsUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/GMS/'; // using new link local url
 
   // static String _maxkingGMSUrl =
   //     'http://203.153.32.85:54329/api/Maxking_GMS_/'; // Global maxking URL
 
-  static String _maxkingGMSUrl =
-      'http://10.3.0.70:9042/api/Maxking_GMS_/'; // 70 maxking URL
-
   // static String _maxkingGMSUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/Maxking_GMS_/'; // using new link maxking URL
+  //     'http://10.3.0.70:9042/api/Maxking_GMS_/'; // 70 maxking URL
+
+  static String _maxkingGMSUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/Maxking_GMS_/'; // using new link maxking URL
 
   // static String _productionUrl =
   //     'http://203.153.32.85:54329/api/Production/'; //global url
 
   // Production base URL
-  static String _productionUrl = 'http://10.3.0.70:9042/api/Production/';
+  // static String _productionUrl = 'http://10.3.0.70:9042/api/Production/';
 
 // Production base URL
-  // static String _productionUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/Production/'; // using new link
+  static String _productionUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/Production/'; // using new link
 
-  static String _carConveynanceUrl =
-      'http://10.3.0.70:9042/api/Car_Conveyance_/';
+  // static String _carConveynanceUrl =
+  //     'http://10.3.0.70:9042/api/Car_Conveyance_/';
 
 // Car Conevynance base URL
-  // static String _carConveynanceUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
+  static String _carConveynanceUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
 
   // Getter for Production URL (optional)
   static String get productionUrl => _productionUrl;

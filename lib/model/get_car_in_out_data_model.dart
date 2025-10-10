@@ -127,6 +127,7 @@ class Datum {
   DateTime? destinationto;
   String designation;
   String cardetails;
+  String? carNo;
   String? carIntime;
   DateTime? carOuttime;
   String currentState;
@@ -140,6 +141,7 @@ class Datum {
     required this.destinationto,
     required this.designation,
     required this.cardetails,
+    required this.carNo,
     required this.carIntime,
     required this.carOuttime,
     required this.currentState,
@@ -154,6 +156,7 @@ class Datum {
         destinationto: _tryParseDate(json["destinationto"]),
         designation: json["designation"] ?? "",
         cardetails: json["cardetails"] ?? "",
+        carNo: json["car_No"] ?? "",
         carIntime: json["carIntime"] ?? "",
         carOuttime: _tryParseDate(json["carOuttime"]),
         currentState: json["currentState"] ?? "",
@@ -168,6 +171,7 @@ class Datum {
         "destinationto": destinationto?.toIso8601String(),
         "designation": designation,
         "cardetails": cardetails,
+        "carNo": carNo,
         "carIntime": carIntime,
         "carOuttime": carOuttime?.toIso8601String(),
         "currentState": currentState,
