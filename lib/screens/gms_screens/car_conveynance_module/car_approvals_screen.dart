@@ -304,35 +304,28 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
                   itemCount: _carBookings.length,
                   itemBuilder: (context, index) {
                     final booking = _carBookings[index];
-                    return Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        leading: const Icon(Icons.directions_car,
-                            color: Colors.blueAccent),
-                        title: Text(
-                          booking["name"] ?? "Unknown",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                                "Booking ID: ${booking["carbookingid"] ?? "-"}"),
-                            Text(
-                                "Booking Type: ${booking["selectedbookingtype"] ?? "-"}"),
-                            Text(
-                                "Destination: ${booking["destination"] ?? "-"}"),
-                            Text(
-                                "Travel Start Time: ${booking["travelfrom"] ?? "-"}"),
-                            Text(
-                                "Travel End Time: ${booking["destinationto"] ?? "-"}"),
-                            // Text("Status: ${booking["finaL_STATUS"] ?? "-"}"),
-                          ],
-                        ),
-                        isThreeLine: true,
+                    final status =
+                        booking["final_status"]?.toString().toUpperCase() ??
+                            "-";
+
+                    return Container(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.15),
+                            spreadRadius: 1,
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -342,6 +335,46 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
                             ),
                           );
                         },
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.directions_car,
+                                  color: Colors.blueAccent, size: 28),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    booking["name"] ?? "Unknown",
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                      "Booking ID: ${booking["carbookingid"] ?? "-"}",
+                                      style: const TextStyle(fontSize: 13)),
+                                  Text(
+                                      "Type: ${booking["selectedbookingtype"] ?? "-"}",
+                                      style: const TextStyle(fontSize: 13)),
+                                  Text(
+                                      "Destination: ${booking["destination"] ?? "-"}",
+                                      style: const TextStyle(fontSize: 13)),
+                                  Text(
+                                      "Travel: ${booking["travelfrom"] ?? "-"} → ${booking["destinationto"] ?? "-"}",
+                                      style: const TextStyle(fontSize: 13)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -350,10 +383,18 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
 
             if (!_isLoading && _carBookings.isEmpty && _selectedStatus != null)
               const Padding(
-                padding: EdgeInsets.only(top: 30),
-                child: Text("No records found.",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                padding: EdgeInsets.only(top: 40),
+                child: Column(
+                  children: [
+                    Icon(Icons.inbox_outlined, size: 50, color: Colors.grey),
+                    SizedBox(height: 10),
+                    Text(
+                      "No records found",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
