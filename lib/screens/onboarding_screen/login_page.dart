@@ -526,7 +526,7 @@ class _LoginPageState extends State<LoginPage> {
                     // keyboardType:
                     //     TextInputType.number, // This sets the keyboard type
                     decoration: InputDecoration(
-                      hintText: 'Barcode',
+                      hintText: 'User Name',
                       hintStyle: const TextStyle(color: Colors.white70),
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.3),
