@@ -89,8 +89,6 @@ class AuthProvider with ChangeNotifier {
   //   }
   // }
 
-
-
 // Token based Login , If user login in another device then here logout automatically like same empno login new device the old device is log out
 
   Future<void> _loadLoginState() async {
@@ -191,7 +189,6 @@ class AuthProvider with ChangeNotifier {
   //   // Send APK version to backend
   // }
 
-  
   Future<void> login(LoginModelApi userData) async {
     // Update local state
     _isLoggedIn = true;
@@ -211,21 +208,24 @@ class AuthProvider with ChangeNotifier {
     _fcmToken = fcmToken;
     prefs.setString('fcmToken', fcmToken ?? '');
 
- 
-
     // Send the barcode (empNo) and FCM token to your API
     // Send the barcode (empNo), FCM token, and app version to your API
-    await _sendBarcodeAndFcmToken(userData.empNo, fcmToken, );
+    await _sendBarcodeAndFcmToken(
+      // userData.empNo,
+      userData.username,
+
+      fcmToken,
+    );
 
     // Send queued notifications
     await _sendQueuedNotifications(userData.empNo);
     // Send APK version to backend
-
   }
 
 // based upon login empNo and fcm token stored in below method
   Future<void> _sendBarcodeAndFcmToken(
-    String empNo,
+    // String empNo,
+    String username,
     String? fcmToken,
   ) async {
     var apiUrlInsertOrUpdateItemAsync =
@@ -238,7 +238,8 @@ class AuthProvider with ChangeNotifier {
       url,
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
-        'barcode': empNo, // Send employee number
+        // 'barcode': empNo, // Send employee number
+        'barcode': username, // now sending username instead of empNo
         'Token': fcmToken, // Change the key to 'Token'
       }),
     );

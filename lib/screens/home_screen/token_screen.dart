@@ -28,10 +28,10 @@ class _TokenScreenState extends State<TokenScreen> {
   final List<String> _barcodes = [
     '70068',
     '71202',
-    '67757',
+    '67657',
     '70643',
     '70920',
-    '59323',
+    '59323apc',
   ];
   List<GetEmpDetails> empDetailsList = []; // Declare the list here
 
@@ -39,13 +39,20 @@ class _TokenScreenState extends State<TokenScreen> {
   void initState() {
     super.initState();
     // Fetch data when the screen initializes
-    fetchData(widget.userData.empNo);
+    // fetchData(widget.userData.empNo);
+    fetchData(widget.userData.username);
+
     // fetchELCNotification(widget.userData.empNo);
   }
 
-  Future<void> fetchData(String empNo) async {
-    final url =
-        Uri.parse('http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=$empNo');
+  // Future<void> fetchData(String empNo) async {
+  Future<void> fetchData(String username) async {
+    // final url =
+    //     // Uri.parse('http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=$empNo');
+    //     Uri.parse('http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=$username');
+    // final url = Uri.parse(ApiHelper.getEmpDetails(username));
+    final url = Uri.parse(ApiHelper.getEmpDetailsUserNameBased(username));
+
 
     print('URL: $url');
     try {
@@ -149,6 +156,8 @@ class _TokenScreenState extends State<TokenScreen> {
       if (response.statusCode == 200) {
         // Handle success
         print('Data submitted successfully: ${response.body}');
+        print('🔹 Sending notification payload: $data');
+        print('🔹 DeviceToken in Flutter: $deviceToken');
       } else {
         // Handle error
         print('Failed to submit data: ${response.statusCode}');
@@ -268,11 +277,18 @@ class _TokenScreenState extends State<TokenScreen> {
               // ),
               MaterialButton(
                 onPressed: () {
+                  if (_selectedBarcode == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select a barcode')),
+                    );
+                    return;
+                  }
                   String token = _textFieldController.text;
                   String barcode = _selectedBarcode ?? 'No barcode selected';
                   print('Token: $token, Barcode: $barcode');
                   // Perform further actions with the token and barcode
                   submitData(token, barcode); // Call submitData method
+
                   // Clear the text field controller after submission
                   _textFieldController.clear();
                   // Clear the dropdown selection

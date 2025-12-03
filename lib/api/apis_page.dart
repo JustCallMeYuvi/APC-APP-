@@ -6,45 +6,45 @@ class ApiHelper {
 
   // static String _baseUrl = 'http://203.153.32.85:54329/api/HR/'; //global url
 
-  static String _baseUrl = 'http://10.3.0.70:9042/api/HR/'; // 70 local url
+  // static String _baseUrl = 'http://10.3.0.70:9042/api/HR/'; // 70 local url
 
-  // static String _baseUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/HR/'; // using new link local url
+  static String _baseUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/HR/'; // using new link local url
 
   //  static const String _gmsUrl = 'http://10.3.0.208:8084/api/GMS/'; // 208 local url
 
   // static String _gmsUrl = 'http://203.153.32.85:54329/api/GMS/'; //global url
 
-  static String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/'; // 70 local url
+  // static String _gmsUrl = 'http://10.3.0.70:9042/api/GMS/'; // 70 local url
 
-  // static String _gmsUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/GMS/'; // using new link local url
+  static String _gmsUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/GMS/'; // using new link local url
 
   // static String _maxkingGMSUrl =
   //     'http://203.153.32.85:54329/api/Maxking_GMS_/'; // Global maxking URL
 
-  static String _maxkingGMSUrl =
-      'http://10.3.0.70:9042/api/Maxking_GMS_/'; // 70 maxking URL
-
   // static String _maxkingGMSUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/Maxking_GMS_/'; // using new link maxking URL
+  //     'http://10.3.0.70:9042/api/Maxking_GMS_/'; // 70 maxking URL
+
+  static String _maxkingGMSUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/Maxking_GMS_/'; // using new link maxking URL
 
   // static String _productionUrl =
   //     'http://203.153.32.85:54329/api/Production/'; //global url
 
   // Production base URL
-  static String _productionUrl = 'http://10.3.0.70:9042/api/Production/';
+  // static String _productionUrl = 'http://10.3.0.70:9042/api/Production/';
 
 // Production base URL
-  // static String _productionUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/Production/'; // using new link
+  static String _productionUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/Production/'; // using new link
 
-  static String _carConveynanceUrl =
-      'http://10.3.0.70:9042/api/Car_Conveyance_/';
+  // static String _carConveynanceUrl =
+  //     'http://10.3.0.70:9042/api/Car_Conveyance_/';
 
 // Car Conevynance base URL
-  // static String _carConveynanceUrl =
-  //     'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
+  static String _carConveynanceUrl =
+      'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
 
   // Getter for Production URL (optional)
   static String get productionUrl => _productionUrl;
@@ -112,12 +112,19 @@ class ApiHelper {
   // static String get gmsUrlExportVehicles => _gmsUrlExportVehicles;
 
   // Login Page
-  static String login(String empNo, String password) =>
-      '${_baseUrl}LoginApi?empNo=$empNo&password=$password';
+  // static String login(String empNo, String password) =>
+  //     '${_baseUrl}LoginApi?empNo=$empNo&password=$password';
+
+      // Login Page
+static String login(String username, String password) =>
+    '${_baseUrl}LoginApi?username=$username&password=$password';
 
   // Employee Details Page in Accoun Screen
   static String getEmpDetails(String empNo) =>
       '${_baseUrl}GetEmpDetails?empNo=$empNo';
+// username base
+        static String getEmpDetailsUserNameBased(String username) =>
+      '${_baseUrl}GetEmpDetails?empNo=$username';
 
   // Method for generating the URL for UpdatePassword API
   static String updatePasswordApi(
@@ -125,9 +132,13 @@ class ApiHelper {
     return '${_baseUrl}UpdatePassword?empNo=$empNo&oldPassword=$oldPassword&newPassword=$newPassword';
   }
 
-  // Get Notifications Page
-  static String getNotifications(String empNo) =>
-      '${_baseUrl}get-notifications/$empNo';
+  // // Get Notifications Page
+  // static String getNotifications(String empNo) =>
+  //     '${_baseUrl}get-notifications/$empNo';
+
+  static String getNotifications(String username) =>
+      '${_baseUrl}get-notifications/$username';
+
 
 // Method for generating the URL for GetUserDetails API inside Contacts Page
   static String getUserDetailsApi(String empNo) {

@@ -36,7 +36,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    fetchData(widget.userData.empNo);
+    // fetchData(widget.userData.empNo);
+    fetchData(widget.userData.username);
+
     _fetchAppVersion();
   }
 
@@ -47,14 +49,17 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     });
   }
 
-  Future<void> fetchData(String empNo) async {
+  Future<void> fetchData(String username) async {
     // final url = Uri.parse(
     //     'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
 
     // final url = Uri.parse(
     //     'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
     // Get the URL dynamically using ApiHelper
-    final String urlString = ApiHelper.getEmpDetails(empNo);
+    // final String urlString = ApiHelper.getEmpDetails(empNo);
+
+    final String urlString = ApiHelper.getEmpDetailsUserNameBased(username);
+
     final Uri url = Uri.parse(urlString); // Convert the URL to Uri
 // print(object)
     print('URL ${url}');
@@ -119,14 +124,14 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text('Password Change'),
+              title: const Text('Password Change'),
               content: Text(passwordResponse.message),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('OK'),
+                  child: const Text('OK'),
                 ),
               ],
             ),
@@ -137,14 +142,14 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text('Password Change Failed'),
+                title: const Text('Password Change Failed'),
                 content: Text(passwordResponse.message),
                 actions: [
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               ),
@@ -154,14 +159,14 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text('Error'),
-                content: Text('An error occurred. Please try again.'),
+                title: const Text('Error'),
+                content: const Text('An error occurred. Please try again.'),
                 actions: [
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               ),
@@ -218,11 +223,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Account Details'),
+        title: const Text('Account Details'),
         backgroundColor: Colors.lightGreen,
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () {
               // Show a confirmation dialog
               showDialog(
@@ -233,14 +238,14 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     backgroundColor: Colors.white,
-                    title: Text(
+                    title: const Text(
                       'Logout',
                       style: TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    content: Column(
+                    content: const Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
@@ -252,7 +257,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     ),
                     actions: <Widget>[
                       TextButton(
-                        child: Text(
+                        child: const Text(
                           'No',
                           style: TextStyle(color: Colors.black),
                         ),
@@ -266,7 +271,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                         // },
                       ),
                       TextButton(
-                        child: Text(
+                        child: const Text(
                           'Yes',
                           style: TextStyle(color: Colors.red),
                         ),
@@ -304,11 +309,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           gradient: UiConstants.backgroundGradient.gradient,
         ),
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'User Information',
                 style: TextStyle(
                   color: Colors.white,
@@ -316,11 +321,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               // Display fetched data here
               if (empDetailsList.isNotEmpty)
                 Column(
                   children: [
+                    buildAccountInfo(
+                        label: 'User Name', value: empDetailsList.first.username),
                     buildAccountInfo(
                         label: 'Barcode', value: empDetailsList.first.emPNo),
                     buildAccountInfo(
@@ -340,7 +347,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     // Add other fields as needed
                   ],
                 ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               // Text(
               //   'Account Settings',
               //   style: TextStyle(
@@ -374,19 +381,19 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           Expanded(
             child: Text(
               '$label',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             flex: 2,
             child: Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
               ),

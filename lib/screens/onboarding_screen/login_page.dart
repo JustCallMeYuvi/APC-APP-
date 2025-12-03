@@ -407,7 +407,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       // 👇 Ensure URLs are updated based on Wi-Fi network first
-      // await ApiHelper.updateUrlsBasedOnNetwork();
+      await ApiHelper.updateUrlsBasedOnNetwork();
 
       // 👇 Now build login URL with the correct base URL
       final url = Uri.parse(ApiHelper.login(barcode, password));
@@ -523,8 +523,8 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   TextField(
                     controller: _barcodeController,
-                    keyboardType:
-                        TextInputType.number, // This sets the keyboard type
+                    // keyboardType:
+                    //     TextInputType.number, // This sets the keyboard type
                     decoration: InputDecoration(
                       hintText: 'Barcode',
                       hintStyle: const TextStyle(color: Colors.white70),
@@ -828,8 +828,10 @@ String loginModelApiToJson(List<LoginModelApi> data) =>
 //       };
 // }
 
+// added login model username
 class LoginModelApi {
   String empNo;
+  String username;
   dynamic useRRole;
   String password;
   String message;
@@ -838,6 +840,7 @@ class LoginModelApi {
 
   LoginModelApi({
     required this.empNo,
+    required this.username,
     required this.useRRole,
     required this.password,
     required this.message,
@@ -847,6 +850,7 @@ class LoginModelApi {
 
   factory LoginModelApi.fromJson(Map<String, dynamic> json) => LoginModelApi(
         empNo: json["emP_NO"] ?? "", // Provide a default empty string
+        username: json["username"],
         useRRole: json["useR_ROLE"], // Allow dynamic to remain as is
         password: json["password"] ?? "", // Provide a default empty string
         message: json["message"] ?? "No message", // Provide a default message
@@ -856,6 +860,7 @@ class LoginModelApi {
 
   Map<String, dynamic> toJson() => {
         "emP_NO": empNo,
+        "username": username,
         "useR_ROLE": useRRole,
         "password": password,
         "message": message,

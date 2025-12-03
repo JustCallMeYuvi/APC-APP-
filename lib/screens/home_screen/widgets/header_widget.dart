@@ -27,7 +27,9 @@ class _HeaderWidgetState extends State<HeaderWidget> {
   @override
   void initState() {
     super.initState();
-    fetchData(widget.userData.empNo);
+    fetchData(widget.userData.username);
+    // fetchData(widget.userData.empNo);
+
   }
 
   // Future<void> fetchData(String empNo) async {
@@ -68,7 +70,9 @@ class _HeaderWidgetState extends State<HeaderWidget> {
   // }
 
 // below is 9042 api
-  Future<void> fetchData(String empNo) async {
+  // Future<void> fetchData(String empNo) async {
+  Future<void> fetchData(String username) async {
+
     // final url = Uri.parse(
     //     'http://10.3.0.70:9040/api/Flutter/GetEmpDetails?empNo=${widget.userData.empNo}');
 
@@ -76,7 +80,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
     //     'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
 
 // Get the URL dynamically using ApiHelper
-    final String urlString = ApiHelper.getEmpDetails(empNo);
+    final String urlString = ApiHelper.getEmpDetailsUserNameBased(username);
     final Uri url = Uri.parse(urlString); // Convert the URL to Uri
     print('URL ${url}');
     try {

@@ -268,14 +268,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    _notificationsStream = _getNotificationsStream(widget.userData.empNo);
+    // _notificationsStream = _getNotificationsStream(widget.userData.empNo);
+    // 🔥 USE USERNAME instead of empNo
+    _notificationsStream = _getNotificationsStream(widget.userData.username);
   }
 
-  Stream<List<NotificationModel>> _getNotificationsStream(String empNo) async* {
+  // Stream<List<NotificationModel>> _getNotificationsStream(String empNo) async* {
+  //   while (true) {
+  //     final notifications = await _fetchNotifications(empNo);
+  //     yield notifications;
+  //     await Future.delayed(Duration(seconds: 5)); // Poll every 5 seconds
+  //   }
+  // }
+
+  Stream<List<NotificationModel>> _getNotificationsStream(
+      String username) async* {
     while (true) {
-      final notifications = await _fetchNotifications(empNo);
+      final notifications = await _fetchNotifications(username);
       yield notifications;
-      await Future.delayed(Duration(seconds: 5)); // Poll every 5 seconds
+      await Future.delayed(const Duration(seconds: 5));
     }
   }
 
@@ -299,24 +310,41 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   //   }
   // }
 
-  Future<List<NotificationModel>> _fetchNotifications(String empNo) async {
-    // final url = 'http://10.3.0.70:9042/api/HR/get-notifications/$empNo';
-      final url = ApiHelper.getNotifications(empNo); // Use ApiHelper to construct the URL
+  // Future<List<NotificationModel>> _fetchNotifications(String empNo) async {
+  //   // final url = 'http://10.3.0.70:9042/api/HR/get-notifications/$empNo';
+  //     final url = ApiHelper.getNotifications(empNo); // Use ApiHelper to construct the URL
+  //   final response = await http.get(Uri.parse(url));
+  //   // print(url);
+  //   if (response.statusCode == 200) {
+  //     List<dynamic> jsonResponse = json.decode(response.body);
+  //     return jsonResponse
+  //         .map((data) => NotificationModel.fromJson(data))
+  //         .toList();
+  //   } else if (response.statusCode == 404) {
+  //     // Handle the case where no notifications are found
+  //     final jsonResponse = json.decode(response.body);
+  //     if (jsonResponse['message'] == 'No notifications found.') {
+  //       return []; // Return an empty list if no notifications are found
+  //     } else {
+  //       throw Exception('Failed to load notifications');
+  //     }
+  //   } else {
+  //     throw Exception('Failed to load notifications');
+  //   }
+  // }
+
+  //using username fetch notifications
+  Future<List<NotificationModel>> _fetchNotifications(String username) async {
+    final url = ApiHelper.getNotifications(username); // Correct URL
     final response = await http.get(Uri.parse(url));
-    // print(url);
+
     if (response.statusCode == 200) {
       List<dynamic> jsonResponse = json.decode(response.body);
       return jsonResponse
           .map((data) => NotificationModel.fromJson(data))
           .toList();
     } else if (response.statusCode == 404) {
-      // Handle the case where no notifications are found
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['message'] == 'No notifications found.') {
-        return []; // Return an empty list if no notifications are found
-      } else {
-        throw Exception('Failed to load notifications');
-      }
+      return [];
     } else {
       throw Exception('Failed to load notifications');
     }
@@ -327,18 +355,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications'),
+        title: const Text('Notifications'),
         backgroundColor: Colors.lightGreen,
       ),
       body: StreamBuilder<List<NotificationModel>>(
         stream: _notificationsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
+            return const Center(
               child: Text(
                 'No Notifications',
                 style: TextStyle(color: Colors.white, fontSize: 18),
@@ -366,17 +394,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text('Confirm Deletion'),
-                          content: Text(
+                          title: const Text('Confirm Deletion'),
+                          content: const Text(
                               'Are you sure you want to delete this notification?'),
                           actions: <Widget>[
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(false),
-                              child: Text('Cancel'),
+                              child: const Text('Cancel'),
                             ),
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(true),
-                              child: Text('Delete'),
+                              child: const Text('Delete'),
                             ),
                           ],
                         );
@@ -388,15 +416,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     setState(() {
                       notificationList.removeAt(index);
                     });
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content: Text('Notification Deleted'),
                     ));
                   },
                   background: Container(
                     color: Colors.red,
                     alignment: Alignment.centerRight,
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Icon(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(
                       Icons.delete,
                       color: Colors.white,
                     ),
@@ -463,7 +491,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }) {
     return Card(
       color: isRead ? Colors.grey[700] : Colors.grey[800],
-      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
       elevation: 5,
       child: Stack(
         children: [
@@ -475,7 +503,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
             title: Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -483,7 +511,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
             subtitle: Text(
               subtitle,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
               ),
@@ -497,7 +525,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             },
           ),
           if (!isRead)
-            Positioned(
+            const Positioned(
               right: 8,
               top: 8,
               child: Icon(

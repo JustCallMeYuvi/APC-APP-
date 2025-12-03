@@ -314,7 +314,9 @@ class _MultipleFormsState extends State<MultipleForms> {
     super.initState();
     // fetchData(widget.userData.empNo);
     // fetchUserAccess();
-    fetchData(widget.userData.empNo).then((_) {
+    // fetchData(widget.userData.empNo).then((_) {
+    fetchData(widget.userData.username).then((_) {
+
       fetchUserAccess();
     });
   }
@@ -389,12 +391,17 @@ class _MultipleFormsState extends State<MultipleForms> {
 //   }
 // }
 
-  Future<void> fetchData(String empNo) async {
+  // Future<void> fetchData(String empNo) async {
+  Future<void> fetchData(String username) async {
+
     // final url = Uri.parse(
     //     'http://10.3.0.70:9042/api/HR/GetEmpDetails?empNo=${widget.userData.empNo}');
 
+    // final url = Uri.parse(
+    //     '${ApiHelper.baseUrl}GetEmpDetails?empNo=${widget.userData.empNo}');
+    
     final url = Uri.parse(
-        '${ApiHelper.baseUrl}GetEmpDetails?empNo=${widget.userData.empNo}');
+        '${ApiHelper.baseUrl}GetEmpDetails?empNo=${widget.userData.username}');
 
 // ${ApiHelper.baseUrl}
     // Debugging: Print the URL
@@ -414,8 +421,11 @@ class _MultipleFormsState extends State<MultipleForms> {
 
           // Debugging: Print empDetailsList data
           empDetailsList.forEach((detail) {
+          //   print(
+          //       'Emp Detail: ${detail.emPNo}, ${detail.emPName}, ${detail.depTName}, ${detail.position}, ${detail.useRRole}');
+          // });
             print(
-                'Emp Detail: ${detail.emPNo}, ${detail.emPName}, ${detail.depTName}, ${detail.position}, ${detail.useRRole}');
+                'Emp Detail: ${detail.username}, ${detail.emPName}, ${detail.depTName}, ${detail.position}, ${detail.useRRole}');
           });
         });
       } else {
