@@ -30,6 +30,7 @@
         android:label="APC Mobile App"
         android:name="${applicationName}"
         android:icon="@mipmap/apache">
+          android:usesCleartextTraffic="true"
         <activity
             android:name=".MainActivity"
             android:exported="true"

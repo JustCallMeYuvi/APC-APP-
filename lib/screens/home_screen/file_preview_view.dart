@@ -1,7 +1,7 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:open_file/open_file.dart';
+// import 'package:open_file/open_file.dart';
 
 import 'dart:typed_data';
 import 'dart:io';
@@ -129,10 +129,10 @@ Future<void> _downloadAndOpenFile() async {
           await file.writeAsBytes(widget.fileBytes);
 
           // Open the file using open_file package
-          final result = await OpenFile.open(file.path);
-          if (result.type != ResultType.done) {
-            throw Exception('Failed to open file');
-          }
+          // final result = await OpenFile.open(file.path);
+          // if (result.type != ResultType.done) {
+          //   throw Exception('Failed to open file');
+          // }
         } else {
           throw Exception('Could not get the storage directory');
         }

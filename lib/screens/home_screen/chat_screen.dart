@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
-import 'package:open_file/open_file.dart';
+// import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:swipe_to/swipe_to.dart';
@@ -503,7 +503,8 @@ class _ChatScreenState extends State<ChatScreen> {
           );
 
           // Open the file using open_file package
-          await OpenFile.open(file.path);
+          // await OpenFile.open(file.path);
+          
         } else {
           throw Exception('Could not get the storage directory');
         }

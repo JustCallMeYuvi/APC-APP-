@@ -1,5 +1,6 @@
 // import 'dart:convert';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/auth_provider.dart';
 import 'package:animated_movies_app/methods/update_helper.dart';
 import 'package:animated_movies_app/screens/home_screen/home_screen.dart';
@@ -83,6 +84,9 @@ class _SplashScreenWithCheckAppUpdatesState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // ✅ FIRST CALL → Update URLs based on network (WiFi / APC IT)
+      // await ApiHelper.updateUrlsBasedOnNetwork();
+      // ✅ SECOND CALL → Check for App Updates
       await _checkUpdateFlow();
     });
   }
