@@ -850,7 +850,8 @@ class LoginModelApi {
 
   factory LoginModelApi.fromJson(Map<String, dynamic> json) => LoginModelApi(
         empNo: json["emP_NO"] ?? "", // Provide a default empty string
-        username: json["username"],
+        // username: json["username"],
+        username: json["username"]?.toString() ?? "",
         useRRole: json["useR_ROLE"], // Allow dynamic to remain as is
         password: json["password"] ?? "", // Provide a default empty string
         message: json["message"] ?? "No message", // Provide a default message

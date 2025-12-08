@@ -68,6 +68,7 @@ import 'package:animated_movies_app/screens/gms_screens/production_output_module
 import 'package:animated_movies_app/screens/home_screen/add_edit_delete_cars_screen.dart';
 
 import 'package:animated_movies_app/screens/home_screen/efficiency_report_page.dart';
+import 'package:animated_movies_app/screens/home_screen/emp_count_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/employee_feedback_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/patrolling_screen.dart';
 import 'package:animated_movies_app/screens/home_screen/po_completion_page.dart';
@@ -279,7 +280,7 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                     //     widget.userData,
                                                                                                                                   )
                                                                                                                                 : widget.pageRoute == 'Car_Conveynace_Charts'
-                                                                                                                                    ? CarChartsScreen(
+                                                                                                                                    ? const CarChartsScreen(
                                                                                                                                         // userData: widget.userData,
                                                                                                                                         // userData:
                                                                                                                                         //     widget.userData,
@@ -303,10 +304,16 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                     // userData:
                                                                                                                                                     //     widget.userData,
                                                                                                                                                   )
-                                                                                                                                                : Text(
-                                                                                                                                                    'Data for ${widget.pageName} goes here.',
-                                                                                                                                                    style: const TextStyle(fontSize: 20),
-                                                                                                                                                  )
+                                                                                                                                                : widget.pageRoute == 'EmpCount'
+                                                                                                                                                    ? EmpCountScreen(
+                                                                                                                                                        userData: widget.userData,
+                                                                                                                                                        // userData:
+                                                                                                                                                        //     widget.userData,
+                                                                                                                                                      )
+                                                                                                                                                    : Text(
+                                                                                                                                                        'Data for ${widget.pageName} goes here.',
+                                                                                                                                                        style: const TextStyle(fontSize: 20),
+                                                                                                                                                      )
 
             // : SignApprovalPage(
             //     userData: widget.userData,
