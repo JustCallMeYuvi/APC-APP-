@@ -418,6 +418,7 @@
 //     );
 //   }
 // // }
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/model/emp_count_model.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
@@ -500,10 +501,10 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
     // _selectedYear = DateTime.now().year.toString();
     // _yearController.text = _selectedYear!;
 
-    // Generate years from 2005 to current year
+    // Generate years from 2006 to current year
     int currentYear = DateTime.now().year;
     _yearOptions = List.generate(
-      currentYear - 2005 + 1,
+      currentYear - 2006 + 1,
       (i) => (2006 + i).toString(),
     ).reversed.toList(); // 👈 DESCENDING ORDER
 
@@ -531,7 +532,8 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
       _error = null;
     });
 
-    const baseUrl = 'http://10.3.0.70:9042/api/HR/EmpCount';
+    // const baseUrl = 'http://10.3.0.70:9042/api/HR/EmpCount';
+    final baseUrl = '${ApiHelper.baseUrl}EmpCount';
     late Uri uri;
 
     final apiType = _typeApiMap[_selectedType] ?? 'allyears';
@@ -592,13 +594,14 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
           // -------------------------
           // CALCULATE MIN / MAX YEAR (for All Years mode)
           // -------------------------
-          int minYear = 0;
+          int minYear = 2006;
           int maxYear = 0;
 
           if (apiType == "allyears" && items.isNotEmpty) {
             items.sort((a, b) => a.year.compareTo(b.year)); // sort ASC
 
-            minYear = items.first.year; // Oldest year
+            // minYear = items.first.year; // Oldest year
+
             maxYear = items.last.year; // Latest year
           }
 
