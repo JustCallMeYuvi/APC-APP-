@@ -51,7 +51,16 @@ class _OverTimeScreenState extends State<OverTimeScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (picked != null) setState(() => _fromDate = picked);
+
+    if (picked != null) {
+      // If from-date is greater than current to-date → reset to-date also
+      if (_toDate.isBefore(picked)) {
+        await _showAlert("From Date cannot be greater than To Date");
+        return;
+      }
+
+      setState(() => _fromDate = picked);
+    }
   }
 
   Future<void> pickToDate() async {
@@ -61,7 +70,33 @@ class _OverTimeScreenState extends State<OverTimeScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (picked != null) setState(() => _toDate = picked);
+
+    if (picked != null) {
+      // Validation ↓
+      if (picked.isBefore(_fromDate)) {
+        await _showAlert("To Date cannot be earlier than From Date");
+        return;
+      }
+
+      setState(() => _toDate = picked);
+    }
+  }
+
+// --- Alert Dialog Function ---
+  Future<void> _showAlert(String message) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Invalid Date"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   Future<void> fetchData() async {
@@ -124,17 +159,8 @@ class _OverTimeScreenState extends State<OverTimeScreen> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(child: buildTypeDropdown()),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: fetchData,
-                  icon: const Icon(Icons.search),
-                  label: const Text("Search"),
-                ),
-              ],
-            ),
+            buildTypeDropdown(),
+            const SizedBox(width: 12),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -165,6 +191,23 @@ class _OverTimeScreenState extends State<OverTimeScreen> {
               Text(_error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 12),
             Expanded(child: buildResults()),
+            SizedBox(
+              width: double.infinity, // FULL WIDTH
+              child: ElevatedButton.icon(
+                onPressed: fetchData,
+                icon: const Icon(Icons.search),
+                label: const Text("Search"),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16), // height
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10), // rounded corners
+                  ),
+                  backgroundColor: Colors.blue, // button color
+                  foregroundColor: Colors.white, // text + icon color
+                  elevation: 3,
+                ),
+              ),
+            )
           ],
         ),
       ),
@@ -250,8 +293,9 @@ class _OverTimeScreenState extends State<OverTimeScreen> {
     }
 
     // datewise
-    if (_datewise == null || _datewise!.isEmpty)
+    if (_datewise == null || _datewise!.isEmpty) {
       return const Center(child: Text("No Data"));
+    }
 
     return ListView.separated(
       itemCount: _datewise!.length,
