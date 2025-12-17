@@ -41,6 +41,8 @@
 
 import 'package:animated_movies_app/hr_department/employee_punch_page.dart';
 import 'package:animated_movies_app/it_modules/asset_management_screen.dart';
+import 'package:animated_movies_app/overtime/overtime_bloc/overtime_bloc.dart';
+import 'package:animated_movies_app/overtime/overtime_services/overtime_service.dart';
 import 'package:animated_movies_app/screens/api_data_screens/production_request_page.dart';
 import 'package:animated_movies_app/screens/api_data_screens/user_approval_page.dart';
 import 'package:animated_movies_app/screens/bussiness_info/bussiness_info_page.dart';
@@ -79,6 +81,7 @@ import 'package:animated_movies_app/screens/home_screen/token_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ApiDataScreen extends StatefulWidget {
   final String pageName;
@@ -311,11 +314,18 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                         // userData:
                                                                                                                                                         //     widget.userData,
                                                                                                                                                       )
+                                                                                                                                                    // : widget.pageRoute == 'ot'
+                                                                                                                                                    //     ? OverTimeScreen(
+                                                                                                                                                    //         userData: widget.userData,
+                                                                                                                                                    //         // userData:
+                                                                                                                                                    //         //     widget.userData,
+                                                                                                                                                    //       )
                                                                                                                                                     : widget.pageRoute == 'ot'
-                                                                                                                                                        ? OverTimeScreen(
-                                                                                                                                                            userData: widget.userData,
-                                                                                                                                                            // userData:
-                                                                                                                                                            //     widget.userData,
+                                                                                                                                                        ? BlocProvider(
+                                                                                                                                                            create: (_) => OverTimeBloc(OverTimeService()),
+                                                                                                                                                            child: OverTimeScreen(
+                                                                                                                                                              userData: widget.userData,
+                                                                                                                                                            ),
                                                                                                                                                           )
                                                                                                                                                         : Text(
                                                                                                                                                             'Data for ${widget.pageName} goes here.',
