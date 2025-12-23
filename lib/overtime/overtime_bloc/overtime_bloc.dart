@@ -25,13 +25,11 @@ class OverTimeBloc extends Bloc<OverTimeEvent, OverTimeState> {
         fromDate: event.fromDate,
         toDate: event.toDate,
       );
-        // 🔴 NO DATA
-    if (result == null ||
-        (result is List && result.isEmpty)) {
-      emit(OverTimeNoData());
-      return;
-    }
-
+      // 🔴 NO DATA
+      if (result == null || (result is List && result.isEmpty)) {
+        emit(OverTimeNoData());
+        return;
+      }
 
       if (result is OverallModel) {
         emit(OverTimeLoaded(overall: result));

@@ -84,10 +84,10 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
     months = monthNameToNumber.keys.toList();
 
     // ✅ Call it here so models will be ready for the dropdown
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      fetchedOrders = await fetchOrderInfo();
-      setState(() {});
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   fetchedOrders = await fetchOrderInfo();
+    //   setState(() {});
+    // });
   }
 
   Future<List<Map<String, dynamic>>> fetchOrderInfo() async {
