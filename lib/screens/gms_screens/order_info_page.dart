@@ -456,83 +456,85 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
               // ),
               isLoading
                   ? const Center(
-                      child:
-                          CircularProgressIndicator()) // Show only one loader
-                  : ElevatedButton(
-                      onPressed: () async {
-                        // Validation logic
-                        if (selectedCompanyId == null ||
-                            _companyController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Please select a company.')),
-                          );
-                          return;
-                        }
+                      child: CircularProgressIndicator(),
+                    )
+                  : SizedBox(
+                      width: double.infinity, // 🔥 FULL WIDTH
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.lightGreen,
+                          foregroundColor: Colors.white,
+                          elevation: 6,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        onPressed: () async {
+                          // ================= VALIDATION =================
+                          if (selectedCompanyId == null ||
+                              _companyController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Please select a company.')),
+                            );
+                            return;
+                          }
 
-                        if (_typeController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Please select a type.')),
-                          );
-                          return;
-                        }
+                          if (_typeController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Please select a type.')),
+                            );
+                            return;
+                          }
 
-                        if (_dateSelectionMode == 'Season' &&
-                            (selectedSeason == null ||
-                                _seasonController.text.isEmpty)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Please select a season.')),
-                          );
-                          return;
-                        }
+                          if (_dateSelectionMode == 'Season' &&
+                              (selectedSeason == null ||
+                                  _seasonController.text.isEmpty)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Please select a season.')),
+                            );
+                            return;
+                          }
 
-                        if (_dateSelectionMode == 'Month' &&
-                            (selectedMonth == null ||
-                                _monthController.text.isEmpty ||
-                                selectedYear == null)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Please select year and month.')),
-                          );
-                          return;
-                        }
+                          if (_dateSelectionMode == 'Month' &&
+                              (selectedMonth == null ||
+                                  _monthController.text.isEmpty ||
+                                  selectedYear == null)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Please select year and month.')),
+                            );
+                            return;
+                          }
 
-                        // Proceed to fetch data
-                        setState(() {
-                          isLoading = true;
-                        });
+                          // ================= API CALL =================
+                          setState(() => isLoading = true);
 
-                        try {
-                          final data = await fetchOrderInfo();
-                          setState(() {
-                            fetchedOrders = data;
-                            isLoading = false;
-
-                            // Reset all fields after success
-                            // _companyController.clear();
-                            // _typeController.clear();
-                            // _seasonController.clear();
-                            // _monthController.clear();
-
-                            // selectedCompanyId = null;
-                            // selectedCompany = null;
-                            // // _dateSelectionMode = null;
-                            // selectedSeason = null;
-                            // selectedMonth = null;
-                            // selectedYear = null;
-                          });
-                        } catch (e) {
-                          setState(() {
-                            isLoading = false;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error fetching data: $e')),
-                          );
-                        }
-                      },
-                      child: const Text("Submit"),
+                          try {
+                            final data = await fetchOrderInfo();
+                            setState(() {
+                              fetchedOrders = data;
+                              isLoading = false;
+                            });
+                          } catch (e) {
+                            setState(() => isLoading = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('Error fetching data: $e')),
+                            );
+                          }
+                        },
+                        child: const Text("SUBMIT"),
+                      ),
                     ),
 
               const SizedBox(height: 10),

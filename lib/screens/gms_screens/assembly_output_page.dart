@@ -35,6 +35,8 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
   Map<int, List<LineWiseDataModel>> fetchedLineWiseData = {};
   Map<int, bool> loadingItems = {}; // index -> isLoading
 
+  bool isCompanyWiseOverall = false;
+
   @override
   void initState() {
     super.initState();
@@ -68,22 +70,49 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
         // final productionData = ProductionResponse.fromJson(jsonData);
         final productionData = ProductionDataModel.fromJson(jsonData);
 
-        setState(() {
-          deptNames = productionData.departmentList
-              .map<Map<String, String>>(
-                  (e) => {'id': e.toString(), 'name': e.toString()})
-              .toList();
+        // setState(() {
+        //   deptNames = productionData.departmentList
+        //       .map<Map<String, String>>(
+        //           (e) => {'id': e.toString(), 'name': e.toString()})
+        //       .toList();
 
+        //   companyLists = productionData.companyList
+        //       .map<Map<String, String>>(
+        //           (e) => {'id': e.toString(), 'name': e.toString()})
+        //       .toList();
+        //   // departmentData = departmentsApiData.cast<Map<String, dynamic>>();
+
+        //   // departmentData = productionData.departments;
+        //   departmentData =
+        //       productionData.departments.map((e) => e.toJson()).toList();
+        //   filteredDepartmentData = departmentData; // initialize with full data
+        //   summaryList = productionData.summary;
+        // });
+
+        setState(() {
+          // 👇 Department dropdown (COMPANY WISE first)
+          deptNames = [
+            {'id': 'ALL', 'name': 'COMPANY WISE OVERALL'}, // FIRST ITEM
+            ...productionData.departmentList.map<Map<String, String>>(
+              (e) => {'id': e.toString(), 'name': e.toString()},
+            )
+          ];
+
+          // 👇 Company dropdown list
           companyLists = productionData.companyList
               .map<Map<String, String>>(
-                  (e) => {'id': e.toString(), 'name': e.toString()})
+                (e) => {'id': e.toString(), 'name': e.toString()},
+              )
               .toList();
-          // departmentData = departmentsApiData.cast<Map<String, dynamic>>();
 
-          // departmentData = productionData.departments;
+          // 👇 Department data (full data)
           departmentData =
               productionData.departments.map((e) => e.toJson()).toList();
-          filteredDepartmentData = departmentData; // initialize with full data
+
+          // 👇 Default: show ALL data (COMPANY WISE)
+          filteredDepartmentData = departmentData;
+
+          // 👇 Summary data
           summaryList = productionData.summary;
         });
       } else {
@@ -242,17 +271,43 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                       textFieldConfiguration: TextFieldConfiguration(
                         controller: _deptSearchController,
                         autofocus: false,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(10))),
                           labelText: "Search Plant",
-                          suffixIcon: Icon(Icons.search),
+                          // suffixIcon: Icon(Icons.search),
+                          suffixIcon: _deptSearchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    setState(() {
+                                      _deptSearchController.clear();
+                                      selectedDeptId = 'ALL'; // 🔥 RESET
+                                      // isCompanyWiseOverall =
+                                      //     true; // 🔥 SHOW ALL
+                                      selectedDeptId = null; // 🔥 RESET
+                                      isCompanyWiseOverall = false;
+                                      filteredDepartmentData =
+                                          departmentData; // 🔥 FULL DATA
+                                      expandedItems.clear();
+                                      fetchedLineWiseData.clear();
+                                    });
+
+                                    // fetchProductionData(); // 🔥 FULL DATA
+                                  },
+                                )
+                              : const Icon(Icons.search),
                         ),
                         onChanged: (text) {
-                          setState(() {
-                            if (text.isEmpty) selectedDeptId = null;
-                          });
+                          if (text.isEmpty) {
+                            setState(() {
+                              selectedDeptId = 'ALL';
+                              isCompanyWiseOverall = true;
+                            });
+
+                            // fetchProductionData(); // 🔥 back to full data
+                          }
                         },
                       ),
                       suggestionsCallback: (pattern) async {
@@ -273,6 +328,8 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                         setState(() {
                           selectedDeptId = suggestion['id'];
                           _deptSearchController.text = '${suggestion['name']}';
+                          // 🔑 IMPORTANT
+                          isCompanyWiseOverall = suggestion['id'] == 'ALL';
                         });
                         filterDepartmentData();
                       },
@@ -353,7 +410,9 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                     //   ),
                     // ]
 
-                    if (filteredDepartmentData.isNotEmpty) ...[
+                    // if (filteredDepartmentData.isNotEmpty) ...[
+                    if (!isCompanyWiseOverall &&
+                        filteredDepartmentData.isNotEmpty) ...[
                       // const SizedBox(height: 20),
                       // Text(
                       //   'Department Production Summary',
@@ -441,7 +500,9 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                           final dept = filteredDepartmentData[index];
                           final isExpanded = expandedItems[index] ?? false;
                           final lineWiseData = fetchedLineWiseData[index] ?? [];
-
+                          final int achievement = int.tryParse(
+                                  dept['achievement']?.toString() ?? '0') ??
+                              0;
                           return Card(
                             elevation: 4,
                             margin: const EdgeInsets.symmetric(vertical: 8),
@@ -524,15 +585,22 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
                                       '🎯 Target', dept['target']),
                                   _customPlantInfoText(
                                       '✅ Achieved Output', dept['output']),
+                                  // _customPlantInfoText(
+                                  //   '📊 Balance',
+                                  //   dept['achievement'],
+                                  //   valueColor: int.tryParse(dept['achievement']
+                                  //                   .toString()) !=
+                                  //               null &&
+                                  //           int.parse(dept['achievement']
+                                  //                   .toString()) >=
+                                  //               0
+                                  //       ? Colors.green
+                                  //       : Colors.red,
+                                  // ),
                                   _customPlantInfoText(
-                                    '📊 Balance',
-                                    dept['achievement'],
-                                    valueColor: int.tryParse(dept['achievement']
-                                                    .toString()) !=
-                                                null &&
-                                            int.parse(dept['achievement']
-                                                    .toString()) >=
-                                                0
+                                    achievement > 0 ? '📈 Extra' : '📊 Balance',
+                                    achievement.toString(),
+                                    valueColor: achievement > 0
                                         ? Colors.green
                                         : Colors.red,
                                   ),
@@ -767,8 +835,16 @@ class _AssemblyOutputPageState extends State<AssemblyOutputPage> {
     );
   }
 
-  int _parseAchievementPercent(String percentStr) {
-    return int.tryParse(percentStr.replaceAll('%', '').trim()) ?? 0;
+  // int _parseAchievementPercent(String percentStr) {
+  //   return int.tryParse(percentStr.replaceAll('%', '').trim()) ?? 0;
+  // }
+  double _parseAchievementPercent(String? value) {
+    if (value == null || value.isEmpty) return 0;
+
+    return double.tryParse(
+          value.replaceAll('%', '').trim(),
+        ) ??
+        0;
   }
 }
 

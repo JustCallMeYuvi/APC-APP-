@@ -478,56 +478,73 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
             //   },
             //   child: const Text("Search"),
             // ),
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedReport == 'B-Grade') {
-                  await fetchBGradeData();
-                  if (bGradeList.isEmpty) {
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lightGreen,
+                  foregroundColor: Colors.white,
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+                onPressed: () async {
+                  if (selectedReport == 'B-Grade') {
+                    await fetchBGradeData();
+                    if (bGradeList.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content:
+                                Text("No B-Grade report found for selection")),
+                      );
+                    }
+                  }
+                  // else if (selectedReport == 'IE Efficiency') {
+                  //   await fetchIEEfficiencyData();
+                  //   if (ieEfficiencyList.isEmpty) {
+                  //     ScaffoldMessenger.of(context).showSnackBar(
+                  //       const SnackBar(
+                  //           content: Text(
+                  //               "No IE Efficiency report found for selection")),
+                  //     );
+                  //   }
+                  // }
+                  else if (selectedReport == 'IE Efficiency') {
+                    await fetchIEEfficiencyData();
+
+                    if (ieEfficiencyList.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "No IE Efficiency data found. Please select a date within the last 7 days.",
+                          ),
+                        ),
+                      );
+                    }
+                  } else if (selectedReport == 'RFT Report') {
+                    await fetchRFTReportData();
+                    if (rftReportList.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("No RFT report found for selection")),
+                      );
+                    }
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content:
-                              Text("No B-Grade report found for selection")),
+                              Text('Please select a report to fetch data.')),
                     );
                   }
-                }
-                // else if (selectedReport == 'IE Efficiency') {
-                //   await fetchIEEfficiencyData();
-                //   if (ieEfficiencyList.isEmpty) {
-                //     ScaffoldMessenger.of(context).showSnackBar(
-                //       const SnackBar(
-                //           content: Text(
-                //               "No IE Efficiency report found for selection")),
-                //     );
-                //   }
-                // }
-                else if (selectedReport == 'IE Efficiency') {
-                  await fetchIEEfficiencyData();
-
-                  if (ieEfficiencyList.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          "No IE Efficiency data found. Please select a date within the last 7 days.",
-                        ),
-                      ),
-                    );
-                  }
-                } else if (selectedReport == 'RFT Report') {
-                  await fetchRFTReportData();
-                  if (rftReportList.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("No RFT report found for selection")),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Please select a report to fetch data.')),
-                  );
-                }
-              },
-              child: const Text("Search"),
+                },
+                child: const Text("Search"),
+              ),
             ),
 
             const SizedBox(height: 16),
