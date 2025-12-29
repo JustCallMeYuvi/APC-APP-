@@ -26,15 +26,41 @@ class BGradeData {
     required this.bGradePercent,
   });
 
-  factory BGradeData.fromJson(Map<String, dynamic> json) => BGradeData(
-        date: DateTime.parse(json["date"]),
-        department: json["department"],
-        bGrade: json["b_Grade"],
-        output: json["output"],
-        repairs: json["repairs"],
-        process: json["process"],
-        bGradePercent: json["bGradePercent"],
-      );
+  // factory BGradeData.fromJson(Map<String, dynamic> json) => BGradeData(
+  //       date: DateTime.parse(json["date"]),
+  //       department: json["department"],
+  //       bGrade: json["b_Grade"],
+  //       output: json["output"],
+  //       repairs: json["repairs"],
+  //       process: json["process"],
+  //       bGradePercent: json["bGradePercent"],
+  //     );
+
+  
+  factory BGradeData.fromJson(Map<String, dynamic> json) {
+    final rawDate = json["date"].toString().trim();
+    DateTime parsedDate;
+
+    if (rawDate.contains(' - ')) {
+      // ✅ Correctly split date range
+      parsedDate = DateTime.parse(rawDate.split(' - ')[0]);
+    } else if (rawDate.length == 4) {
+      // ✅ Handles "2025" safely
+      parsedDate = DateTime(int.parse(rawDate), 1, 1);
+    } else {
+      parsedDate = DateTime.parse(rawDate);
+    }
+
+    return BGradeData(
+      date: parsedDate,
+      department: json["department"] ?? '',
+      bGrade: json["b_Grade"] ?? 0,
+      output: json["output"] ?? 0,
+      repairs: json["repairs"] ?? 0,
+      process: json["process"] ?? '',
+      bGradePercent: json["bGradePercent"] ?? '0',
+    );
+  }
 }
 
 class IEEfficiencyData {
@@ -517,7 +543,6 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                   // }
                   else if (selectedReport == 'IE Efficiency') {
                     await fetchIEEfficiencyData();
-
                     if (ieEfficiencyList.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

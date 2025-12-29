@@ -80,6 +80,7 @@ import 'package:animated_movies_app/screens/home_screen/rft_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/target_output_report_page.dart';
 import 'package:animated_movies_app/screens/home_screen/token_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
+import 'package:animated_movies_app/screens/ui_local_and_global_api_screens/api_main_screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -328,17 +329,22 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                               userData: widget.userData,
                                                                                                                                                             ),
                                                                                                                                                           )
-
-                                                                                                                                                          : widget.pageRoute == 'HR_Modules'
-                                                                                                                                            ? InformationOfEmployeesScreen(
-                                                                                                                                                userData: widget.userData,
-                                                                                                                                                // userData:
-                                                                                                                                                //     widget.userData,
-                                                                                                                                              )
-                                                                                                                                                        : Text(
-                                                                                                                                                            'Data for ${widget.pageName} goes here.',
-                                                                                                                                                            style: const TextStyle(fontSize: 20),
-                                                                                                                                                          )
+                                                                                                                                                        : widget.pageRoute == 'HR_Modules'
+                                                                                                                                                            ? InformationOfEmployeesScreen(
+                                                                                                                                                                userData: widget.userData,
+                                                                                                                                                                // userData:
+                                                                                                                                                                //     widget.userData,
+                                                                                                                                                              )
+                                                                                                                                                            : widget.pageRoute == 'api-s'
+                                                                                                                                                                ? ApiMainScreen(
+                                                                                                                                                                    userData: widget.userData,
+                                                                                                                                                                    // userData:
+                                                                                                                                                                    //     widget.userData,
+                                                                                                                                                                  )
+                                                                                                                                                                : Text(
+                                                                                                                                                                    'Data for ${widget.pageName} goes here.',
+                                                                                                                                                                    style: const TextStyle(fontSize: 20),
+                                                                                                                                                                  )
 
             // : SignApprovalPage(
             //     userData: widget.userData,
