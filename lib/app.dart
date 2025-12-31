@@ -85,7 +85,7 @@ class _SplashScreenWithCheckAppUpdatesState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // ✅ FIRST CALL → Update URLs based on network (WiFi / APC IT)
-      // await ApiHelper.updateUrlsBasedOnNetwork();
+      await ApiHelper.updateUrlsBasedOnNetwork();
       // ✅ SECOND CALL → Check for App Updates
       await _checkUpdateFlow();
     });

@@ -8,7 +8,9 @@ import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:intl/intl.dart';
 
 class BGradeData {
-  DateTime date;
+  // DateTime date;
+  final String date; // 👈 change here
+
   String department;
   int bGrade;
   int output;
@@ -36,7 +38,6 @@ class BGradeData {
   //       bGradePercent: json["bGradePercent"],
   //     );
 
-  
   factory BGradeData.fromJson(Map<String, dynamic> json) {
     final rawDate = json["date"].toString().trim();
     DateTime parsedDate;
@@ -52,7 +53,8 @@ class BGradeData {
     }
 
     return BGradeData(
-      date: parsedDate,
+      // date: parsedDate,
+      date: json["date"], // 👈 NO DateTime.parse
       department: json["department"] ?? '',
       bGrade: json["b_Grade"] ?? 0,
       output: json["output"] ?? 0,
@@ -155,6 +157,7 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
 
   List<BGradeData> bGradeList = [];
   List<RftReport> rftReportList = [];
+  bool isLoading = false;
   @override
   void initState() {
     super.initState();
@@ -181,6 +184,40 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
     }
   }
 
+  // Future<void> fetchBGradeData() async {
+  //   if (selectedPlants == null || selectedProcess == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Please select Plant and Process')),
+  //     );
+  //     return;
+  //   }
+
+  //   String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+  //   String process = selectedProcess == "Cutting"
+  //       ? "C"
+  //       : selectedProcess == "Stitching"
+  //           ? "S"
+  //           : selectedProcess == "Assembly"
+  //               ? "L"
+  //               : "ALL";
+
+  //   var url =
+  //       '${ApiHelper.productionUrl}get-B-Grade-data?inputDate=$formattedDate&line=$selectedPlants&process=$process';
+
+  //   final response = await http.get(Uri.parse(url));
+  //   print('B Grade URL ${url}');
+  //   if (response.statusCode == 200) {
+  //     final List<dynamic> data = json.decode(response.body);
+  //     setState(() {
+  //       bGradeList = data.map((json) => BGradeData.fromJson(json)).toList();
+  //     });
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Failed to fetch data')),
+  //     );
+  //   }
+  // }
+
   Future<void> fetchBGradeData() async {
     if (selectedPlants == null || selectedProcess == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -189,29 +226,33 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
       return;
     }
 
-    String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
-    String process = selectedProcess == "Cutting"
-        ? "C"
-        : selectedProcess == "Stitching"
-            ? "S"
-            : selectedProcess == "Assembly"
-                ? "L"
-                : "ALL";
+    setState(() => isLoading = true); // 🔥 START LOADING
 
-    var url =
-        '${ApiHelper.productionUrl}get-B-Grade-data?inputDate=$formattedDate&line=$selectedPlants&process=$process';
+    try {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+      String process = selectedProcess == "Cutting"
+          ? "C"
+          : selectedProcess == "Stitching"
+              ? "S"
+              : selectedProcess == "Assembly"
+                  ? "L"
+                  : "ALL";
 
-    final response = await http.get(Uri.parse(url));
-    print('B Grade URL ${url}');
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      setState(() {
-        bGradeList = data.map((json) => BGradeData.fromJson(json)).toList();
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to fetch data')),
-      );
+      final url =
+          '${ApiHelper.productionUrl}get-B-Grade-data?inputDate=$formattedDate&line=$selectedPlants&process=$process';
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          bGradeList = data.map((e) => BGradeData.fromJson(e)).toList();
+        });
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() => isLoading = false); // 🔥 STOP LOADING
     }
   }
 
@@ -230,7 +271,45 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
 
   List<IEEfficiencyData> ieEfficiencyList = [];
 
+  // Future<void> fetchIEEfficiencyData() async {
+  //   final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+  //   String ieefficencyProcess = selectedProcess == "Cutting"
+  //       ? "C"
+  //       : selectedProcess == "Stitching"
+  //           ? "S"
+  //           : selectedProcess == "Assembly"
+  //               ? "L"
+  //               : "ALL";
+  //   var apiUrl =
+  //       '${ApiHelper.productionUrl}get-IEEfficiency-data?inputDate=$formattedDate&line=$selectedPlants&process=$ieefficencyProcess';
+
+  //   try {
+  //     final response = await http.get(Uri.parse(apiUrl));
+
+  //     if (response.statusCode == 200) {
+  //       final List<dynamic> data = jsonDecode(response.body);
+  //       setState(() {
+  //         ieEfficiencyList =
+  //             data.map((json) => IEEfficiencyData.fromJson(json)).toList();
+  //       });
+  //     } else {
+  //       throw Exception("Failed to load IE Efficiency data");
+  //     }
+  //   } catch (e) {
+  //     print("Error fetching IE Efficiency data: $e");
+  //   }
+  // }
+
   Future<void> fetchIEEfficiencyData() async {
+    if (selectedPlants == null || selectedProcess == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select Plant and Process')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true); // 🔄 START LOADING
+
     final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
     String ieefficencyProcess = selectedProcess == "Cutting"
         ? "C"
@@ -239,7 +318,8 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
             : selectedProcess == "Assembly"
                 ? "L"
                 : "ALL";
-    var apiUrl =
+
+    final apiUrl =
         '${ApiHelper.productionUrl}get-IEEfficiency-data?inputDate=$formattedDate&line=$selectedPlants&process=$ieefficencyProcess';
 
     try {
@@ -256,6 +336,8 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
       }
     } catch (e) {
       print("Error fetching IE Efficiency data: $e");
+    } finally {
+      setState(() => isLoading = false); // ✅ STOP LOADING (IMPORTANT)
     }
   }
 
@@ -272,10 +354,15 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
   //   // Get the code or fallback to "ALL"
   //   final rftReportprocess = processCodeMap[selectedProcess] ?? "ALL";
 
-  //   final url = Uri.parse(
-  //     "http://10.3.0.70:9042/api/Production/get-RFT-data?inputDate=$formattedDate&line=$selectedPlants&process=$rftReportprocess",
-  //   );
-  //   print('RFT Report URL ${url}');
+  //   // Construct the URL string
+  //   final rftURL =
+  //       '${ApiHelper.productionUrl}get-RFT-data?inputDate=$formattedDate&line=$selectedPlants&process=$rftReportprocess';
+
+  //   print('RFT Report URL: $rftURL');
+
+  //   // Convert to Uri
+  //   final url = Uri.parse(rftURL);
+
   //   try {
   //     final response = await http.get(url);
   //     if (response.statusCode == 200) {
@@ -292,29 +379,35 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
   // }
 
   Future<void> fetchRFTReportData() async {
+    if (selectedPlants == null || selectedProcess == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select Plant and Process')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true); // 🔄 START LOADING
+
     final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
 
-    // Use a map for better clarity and flexibility
     const processCodeMap = {
       "Cutting": "C",
       "Stitching": "S",
       "Assembly": "L",
     };
 
-    // Get the code or fallback to "ALL"
     final rftReportprocess = processCodeMap[selectedProcess] ?? "ALL";
 
-    // Construct the URL string
     final rftURL =
         '${ApiHelper.productionUrl}get-RFT-data?inputDate=$formattedDate&line=$selectedPlants&process=$rftReportprocess';
 
     print('RFT Report URL: $rftURL');
 
-    // Convert to Uri
     final url = Uri.parse(rftURL);
 
     try {
       final response = await http.get(url);
+
       if (response.statusCode == 200) {
         final List<RftReport> data = rftReportFromJson(response.body);
         setState(() {
@@ -325,6 +418,8 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
       }
     } catch (e) {
       print("❌ Error: $e");
+    } finally {
+      setState(() => isLoading = false); // ✅ STOP LOADING (VERY IMPORTANT)
     }
   }
 
@@ -520,54 +615,57 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                     letterSpacing: 0.6,
                   ),
                 ),
-                onPressed: () async {
-                  if (selectedReport == 'B-Grade') {
-                    await fetchBGradeData();
-                    if (bGradeList.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content:
-                                Text("No B-Grade report found for selection")),
-                      );
-                    }
-                  }
-                  // else if (selectedReport == 'IE Efficiency') {
-                  //   await fetchIEEfficiencyData();
-                  //   if (ieEfficiencyList.isEmpty) {
-                  //     ScaffoldMessenger.of(context).showSnackBar(
-                  //       const SnackBar(
-                  //           content: Text(
-                  //               "No IE Efficiency report found for selection")),
-                  //     );
-                  //   }
-                  // }
-                  else if (selectedReport == 'IE Efficiency') {
-                    await fetchIEEfficiencyData();
-                    if (ieEfficiencyList.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "No IE Efficiency data found. Please select a date within the last 7 days.",
-                          ),
-                        ),
-                      );
-                    }
-                  } else if (selectedReport == 'RFT Report') {
-                    await fetchRFTReportData();
-                    if (rftReportList.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("No RFT report found for selection")),
-                      );
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text('Please select a report to fetch data.')),
-                    );
-                  }
-                },
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        if (selectedReport == 'B-Grade') {
+                          await fetchBGradeData();
+                          if (bGradeList.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      "No B-Grade report found for selection")),
+                            );
+                          }
+                        }
+                        // else if (selectedReport == 'IE Efficiency') {
+                        //   await fetchIEEfficiencyData();
+                        //   if (ieEfficiencyList.isEmpty) {
+                        //     ScaffoldMessenger.of(context).showSnackBar(
+                        //       const SnackBar(
+                        //           content: Text(
+                        //               "No IE Efficiency report found for selection")),
+                        //     );
+                        //   }
+                        // }
+                        else if (selectedReport == 'IE Efficiency') {
+                          await fetchIEEfficiencyData();
+                          if (ieEfficiencyList.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "No IE Efficiency data found. Please select a date within the last 7 days.",
+                                ),
+                              ),
+                            );
+                          }
+                        } else if (selectedReport == 'RFT Report') {
+                          await fetchRFTReportData();
+                          if (rftReportList.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      "No RFT report found for selection")),
+                            );
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Please select a report to fetch data.')),
+                          );
+                        }
+                      },
                 child: const Text("Search"),
               ),
             ),
@@ -575,74 +673,19 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
             const SizedBox(height: 16),
 
             Expanded(
-              child: selectedReport == 'IE Efficiency'
-                  ? (groupedIEData.isEmpty
-                      ? const Center(child: Text("No data found"))
-                      : ListView.builder(
-                          itemCount: groupedIEData.length,
-                          itemBuilder: (context, index) {
-                            final process = groupedIEData.keys.elementAt(index);
-                            final items = groupedIEData[process]!;
-
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 4),
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: ExpansionTile(
-                                title: Text(
-                                  getFullProcessName(process),
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.blue,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                childrenPadding: const EdgeInsets.all(16),
-                                expandedCrossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: items.map((data) {
-                                  return Padding(
-                                    padding:
-                                        const EdgeInsets.only(bottom: 12.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        reportsDataTextWidget('🏭 Line',
-                                            data.prodLine.toString()),
-                                        reportsDataTextWidget('📅 Date',
-                                            data.prodDate.toString()),
-                                        reportsDataTextWidget(
-                                            '⏱️Standard Manhours',
-                                            data.standardManhours
-                                                .toStringAsFixed(2)),
-                                        reportsDataTextWidget(
-                                            '⌛ Actual Manhours',
-                                            data.actualManhours
-                                                .toStringAsFixed(2)),
-                                        reportsDataTextWidget('⚙️ IE',
-                                            "${data.ie.toStringAsFixed(2)}%"),
-                                        const Divider(),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            );
-                          },
-                        ))
-                  : selectedReport == 'B-Grade'
-                      ? (groupedData.isEmpty
+              child: isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : selectedReport == 'IE Efficiency'
+                      ? (groupedIEData.isEmpty
                           ? const Center(child: Text("No data found"))
                           : ListView.builder(
-                              itemCount: groupedData.length,
+                              itemCount: groupedIEData.length,
                               itemBuilder: (context, index) {
                                 final process =
-                                    groupedData.keys.elementAt(index);
-                                final items = groupedData[process]!;
+                                    groupedIEData.keys.elementAt(index);
+                                final items = groupedIEData[process]!;
 
                                 return Card(
                                   margin: const EdgeInsets.symmetric(
@@ -672,21 +715,19 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             reportsDataTextWidget('🏭 Line',
-                                                data.department.toString()),
+                                                data.prodLine.toString()),
+                                            reportsDataTextWidget('📅 Date',
+                                                data.prodDate.toString()),
                                             reportsDataTextWidget(
-                                              '📅 Date',
-                                              DateFormat('yyyy-MM-dd')
-                                                  .format(data.date),
-                                            ),
-                                            reportsDataTextWidget('📦 Output',
-                                                data.output.toString()),
-                                            reportsDataTextWidget('🅱️ B Grade',
-                                                data.bGrade.toString()),
-                                            reportsDataTextWidget('🛠️ Repairs',
-                                                data.repairs.toString()),
+                                                '⏱️Standard Manhours',
+                                                data.standardManhours
+                                                    .toStringAsFixed(2)),
                                             reportsDataTextWidget(
-                                                '📉 B Grade %',
-                                                data.bGradePercent.toString()),
+                                                '⌛ Actual Manhours',
+                                                data.actualManhours
+                                                    .toStringAsFixed(2)),
+                                            reportsDataTextWidget('⚙️ IE',
+                                                "${data.ie.toStringAsFixed(2)}%"),
                                             const Divider(),
                                           ],
                                         ),
@@ -696,15 +737,15 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                 );
                               },
                             ))
-                      : selectedReport == 'RFT Report'
-                          ? (groupedRFTData.isEmpty
+                      : selectedReport == 'B-Grade'
+                          ? (groupedData.isEmpty
                               ? const Center(child: Text("No data found"))
                               : ListView.builder(
-                                  itemCount: groupedRFTData.length,
+                                  itemCount: groupedData.length,
                                   itemBuilder: (context, index) {
-                                    final processCode =
-                                        groupedRFTData.keys.elementAt(index);
-                                    final items = groupedRFTData[processCode]!;
+                                    final process =
+                                        groupedData.keys.elementAt(index);
+                                    final items = groupedData[process]!;
 
                                     return Card(
                                       margin: const EdgeInsets.symmetric(
@@ -715,7 +756,7 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                       ),
                                       child: ExpansionTile(
                                         title: Text(
-                                          getFullProcessName(processCode),
+                                          getFullProcessName(process),
                                           style: const TextStyle(
                                             fontSize: 20,
                                             color: Colors.blue,
@@ -734,20 +775,30 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
+                                                reportsDataTextWidget('🏭 Line',
+                                                    data.department.toString()),
+                                                // reportsDataTextWidget(
+                                                //   '📅 Date',
+                                                //   DateFormat('yyyy-MM-dd')
+                                                //       .format(data.date),
+                                                // ),
                                                 reportsDataTextWidget(
-                                                    '🏭 Line',
-                                                    data.productionLineCode ??
-                                                        ''),
-                                                reportsDataTextWidget('📅 Date',
-                                                    data.createdate ?? ''),
+                                                  '📅 Date',
+                                                  data.date, // 👈 FULL "2025-12-01 - 2025-12-22"
+                                                ),
                                                 reportsDataTextWidget(
-                                                    '📦 Total Qty',
-                                                    data.totalQty ?? ''),
+                                                    '📦 Output',
+                                                    data.output.toString()),
                                                 reportsDataTextWidget(
-                                                    '✅ Qualified Qty',
-                                                    data.qualifiedQty ?? ''),
-                                                reportsDataTextWidget('🎯 RFT',
-                                                    '${data.rft ?? '0'}%'),
+                                                    '🅱️ B Grade',
+                                                    data.bGrade.toString()),
+                                                reportsDataTextWidget(
+                                                    '🛠️ Repairs',
+                                                    data.repairs.toString()),
+                                                reportsDataTextWidget(
+                                                    '📉 B Grade %',
+                                                    data.bGradePercent
+                                                        .toString()),
                                                 const Divider(),
                                               ],
                                             ),
@@ -757,7 +808,74 @@ class _ProductionReportsModuleState extends State<ProductionReportsModule> {
                                     );
                                   },
                                 ))
-                          : const Center(child: Text("Please select a report")),
+                          : selectedReport == 'RFT Report'
+                              ? (groupedRFTData.isEmpty
+                                  ? const Center(child: Text("No data found"))
+                                  : ListView.builder(
+                                      itemCount: groupedRFTData.length,
+                                      itemBuilder: (context, index) {
+                                        final processCode = groupedRFTData.keys
+                                            .elementAt(index);
+                                        final items =
+                                            groupedRFTData[processCode]!;
+
+                                        return Card(
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 8, horizontal: 4),
+                                          elevation: 4,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: ExpansionTile(
+                                            title: Text(
+                                              getFullProcessName(processCode),
+                                              style: const TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.blue,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            childrenPadding:
+                                                const EdgeInsets.all(16),
+                                            expandedCrossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: items.map((data) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 12.0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    reportsDataTextWidget(
+                                                        '🏭 Line',
+                                                        data.productionLineCode ??
+                                                            ''),
+                                                    reportsDataTextWidget(
+                                                        '📅 Date',
+                                                        data.createdate ?? ''),
+                                                    reportsDataTextWidget(
+                                                        '📦 Total Qty',
+                                                        data.totalQty ?? ''),
+                                                    reportsDataTextWidget(
+                                                        '✅ Qualified Qty',
+                                                        data.qualifiedQty ??
+                                                            ''),
+                                                    reportsDataTextWidget(
+                                                        '🎯 RFT',
+                                                        '${data.rft ?? '0'}%'),
+                                                    const Divider(),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        );
+                                      },
+                                    ))
+                              : const Center(
+                                  child: Text("Please select a report")),
             ),
           ],
         ),

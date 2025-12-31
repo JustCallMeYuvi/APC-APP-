@@ -47,6 +47,9 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
   bool isModelandArticleLoading = false;
   bool isClearFilterLoading = false;
 
+  final ScrollController _scrollController = ScrollController();
+  bool showScrollToTopBtn = false;
+
   final List<Map<String, dynamic>> companies = [
     {'name': 'ALL', 'id': 'ALL'},
     {'name': 'APC', 'id': '5000'},
@@ -88,6 +91,18 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
     //   fetchedOrders = await fetchOrderInfo();
     //   setState(() {});
     // });
+
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 300) {
+        if (!showScrollToTopBtn) {
+          setState(() => showScrollToTopBtn = true);
+        }
+      } else {
+        if (showScrollToTopBtn) {
+          setState(() => showScrollToTopBtn = false);
+        }
+      }
+    });
   }
 
   Future<List<Map<String, dynamic>>> fetchOrderInfo() async {
@@ -259,9 +274,24 @@ class _OrderInfoPageState extends State<OrderInfoPage> {
                     .toList();
 
     return Scaffold(
+      floatingActionButton: showScrollToTopBtn
+          ? FloatingActionButton(
+              mini: true,
+              backgroundColor: Colors.lightGreen,
+              onPressed: () {
+                _scrollController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                );
+              },
+              child: const Icon(Icons.arrow_upward),
+            )
+          : null,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
+          controller: _scrollController, // 🔥 ADD THIS
           child: Column(
             children: [
               const SizedBox(
