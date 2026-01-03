@@ -39,61 +39,61 @@ class _LoginPageState extends State<LoginPage> {
     // TODO: implement initState
     super.initState();
 
-    checkForUpdates(); // Call update check on initialization
+    // checkForUpdates(); // Call update check on initialization
   }
 
-  Future<void> checkForUpdates() async {
-    setState(() {
-      _isLoading = true; // Start loading
-    });
+  // Future<void> checkForUpdates() async {
+  //   setState(() {
+  //     _isLoading = true; // Start loading
+  //   });
 
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String currentVersion = packageInfo.version;
+  //   PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  //   String currentVersion = packageInfo.version;
 
-    // final url = Uri.parse(
-    //     'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
-    final Uri url = ApiHelper.checkUpdateApi(currentVersion);
-    try {
-      final response = await http.get(url);
+  //   // final url = Uri.parse(
+  //   //     'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
+  //   final Uri url = ApiHelper.checkUpdateApi(currentVersion);
+  //   try {
+  //     final response = await http.get(url);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
 
-        if (data != null &&
-            data.containsKey('latestVersion') &&
-            data.containsKey('apkFileData')) {
-          String latestVersion = data['latestVersion'];
-          String apkFileData =
-              data['apkFileData']; // Base64 encoded APK file data
+  //       if (data != null &&
+  //           data.containsKey('latestVersion') &&
+  //           data.containsKey('apkFileData')) {
+  //         String latestVersion = data['latestVersion'];
+  //         String apkFileData =
+  //             data['apkFileData']; // Base64 encoded APK file data
 
-          if (currentVersion != latestVersion) {
-            _showUpdateDialog(latestVersion, apkFileData);
-          } else {
-            // _showNoUpdateDialog();
-          }
-        } else {
-          print(
-              'Invalid response: latestVersion or apkFileData key not found.');
-        }
-      } else if (response.statusCode == 404) {
-        // Handle the case when no update is available
-        if (response.body == "No update available") {
-          // _showNoUpdateDialog();
-        } else {
-          print('Unexpected response body: ${response.body}');
-        }
-      } else {
-        print(
-            'Failed to check for updates: ${response.statusCode} ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      print('Error while checking for updates: $e');
-    } finally {
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
-    }
-  }
+  //         if (currentVersion != latestVersion) {
+  //           _showUpdateDialog(latestVersion, apkFileData);
+  //         } else {
+  //           // _showNoUpdateDialog();
+  //         }
+  //       } else {
+  //         print(
+  //             'Invalid response: latestVersion or apkFileData key not found.');
+  //       }
+  //     } else if (response.statusCode == 404) {
+  //       // Handle the case when no update is available
+  //       if (response.body == "No update available") {
+  //         // _showNoUpdateDialog();
+  //       } else {
+  //         print('Unexpected response body: ${response.body}');
+  //       }
+  //     } else {
+  //       print(
+  //           'Failed to check for updates: ${response.statusCode} ${response.reasonPhrase}');
+  //     }
+  //   } catch (e) {
+  //     print('Error while checking for updates: $e');
+  //   } finally {
+  //     setState(() {
+  //       _isLoading = false; // Stop loading
+  //     });
+  //   }
+  // }
 
   void _showUpdateDialog(String latestVersion, String apkFileData) {
     showDialog(
@@ -407,7 +407,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       // 👇 Ensure URLs are updated based on Wi-Fi network first
-      // await ApiHelper.updateUrlsBasedOnNetwork();
+      await ApiHelper.updateUrlsBasedOnNetwork();
 
       // 👇 Now build login URL with the correct base URL
       final url = Uri.parse(ApiHelper.login(barcode, password));

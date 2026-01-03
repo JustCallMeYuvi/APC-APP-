@@ -170,7 +170,7 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
-    checkForUpdates(); // Call update check on initialization
+    // checkForUpdates(); // Call update check on initialization
 
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);

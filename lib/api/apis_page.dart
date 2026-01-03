@@ -66,20 +66,24 @@ class ApiHelper {
     if (ipAddress != null) {
       if (ipAddress.startsWith('10.3.') ||
           ipAddress.startsWith('10.4.') ||
-          ipAddress.startsWith('10.5.')) {
+          ipAddress.startsWith('10.5.') ||
+          ipAddress.startsWith('10.0.')) {
         // If the IP address starts with 10.3.x.x or 10.4.x.x, use local URLs
         // _baseUrl = 'http://10.3.0.208:8084/api/HR/';
-        // _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
-        // _maxkingGMSUrl = 'http://10.3.0.208:8084/api/Maxking_GMS_/';
-        // _productionUrl = 'http://10.3.0.208:8084/api/Production/';
-        // _carConveynanceUrl = 'http://10.3.0.208:8084/api/Car_Conveyance_/';
-
-// for test url apk
         _baseUrl = 'http://10.3.0.70:9042/api/HR/';
-        _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
-        _maxkingGMSUrl = 'http://10.3.0.70:9042/api/Maxking_GMS_/';
+        _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
+        _maxkingGMSUrl = 'http://10.3.0.208:8084/api/Maxking_GMS_/';
+        // _productionUrl = 'http://10.3.0.208:8084/api/Production/';
+
         _productionUrl = 'http://10.3.0.70:9042/api/Production/';
-        _carConveynanceUrl = 'http://10.3.0.70:9042/api/Car_Conveyance_/';
+        _carConveynanceUrl = 'http://10.3.0.208:8084/api/Car_Conveyance_/';
+
+// // for test url apk
+//         _baseUrl = 'http://10.3.0.70:9042/api/HR/';
+//         _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
+//         _maxkingGMSUrl = 'http://10.3.0.70:9042/api/Maxking_GMS_/';
+//         _productionUrl = 'http://10.3.0.70:9042/api/Production/';
+//         _carConveynanceUrl = 'http://10.3.0.70:9042/api/Car_Conveyance_/';
 
         // urlGlobalOrLocalCheck = '10.3.0.208';
         urlGlobalOrLocalCheck = '10.3.0.70';
@@ -93,21 +97,24 @@ class ApiHelper {
 
 // this global domain based url
         // _baseUrl = 'http://apc-gms.apachefootwear.com:8084/api/HR/';
-        // _gmsUrl = 'http://apc-gms.apachefootwear.com:8084/api/GMS/';
-        // _maxkingGMSUrl =
-        //     'http://apc-gms.apachefootwear.com:8084/api/Maxking_GMS_/';
+        _baseUrl = 'http://115.244.47.101:9042/api/HR/';
+
+        _gmsUrl = 'http://apc-gms.apachefootwear.com:8084/api/GMS/';
+        _maxkingGMSUrl =
+            'http://apc-gms.apachefootwear.com:8084/api/Maxking_GMS_/';
         // _productionUrl =
         //     'http://apc-gms.apachefootwear.com:8084/api/Production/';
-        // _carConveynanceUrl =
-        //     'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/';
-        // urlGlobalOrLocalCheck = '203.153.32.85';
-
-        _baseUrl = 'http://115.244.47.101:9042/api/HR/';
-        _gmsUrl = 'http://115.244.47.101:9042/api/GMS/';
-        _maxkingGMSUrl = 'http://115.244.47.101:9042/api/Maxking_GMS_/';
         _productionUrl = 'http://115.244.47.101:9042/api/Production/';
-        _carConveynanceUrl = 'http://115.244.47.101:9042/api/Car_Conveyance_/';
-        urlGlobalOrLocalCheck = '115.244.47.101';
+        _carConveynanceUrl =
+            'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/';
+        urlGlobalOrLocalCheck = '203.153.32.85';
+
+        // _baseUrl = 'http://115.244.47.101:9042/api/HR/';
+        // _gmsUrl = 'http://115.244.47.101:9042/api/GMS/';
+        // _maxkingGMSUrl = 'http://115.244.47.101:9042/api/Maxking_GMS_/';
+        // _productionUrl = 'http://115.244.47.101:9042/api/Production/';
+        // _carConveynanceUrl = 'http://115.244.47.101:9042/api/Car_Conveyance_/';
+        // urlGlobalOrLocalCheck = '115.244.47.101';
       }
       print('Base URL set to: $_baseUrl');
       print('GMS URL set to: $_gmsUrl');

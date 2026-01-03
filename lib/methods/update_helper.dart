@@ -316,6 +316,10 @@
 //     );
 //   }
 // }
+
+
+
+// // new apk and url code
 import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
@@ -424,10 +428,10 @@ class UpdateHelper {
           'Please download and install the latest APK.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Later'),
-          ),
+          // TextButton(
+          //   onPressed: () => Navigator.pop(ctx),
+          //   child: const Text('Later'),
+          // ),
           ElevatedButton(
             onPressed: () async {
               final uri = Uri.parse(downloadUrl);
@@ -443,7 +447,7 @@ class UpdateHelper {
                   ),
                 );
               }
-              Navigator.pop(ctx);
+              // Navigator.pop(ctx);
             },
             child: const Text('Download Update'),
           ),
