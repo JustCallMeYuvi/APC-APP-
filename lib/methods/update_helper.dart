@@ -317,8 +317,6 @@
 //   }
 // }
 
-
-
 // // new apk and url code
 import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
@@ -326,6 +324,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 class UpdateHelper {
   static Future<bool> checkForUpdates(BuildContext context) async {
     // 🔥 CALL YOUR METHOD HERE
@@ -341,8 +340,7 @@ class UpdateHelper {
     debugPrint('🔵 Check Version API: $url');
 
     try {
-      final response =
-          await http.get(url).timeout(const Duration(seconds: 60));
+      final response = await http.get(url).timeout(const Duration(seconds: 60));
 
       debugPrint('🟢 Status Code: ${response.statusCode}');
       debugPrint('🟢 Response Body: ${response.body}');
@@ -394,7 +392,6 @@ class UpdateHelper {
 
     return false;
   }
-
 
   // ✅ ADD THIS METHOD INSIDE CLASS
   static int compareVersions(String v1, String v2) {
