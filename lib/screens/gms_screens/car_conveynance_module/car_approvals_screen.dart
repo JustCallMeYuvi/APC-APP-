@@ -22,14 +22,27 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
   DateTime? toDate;
 
   String? _selectedCarType;
-  String? _selectedStatus;
+  // String? _selectedStatus;
   bool _isLoading = false;
 
-  final List<String> carTypes = ["NORMAL", "VIP", "EMERGENCY"];
-  final List<String> statusTypes = ["PENDING"];
+  // final List<String> carTypes = ["NORMAL", "VIP", "EMERGENCY"];
+  // final List<String> statusTypes = ["PENDING"];
+
+  String? _selectedLevel; // from carTypes
+  String? _selectedStatus; // from statusTypes
+  final List<String> carTypes = ["Approval", "Car Assign"];
+  final List<String> statusTypes = ["PENDING", "APPROVED", "REJECTED"];
+
+  Map<String, List<dynamic>> groupedBookings = {};
 
   final TextEditingController _carTypeController = TextEditingController();
   final TextEditingController _statusController = TextEditingController();
+
+  final List<String> bookingTypeOrder = [
+    "NORMAL",
+    "VIP",
+    "EMERGENCY",
+  ];
 
   Future<void> _pickDate(bool isFrom) async {
     final DateTime? picked = await showDatePicker(
@@ -49,13 +62,62 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
     }
   }
 
+  bool _hasValue(dynamic value) {
+    return value != null &&
+        value.toString().trim().isNotEmpty &&
+        value.toString().toLowerCase() != "null";
+  }
+
   List<dynamic> _carBookings = []; // Store API results here
 
-  /// Fetch car booking records
+  // /// Fetch car booking records
+  // Future<void> _fetchCarBookings() async {
+  //   if (_selectedStatus == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Please select Approval Status")),
+  //     );
+  //     return;
+  //   }
+
+  //   setState(() {
+  //     _isLoading = true;
+  //     _carBookings.clear();
+  //   });
+
+  //   try {
+  //     final userId = widget.userData.empNo ?? "0"; // Use your empNo field
+  //     // final url =
+  //     //     "http://10.3.0.70:9042/api/Car_Conveyance_/CarBookingRecords?USERID=$userId&MANAGE=$_selectedStatus";
+  //     final url =
+  //         '${ApiHelper.carConveynanceUrl}CarBookingRecords?USERID=$userId&MANAGE=$_selectedStatus';
+  //     final response = await http.get(Uri.parse(url));
+
+  //     if (response.statusCode == 200) {
+  //       final List<dynamic> data = json.decode(response.body);
+  //       setState(() {
+  //         _carBookings = data;
+  //       });
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //             content: Text("Failed to load data: ${response.statusCode}")),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("Error fetching data: $e")),
+  //     );
+  //   } finally {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
+
   Future<void> _fetchCarBookings() async {
-    if (_selectedStatus == null) {
+    if (_selectedLevel == null || _selectedStatus == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select Approval Status")),
+        const SnackBar(content: Text("Please select Level and Status")),
       );
       return;
     }
@@ -63,25 +125,37 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
     setState(() {
       _isLoading = true;
       _carBookings.clear();
+      groupedBookings.clear(); // ✅ clear previous groups
     });
 
     try {
-      final userId = widget.userData.empNo ?? "0"; // Use your empNo field
-      // final url =
-      //     "http://10.3.0.70:9042/api/Car_Conveyance_/CarBookingRecords?USERID=$userId&MANAGE=$_selectedStatus";
-      final url =
-          '${ApiHelper.carConveynanceUrl}CarBookingRecords?USERID=$userId&MANAGE=$_selectedStatus';
+      final url = '${ApiHelper.carConveynanceUrl}'
+          'CarApprovalRecords?level=$_selectedLevel&status=$_selectedStatus';
+
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+
+        // ✅ GROUP BY selectedBookingType
+        for (var item in data) {
+          final String type = item["selectedBookingType"] ?? "UNKNOWN";
+
+          if (!groupedBookings.containsKey(type)) {
+            groupedBookings[type] = [];
+          }
+
+          groupedBookings[type]!.add(item);
+        }
+
         setState(() {
-          _carBookings = data;
+          _carBookings = data; // optional (keep if needed elsewhere)
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text("Failed to load data: ${response.statusCode}")),
+            content: Text("Failed to load data: ${response.statusCode}"),
+          ),
         );
       }
     } catch (e) {
@@ -102,50 +176,6 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // From & To Date
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: InkWell(
-            //         onTap: () => _pickDate(true),
-            //         child: Container(
-            //           padding: const EdgeInsets.symmetric(
-            //               vertical: 14, horizontal: 12),
-            //           decoration: BoxDecoration(
-            //             border: Border.all(color: Colors.grey.shade400),
-            //             borderRadius: BorderRadius.circular(12),
-            //           ),
-            //           child: Text(
-            //             fromDate == null
-            //                 ? "From Date"
-            //                 : "${fromDate!.day}/${fromDate!.month}/${fromDate!.year}",
-            //             style: textStyle,
-            //           ),
-            //         ),
-            //       ),
-            //     ),
-            //     const SizedBox(width: 12),
-            //     Expanded(
-            //       child: InkWell(
-            //         onTap: () => _pickDate(false),
-            //         child: Container(
-            //           padding: const EdgeInsets.symmetric(
-            //               vertical: 14, horizontal: 12),
-            //           decoration: BoxDecoration(
-            //             border: Border.all(color: Colors.grey.shade400),
-            //             borderRadius: BorderRadius.circular(12),
-            //           ),
-            //           child: Text(
-            //             toDate == null
-            //                 ? "To Date"
-            //                 : "${toDate!.day}/${toDate!.month}/${toDate!.year}",
-            //             style: textStyle,
-            //           ),
-            //         ),
-            //       ),
-            //     ),
-            //   ],
-            // ),
             const SizedBox(height: 20),
 
             // Car Type Search Dropdown
@@ -153,7 +183,7 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
               textFieldConfiguration: TextFieldConfiguration(
                 controller: _carTypeController,
                 decoration: const InputDecoration(
-                  labelText: "Car Type",
+                  labelText: "Approval Type",
                   border: OutlineInputBorder(),
                   suffixIcon: Icon(Icons.arrow_drop_down),
                 ),
@@ -169,7 +199,8 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
               },
               onSuggestionSelected: (suggestion) {
                 setState(() {
-                  _selectedCarType = suggestion;
+                  // _selectedCarType = suggestion;
+                  _selectedLevel = suggestion; // ✅ LEVEL
                   _carTypeController.text = suggestion;
                 });
               },
@@ -208,61 +239,6 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Apply Button
-            // SizedBox(
-            //   width: double.infinity,
-            //   child: ElevatedButton(
-            //     onPressed: () {
-            //       ScaffoldMessenger.of(context).showSnackBar(
-            //         SnackBar(
-            //           content: Text(
-            //             "From: $fromDate | To: $toDate | Car: $_selectedCarType | Status: $_selectedStatus",
-            //           ),
-            //         ),
-            //       );
-            //     },
-            //     style: ElevatedButton.styleFrom(
-            //       padding: const EdgeInsets.symmetric(vertical: 14),
-            //       shape: RoundedRectangleBorder(
-            //         borderRadius: BorderRadius.circular(12),
-            //       ),
-            //     ),
-            //     child: const Text("Apply", style: TextStyle(fontSize: 18)),
-            //   ),
-            // ),
-
-            // SizedBox(
-            //   width: double.infinity,
-            //   child: ElevatedButton(
-            //     onPressed: () async {
-            //       setState(() {
-            //         _isLoading = true;
-            //       });
-
-            //       await Future.delayed(const Duration(seconds: 3));
-
-            //       setState(() {
-            //         _isLoading = false;
-            //       });
-
-            //       ScaffoldMessenger.of(context).showSnackBar(
-            //         SnackBar(
-            //           content: Text(
-            //             "From: $fromDate | To: $toDate | Car: $_selectedCarType | Status: $_selectedStatus",
-            //           ),
-            //         ),
-            //       );
-            //     },
-            //     style: ElevatedButton.styleFrom(
-            //       padding: const EdgeInsets.symmetric(vertical: 14),
-            //       shape: RoundedRectangleBorder(
-            //         borderRadius: BorderRadius.circular(12),
-            //       ),
-            //     ),
-            //     child: const Text("Apply", style: TextStyle(fontSize: 18)),
-            //   ),
-            // ),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -273,7 +249,7 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text("Apply", style: TextStyle(fontSize: 18)),
+                child: const Text("Submit", style: TextStyle(fontSize: 18)),
               ),
             ),
 
@@ -289,95 +265,155 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
               ),
             const SizedBox(height: 20),
 
-            // // Car Animation
-            // SizedBox(
-            //   height: 150,
-            //   child: Image.asset(
-            //     'assets/car.gif',
-            //     fit: BoxFit.contain,
-            //   ),
-            // ),
-
-            if (!_isLoading && _carBookings.isNotEmpty)
+            if (!_isLoading && groupedBookings.isNotEmpty)
               Expanded(
-                child: ListView.builder(
-                  itemCount: _carBookings.length,
-                  itemBuilder: (context, index) {
-                    final booking = _carBookings[index];
-                    final status =
-                        booking["final_status"]?.toString().toUpperCase() ??
-                            "-";
+                child: ListView(
+                  children: bookingTypeOrder
+                      .where((type) => groupedBookings.containsKey(type))
+                      .map((bookingType) {
+                    final bookings = groupedBookings[bookingType]!;
 
-                    return Container(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 12),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.15),
-                            spreadRadius: 1,
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  CarBookingDetailsScreen(booking: booking),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
+                      child: ExpansionTile(
+                        initiallyExpanded:
+                            bookingType == "NORMAL", // ✅ NORMAL open first
+                        title: Text(
+                          bookingType,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        children: bookings.map<Widget>((booking) {
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      // CarBookingDetailsScreen(booking: booking),
+                                      CarBookingDetailsScreen(
+                                    bookingId: booking["carBookingId"],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: Colors.blueAccent.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.06),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              child: const Icon(Icons.directions_car,
-                                  color: Colors.blueAccent, size: 28),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    booking["name"] ?? "Unknown",
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                  // 🔹 TOP ROW: Booking ID + Status
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // Booking ID
+                                      Text(
+                                        "Booking #${booking["carBookingId"] ?? "-"}",
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+
+                                      // STATUS CHIP (only if status exists)
+                                      if (_hasValue(booking["inchargeStatus"]))
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: booking["inchargeStatus"] ==
+                                                    "APPROVED"
+                                                ? Colors.green.shade100
+                                                : booking["inchargeStatus"] ==
+                                                        "REJECTED"
+                                                    ? Colors.red.shade100
+                                                    : Colors.orange.shade100,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            booking["inchargeStatus"],
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: booking[
+                                                          "inchargeStatus"] ==
+                                                      "APPROVED"
+                                                  ? const Color.fromARGB(
+                                                      255, 89, 131, 90)
+                                                  : booking["inchargeStatus"] ==
+                                                          "REJECTED"
+                                                      ? Colors.red
+                                                      : Colors.orange,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                      "Booking ID: ${booking["carbookingid"] ?? "-"}",
-                                      style: const TextStyle(fontSize: 13)),
-                                  Text(
-                                      "Type: ${booking["selectedbookingtype"] ?? "-"}",
-                                      style: const TextStyle(fontSize: 13)),
-                                  Text(
-                                      "Destination: ${booking["destination"] ?? "-"}",
-                                      style: const TextStyle(fontSize: 13)),
-                                  Text(
-                                      "Travel: ${booking["travelfrom"] ?? "-"} → ${booking["destinationto"] ?? "-"}",
-                                      style: const TextStyle(fontSize: 13)),
+
+                                  const SizedBox(height: 10),
+
+                                  // 🔹 TRAVEL ROW
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.location_on_outlined,
+                                          size: 18, color: Colors.blueAccent),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          "${booking["travelFrom"] ?? "-"}  →  ${booking["destinationTo"] ?? "-"}",
+                                          style: const TextStyle(fontSize: 13),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  // 🔹 BOTTOM ROW: EXTRA STATUS
+                                  Wrap(
+                                    spacing: 8,
+                                    children: [
+                                      if (booking["gmoStatus"] != null)
+                                        _statusChip(
+                                            "GMO", booking["gmoStatus"]),
+                                      if (booking["secStatus"] != null)
+                                        _statusChip(
+                                            "SEC", booking["secStatus"]),
+                                      if (booking["secSpvStatus"] != null)
+                                        _statusChip(
+                                            "SPV", booking["secSpvStatus"]),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        }).toList(),
                       ),
                     );
-                  },
+                  }).toList(),
                 ),
               ),
 
@@ -397,6 +433,23 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statusChip(String label, String status) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        "$label: $status",
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
