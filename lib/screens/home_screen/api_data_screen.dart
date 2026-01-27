@@ -39,6 +39,7 @@
 
 // api_data_screen.dart
 
+import 'package:animated_movies_app/dormitory/resident_complaint_page.dart';
 import 'package:animated_movies_app/hr_department/employee_punch_page.dart';
 import 'package:animated_movies_app/it_modules/asset_management_screen.dart';
 import 'package:animated_movies_app/overtime/overtime_bloc/overtime_bloc.dart';
@@ -341,10 +342,16 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                                     // userData:
                                                                                                                                                                     //     widget.userData,
                                                                                                                                                                   )
-                                                                                                                                                                : Text(
-                                                                                                                                                                    'Data for ${widget.pageName} goes here.',
-                                                                                                                                                                    style: const TextStyle(fontSize: 20),
-                                                                                                                                                                  )
+                                                                                                                                                                : widget.pageRoute == 'Resident_Complaint'
+                                                                                                                                                                    ? ResidentComplaintPage(
+                                                                                                                                                                        userData: widget.userData,
+                                                                                                                                                                        // userData:
+                                                                                                                                                                        //     widget.userData,
+                                                                                                                                                                      )
+                                                                                                                                                                    : Text(
+                                                                                                                                                                        'Data for ${widget.pageName} goes here.',
+                                                                                                                                                                        style: const TextStyle(fontSize: 20),
+                                                                                                                                                                      )
 
             // : SignApprovalPage(
             //     userData: widget.userData,

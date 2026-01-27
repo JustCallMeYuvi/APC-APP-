@@ -430,7 +430,7 @@ class _LoginPageState extends State<LoginPage> {
       if (response.statusCode == 200) {
         final List<LoginModelApi> loginResponse =
             loginModelApiFromJson(response.body);
-
+print('Login Body ${response.body}');
         if (loginResponse.isNotEmpty) {
           final loginData = loginResponse.first;
 
@@ -837,6 +837,8 @@ class LoginModelApi {
   String message;
   bool success;
   String? token;
+  // 🔥 NEW FIELD
+  String? deptName;
 
   LoginModelApi({
     required this.empNo,
@@ -846,6 +848,7 @@ class LoginModelApi {
     required this.message,
     required this.success,
     this.token,
+    this.deptName,
   });
 
   factory LoginModelApi.fromJson(Map<String, dynamic> json) => LoginModelApi(
@@ -857,6 +860,8 @@ class LoginModelApi {
         message: json["message"] ?? "No message", // Provide a default message
         success: json["success"] ?? false, // Provide a default false value
         token: json["token"], // Token is nullable, no default needed
+        // ✅ MAP DEPARTMENT NAME
+        deptName: json["depT_NAME"]?.toString(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -867,5 +872,8 @@ class LoginModelApi {
         "message": message,
         "success": success,
         "token": token,
+
+        // optional
+        "depT_NAME": deptName,
       };
 }

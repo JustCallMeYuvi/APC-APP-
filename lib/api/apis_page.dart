@@ -42,6 +42,8 @@ class ApiHelper {
   static String _carConveynanceUrl =
       'http://10.3.0.70:9042/api/Car_Conveyance_/';
 
+  static String _dormitoryURL = 'http://10.3.0.70:9042/api/Dormitory_/';
+
 // Car Conevynance base URL
   // static String _carConveynanceUrl =
   //     'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
@@ -56,6 +58,7 @@ class ApiHelper {
   static String get maxkingGMSUrl => _maxkingGMSUrl; // Maxking URL
 
   static String get carConveynanceUrl => _carConveynanceUrl;
+  static String get dormitoryURL => _dormitoryURL;
 
   static String urlGlobalOrLocalCheck = '';
 
