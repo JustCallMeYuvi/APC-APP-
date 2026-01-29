@@ -86,6 +86,8 @@ import 'package:animated_movies_app/screens/ui_local_and_global_api_screens/api_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../resident_issues_bloc_folder/resident_issues_screen.dart';
+
 class ApiDataScreen extends StatefulWidget {
   final String pageName;
   final String pageRoute;
@@ -344,6 +346,12 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                                   )
                                                                                                                                                                 : widget.pageRoute == 'Resident_Complaint'
                                                                                                                                                                     ? ResidentComplaintPage(
+                                                                                                                                                                        userData: widget.userData,
+                                                                                                                                                                        // userData:
+                                                                                                                                                                        //     widget.userData,
+                                                                                                                                                                      )
+                                                                                                                                                                             : widget.pageRoute == 'Resident_Issues'
+                                                                                                                                                                    ? ResidentIssuesScreen(
                                                                                                                                                                         userData: widget.userData,
                                                                                                                                                                         // userData:
                                                                                                                                                                         //     widget.userData,

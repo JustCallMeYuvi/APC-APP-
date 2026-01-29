@@ -148,19 +148,34 @@ class _ResidentComplaintPageState extends State<ResidentComplaintPage> {
 
   // ---------------- UI Helpers ----------------
 
-  Widget _header() => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFff512f), Color(0xFFdd2476)],
+  Widget _header() => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10,
+                offset: Offset(0, 6),
+              ),
+            ],
           ),
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-        ),
-        child: const Text(
-          "Raise a Complaint",
-          style: TextStyle(
-              color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+          child: const Row(
+            children: [
+              Icon(Icons.edit_note, size: 32, color: Colors.deepPurple),
+              SizedBox(width: 12),
+              Text(
+                "Raise a Complaint",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       );
 
