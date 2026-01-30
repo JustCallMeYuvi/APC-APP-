@@ -39,6 +39,7 @@
 
 // api_data_screen.dart
 
+import 'package:animated_movies_app/MNT_Modules/maintenance_qr_code_scanner_screen.dart';
 import 'package:animated_movies_app/dormitory/resident_complaint_page.dart';
 import 'package:animated_movies_app/hr_department/employee_punch_page.dart';
 import 'package:animated_movies_app/it_modules/asset_management_screen.dart';
@@ -350,16 +351,22 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                                         // userData:
                                                                                                                                                                         //     widget.userData,
                                                                                                                                                                       )
-                                                                                                                                                                             : widget.pageRoute == 'Resident_Issues'
-                                                                                                                                                                    ? ResidentIssuesScreen(
-                                                                                                                                                                        userData: widget.userData,
-                                                                                                                                                                        // userData:
-                                                                                                                                                                        //     widget.userData,
-                                                                                                                                                                      )
-                                                                                                                                                                    : Text(
-                                                                                                                                                                        'Data for ${widget.pageName} goes here.',
-                                                                                                                                                                        style: const TextStyle(fontSize: 20),
-                                                                                                                                                                      )
+                                                                                                                                                                    : widget.pageRoute == 'Resident_Issues'
+                                                                                                                                                                        ? ResidentIssuesScreen(
+                                                                                                                                                                            userData: widget.userData,
+                                                                                                                                                                            // userData:
+                                                                                                                                                                            //     widget.userData,
+                                                                                                                                                                          )
+                                                                                                                                                                        : widget.pageRoute == 'QR_Code'
+                                                                                                                                                                            ? MaintenanceQrCodeScannerScreen(
+                                                                                                                                                                                userData: widget.userData,
+                                                                                                                                                                                // userData:
+                                                                                                                                                                                //     widget.userData,
+                                                                                                                                                                              )
+                                                                                                                                                                            : Text(
+                                                                                                                                                                                'Data for ${widget.pageName} goes here.',
+                                                                                                                                                                                style: const TextStyle(fontSize: 20),
+                                                                                                                                                                              )
 
             // : SignApprovalPage(
             //     userData: widget.userData,

@@ -44,6 +44,6 @@ class ComplaintResidentBloc
         isLoading: false,
         error: e.toString(),
       ));
-    }
+    } 
   }
 }
