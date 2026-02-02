@@ -33,34 +33,16 @@ class MaintenanceQrCodeScannerScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   /// QR ICON
-                  const Icon(
-                    Icons.qr_code_scanner,
-                    size: 80,
+                  IconButton(
                     color: Colors.blue,
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  /// SCAN BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: state.isLoading
-                          ? null
-                          : () {
-                              context.read<QrScanBloc>().add(StartQrScan());
-                            },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Scan QR Code',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
+                    onPressed: state.isLoading
+                        ? null
+                        : () {
+                            context.read<QrScanBloc>().add(StartQrScan());
+                          },
+                    icon: const Icon(
+                      Icons.qr_code_scanner,
+                      size: 80,
                     ),
                   ),
 
