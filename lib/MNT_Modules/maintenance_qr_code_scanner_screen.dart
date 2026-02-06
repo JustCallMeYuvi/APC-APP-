@@ -300,56 +300,53 @@ class _MaintenanceQrCodeScannerScreenState
   }
 
   Widget _infoRow(IconData icon, String title, String? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🔹 ICON WITH BACKGROUND (STYLE BOOST)
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: Colors.grey.shade700,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 🔹 ICON WITH BACKGROUND (STYLE BOOST)
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: Colors.grey.shade700,
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        // 🔹 TITLE
+        SizedBox(
+          width: 150,
+          child: Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Colors.grey.shade800,
             ),
           ),
+        ),
 
-          const SizedBox(width: 12),
+        const SizedBox(width: 6),
 
-          // 🔹 TITLE
-          SizedBox(
-            width: 150,
-            child: Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: Colors.grey.shade800,
-              ),
+        // 🔹 VALUE
+        Expanded(
+          child: Text(
+            value ?? '-',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade900,
+              height: 1.4, // line spacing
             ),
           ),
-
-          const SizedBox(width: 6),
-
-          // 🔹 VALUE
-          Expanded(
-            child: Text(
-              value ?? '-',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade900,
-                height: 1.4, // line spacing
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
