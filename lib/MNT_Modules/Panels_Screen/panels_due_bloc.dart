@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:animated_movies_app/MNT_Modules/Panels_Screen/panels_due_model.dart';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
 import 'panels_due_event.dart';
 import 'panels_due_state.dart';
-
 
 class PanelsDueBloc extends Bloc<PanelsDueEvent, PanelsDueState> {
   PanelsDueBloc() : super(PanelsDueInitial()) {
@@ -17,10 +17,15 @@ class PanelsDueBloc extends Bloc<PanelsDueEvent, PanelsDueState> {
     emit(PanelsDueLoading());
 
     try {
-      final response = await http.get(
-        Uri.parse('http://10.3.0.70:9042/api/MNT_/panels-due-for-scan'),
+      // final response = await http.get(
+      //   Uri.parse('http://10.3.0.70:9042/api/MNT_/panels-due-for-scan'),
+      // );
+
+      final url = Uri.parse(
+        '${ApiHelper.mntURL}panels-due-for-scan',
       );
 
+      final response = await http.get(url);
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         emit(PanelsDueLoaded(PanelsDueResponse.fromJson(jsonData)));

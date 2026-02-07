@@ -44,6 +44,8 @@ class ApiHelper {
 
   static String _dormitoryURL = 'http://10.3.0.70:9042/api/Dormitory_/';
 
+  static String _mntURL = 'http://10.3.0.70:9042/api/MNT_/';
+
 // Car Conevynance base URL
   // static String _carConveynanceUrl =
   //     'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
@@ -60,69 +62,75 @@ class ApiHelper {
   static String get carConveynanceUrl => _carConveynanceUrl;
   static String get dormitoryURL => _dormitoryURL;
 
+  static String get mntURL => _mntURL;
+
   static String urlGlobalOrLocalCheck = '';
 
   // Method to update URLs based on the current Wi-Fi network
-//   static Future<void> updateUrlsBasedOnNetwork() async {
-//     String? ipAddress = await _getWifiIPAddress();
-//     print('👉 Detected IP: $ipAddress');
-//     if (ipAddress != null) {
-//       if (ipAddress.startsWith('10.3.') ||
-//           ipAddress.startsWith('10.4.') ||
-//           ipAddress.startsWith('10.5.') ||
-//           ipAddress.startsWith('10.0.')) {
-//         // If the IP address starts with 10.3.x.x or 10.4.x.x, use local URLs
-//         // _baseUrl = 'http://10.3.0.208:8084/api/HR/';
+  static Future<void> updateUrlsBasedOnNetwork() async {
+    String? ipAddress = await _getWifiIPAddress();
+    print('👉 Detected IP: $ipAddress');
+    if (ipAddress != null) {
+      if (ipAddress.startsWith('10.3.') ||
+          ipAddress.startsWith('10.4.') ||
+          ipAddress.startsWith('10.5.') ||
+          ipAddress.startsWith('10.0.')) {
+        // If the IP address starts with 10.3.x.x or 10.4.x.x, use local URLs
+        // _baseUrl = 'http://10.3.0.208:8084/api/HR/';
+        _baseUrl = 'http://10.3.0.70:9042/api/HR/';
+        _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
+        _maxkingGMSUrl = 'http://10.3.0.208:8084/api/Maxking_GMS_/';
+        // _productionUrl = 'http://10.3.0.208:8084/api/Production/';
+
+        _productionUrl = 'http://10.3.0.70:9042/api/Production/';
+        _carConveynanceUrl = 'http://10.3.0.208:8084/api/Car_Conveyance_/';
+
+// // for test url apk
 //         _baseUrl = 'http://10.3.0.70:9042/api/HR/';
-//         _gmsUrl = 'http://10.3.0.208:8084/api/GMS/';
-//         _maxkingGMSUrl = 'http://10.3.0.208:8084/api/Maxking_GMS_/';
-//         // _productionUrl = 'http://10.3.0.208:8084/api/Production/';
-
+//         _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
+//         _maxkingGMSUrl = 'http://10.3.0.70:9042/api/Maxking_GMS_/';
 //         _productionUrl = 'http://10.3.0.70:9042/api/Production/';
-//         _carConveynanceUrl = 'http://10.3.0.208:8084/api/Car_Conveyance_/';
+//         _carConveynanceUrl = 'http://10.3.0.70:9042/api/Car_Conveyance_/';
 
-// // // for test url apk
-// //         _baseUrl = 'http://10.3.0.70:9042/api/HR/';
-// //         _gmsUrl = 'http://10.3.0.70:9042/api/GMS/';
-// //         _maxkingGMSUrl = 'http://10.3.0.70:9042/api/Maxking_GMS_/';
-// //         _productionUrl = 'http://10.3.0.70:9042/api/Production/';
-// //         _carConveynanceUrl = 'http://10.3.0.70:9042/api/Car_Conveyance_/';
+        // urlGlobalOrLocalCheck = '10.3.0.208';
+        urlGlobalOrLocalCheck = '10.3.0.70';
+      } else {
+        // If the IP address does not match, use the public URLs
+        // _baseUrl = 'http://203.153.32.85:54329/api/HR/';
+        // _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
+        // _maxkingGMSUrl = 'http://203.153.32.85:54329/api/Maxking_GMS_/';
+        // _productionUrl = 'http://203.153.32.85:54329/api/Production/';
+        // _carConveynanceUrl = 'http://10.3.0.70:9042/api/Car_Conveyance_/';
 
-//         // urlGlobalOrLocalCheck = '10.3.0.208';
-//         urlGlobalOrLocalCheck = '10.3.0.70';
-//       } else {
-//         // If the IP address does not match, use the public URLs
-//         // _baseUrl = 'http://203.153.32.85:54329/api/HR/';
-//         // _gmsUrl = 'http://203.153.32.85:54329/api/GMS/';
-//         // _maxkingGMSUrl = 'http://203.153.32.85:54329/api/Maxking_GMS_/';
-//         // _productionUrl = 'http://203.153.32.85:54329/api/Production/';
-//         // _carConveynanceUrl = 'http://10.3.0.70:9042/api/Car_Conveyance_/';
+// this global domain based url
+        // _baseUrl = 'http://apc-gms.apachefootwear.com:8084/api/HR/';
+        // _baseUrl = 'http://115.244.47.101:9042/api/HR/';
 
-// // this global domain based url
-//         // _baseUrl = 'http://apc-gms.apachefootwear.com:8084/api/HR/';
-//         _baseUrl = 'http://115.244.47.101:9042/api/HR/';
+        // _gmsUrl = 'http://apc-gms.apachefootwear.com:8084/api/GMS/';
+        // _maxkingGMSUrl =
+        //     'http://apc-gms.apachefootwear.com:8084/api/Maxking_GMS_/';
+        // // _productionUrl =
+        // //     'http://apc-gms.apachefootwear.com:8084/api/Production/';
+        // _productionUrl = 'http://115.244.47.101:9042/api/Production/';
+        // _carConveynanceUrl =
+        //     'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/';
+        // urlGlobalOrLocalCheck = '203.153.32.85';
 
-//         _gmsUrl = 'http://apc-gms.apachefootwear.com:8084/api/GMS/';
-//         _maxkingGMSUrl =
-//             'http://apc-gms.apachefootwear.com:8084/api/Maxking_GMS_/';
-//         // _productionUrl =
-//         //     'http://apc-gms.apachefootwear.com:8084/api/Production/';
-//         _productionUrl = 'http://115.244.47.101:9042/api/Production/';
-//         _carConveynanceUrl =
-//             'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/';
-//         urlGlobalOrLocalCheck = '203.153.32.85';
+// this below is 70 public links
+        _baseUrl = 'http://115.244.47.101:9042/api/HR/';
+        _gmsUrl = 'http://115.244.47.101:9042/api/GMS/';
+        _maxkingGMSUrl = 'http://115.244.47.101:9042/api/Maxking_GMS_/';
+        _productionUrl = 'http://115.244.47.101:9042/api/Production/';
+        _carConveynanceUrl = 'http://115.244.47.101:9042/api/Car_Conveyance_/';
+        _dormitoryURL = 'http://115.244.47.101:9042/api/Dormitory_/';
+        _mntURL = 'http://115.244.47.101:9042/api/MNT_/';
 
-//         // _baseUrl = 'http://115.244.47.101:9042/api/HR/';
-//         // _gmsUrl = 'http://115.244.47.101:9042/api/GMS/';
-//         // _maxkingGMSUrl = 'http://115.244.47.101:9042/api/Maxking_GMS_/';
-//         // _productionUrl = 'http://115.244.47.101:9042/api/Production/';
-//         // _carConveynanceUrl = 'http://115.244.47.101:9042/api/Car_Conveyance_/';
-//         // urlGlobalOrLocalCheck = '115.244.47.101';
-//       }
-//       print('Base URL set to: $_baseUrl');
-//       print('GMS URL set to: $_gmsUrl');
-//     }
-//   }
+        urlGlobalOrLocalCheck = '115.244.47.101';
+      }
+      print('Base URL set to: $_baseUrl');
+      print('GMS URL set to: $_gmsUrl');
+    }
+  }
 
   // Helper method to fetch the Wi-Fi IP address
   static Future<String?> _getWifiIPAddress() async {

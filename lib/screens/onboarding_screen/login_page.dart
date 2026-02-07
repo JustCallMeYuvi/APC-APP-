@@ -407,7 +407,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       // 👇 Ensure URLs are updated based on Wi-Fi network first
-      // await ApiHelper.updateUrlsBasedOnNetwork();
+      await ApiHelper.updateUrlsBasedOnNetwork();
 
       // 👇 Now build login URL with the correct base URL
       final url = Uri.parse(ApiHelper.login(barcode, password));
@@ -430,7 +430,7 @@ class _LoginPageState extends State<LoginPage> {
       if (response.statusCode == 200) {
         final List<LoginModelApi> loginResponse =
             loginModelApiFromJson(response.body);
-print('Login Body ${response.body}');
+        print('Login Body ${response.body}');
         if (loginResponse.isNotEmpty) {
           final loginData = loginResponse.first;
 

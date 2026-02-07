@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:animated_movies_app/MNT_Modules/qr_scan_bloc.dart';
 import 'package:animated_movies_app/MNT_Modules/qr_scan_event.dart';
 import 'package:animated_movies_app/MNT_Modules/qr_scan_state.dart';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,7 +34,10 @@ class _MaintenanceQrCodeScannerScreenState
     required String powerPanelId,
     required LoginModelApi userData,
   }) async {
-    final url = Uri.parse('http://10.3.0.70:9042/api/MNT_/insert-qr-record');
+    // final url = Uri.parse('http://10.3.0.70:9042/api/MNT_/insert-qr-record');
+    final url = Uri.parse(
+      '${ApiHelper.mntURL}insert-qr-record',
+    );
 
     final body = {
       "powerPanelId": powerPanelId,
@@ -71,8 +75,11 @@ class _MaintenanceQrCodeScannerScreenState
     required int lastRecordId,
     required LoginModelApi userData,
   }) async {
-    final url = Uri.parse('http://10.3.0.70:9042/api/MNT_/update-qr-record');
+    // final url = Uri.parse('http://10.3.0.70:9042/api/MNT_/update-qr-record');
 
+    final url = Uri.parse(
+      '${ApiHelper.mntURL}update-qr-record',
+    );
     final body = {
       "id": lastRecordId, // ✅ VERY IMPORTANT
       "panelCondition": _mapCondition(panelCondition),
@@ -322,7 +329,7 @@ class _MaintenanceQrCodeScannerScreenState
 
         // 🔹 TITLE
         SizedBox(
-          width: 150,
+          width: MediaQuery.of(context).size.width * 0.35,
           child: Text(
             title,
             style: TextStyle(
@@ -356,47 +363,63 @@ class _MaintenanceQrCodeScannerScreenState
     required List<String> options,
     required Function(String) onChanged,
   }) {
-    const double chipWidth = 150; // 👈 adjust if needed
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 🔹 TITLE COLUMN
-          SizedBox(
-            width: 180,
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+        // Title takes 40% of available width
+        final titleWidth = totalWidth * 0.40;
 
-          // 🔹 SAME-WIDTH CHOICE BUTTONS
-          ...options.map((opt) {
-            final selected = value == opt;
-            return Padding(
-              padding: const EdgeInsets.only(right: 10),
-              child: SizedBox(
-                width: chipWidth,
-                child: ChoiceChip(
-                  label: Center(child: Text(opt)),
-                  selected: selected,
-                  selectedColor: Colors.orange.shade200,
-                  labelStyle: TextStyle(
-                    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+        // Remaining width for buttons
+        final buttonAreaWidth = totalWidth - titleWidth;
+
+        // Equal width for each button
+        final buttonWidth =
+            (buttonAreaWidth - ((options.length - 1) * 38)) / options.length;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 🔹 TITLE
+              SizedBox(
+                width: titleWidth,
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  onSelected: (_) => onChanged(opt),
                 ),
               ),
-            );
-          }).toList(),
-        ],
-      ),
+
+              // 🔹 BUTTONS
+              ...options.map((opt) {
+                final selected = value == opt;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 08),
+                  child: SizedBox(
+                    width: buttonWidth,
+                    child: ChoiceChip(
+                      label: Center(child: Text(opt)),
+                      selected: selected,
+                      selectedColor: Colors.orange.shade200,
+                      labelStyle: TextStyle(
+                        fontWeight:
+                            selected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      onSelected: (_) => onChanged(opt),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
+        );
+      },
     );
   }
 }
