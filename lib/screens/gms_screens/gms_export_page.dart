@@ -2543,14 +2543,6 @@ class _GmsExportPageState extends State<GmsExportPage> {
                                 GmsFilesPage(vehicleId: _vehicleId)),
                       );
                     },
-                    child: const Text(
-                      'View Files',
-                      style: TextStyle(
-                        fontSize: 16, // Text size
-                        fontWeight: FontWeight.bold, // Text boldness
-                        color: Colors.white, // Text color
-                      ),
-                    ),
                     color: Colors.lightGreen, // Background color
                     padding: const EdgeInsets.symmetric(
                         vertical: 10.0, horizontal: 20.0), // Button padding
@@ -2563,7 +2555,15 @@ class _GmsExportPageState extends State<GmsExportPage> {
                         12, // Elevation when the button is pressed
                     splashColor: Colors.blueAccent
                         .withOpacity(0.3), // Splash color on tap
-                    textColor: Colors.white, // Text color on tap
+                    textColor: Colors.white,
+                    child: const Text(
+                      'View Files',
+                      style: TextStyle(
+                        fontSize: 16, // Text size
+                        fontWeight: FontWeight.bold, // Text boldness
+                        color: Colors.white, // Text color
+                      ),
+                    ), // Text color on tap
                   ),
                 ),
 
