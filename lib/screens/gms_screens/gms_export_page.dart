@@ -273,6 +273,12 @@ class _GmsExportPageState extends State<GmsExportPage> {
   String _fireGateOutDescriptionTextFormFieldController = 'Finished Goods';
   String _loadingLocationsFireGateOut = '';
 
+  String _buyersPo = '';
+  String _invoicePacking = '';
+  String _pieceCount = '';
+  String _cartonBox = '';
+  String _chaFetchData = '';
+
   String _licenseNumberOut = '';
   String _remark = '';
 
@@ -1050,6 +1056,26 @@ class _GmsExportPageState extends State<GmsExportPage> {
             _linearSeal = vehicleDetails['linear_Seal'] ?? 'N/A';
             _customSeal = vehicleDetails['custom_Seal'] ?? 'N/A';
             _otherSeal = vehicleDetails['other_Seal'] ?? 'N/A';
+
+            // _buyersPo =vehicleDetails['buyers_Po']?? 'N/A';
+            // _invoicePacking =vehicleDetails['invoice_Packing']?? 'N/A';
+            // _pieceCount =vehicleDetails['piece_Count']?? 'N/A';
+            // _cartonBox =vehicleDetails['carton_boxes']?? 'N/A';
+            // _chaFetchData =vehicleDetails['cha']?? 'N/A';
+            _buyersPo = vehicleDetails['buyers_Po'] ?? '';
+            _invoicePacking = vehicleDetails['invoice_Packing'] ?? '';
+            _pieceCount = vehicleDetails['piece_Count'] ?? '';
+            _cartonBox = vehicleDetails['carton_boxes'] ?? '';
+            _chaFetchData = vehicleDetails['cha'] ?? '';
+
+// ✅ Bind to controllers (THIS IS IMPORTANT)
+            _buyersPoController.text = _buyersPo;
+            _invoicePackingController.text = _invoicePacking;
+            _pieceCountController.text = _pieceCount;
+            _cartonBoxesController.text = _cartonBox;
+            _forwarderDetailsController.text =
+                _chaFetchData; // assuming CHA = Forwarder
+
             _driverNameOut = vehicleDetails['driverName_OUT'] ?? 'N/A';
             _licenseNumberOut = vehicleDetails['licenseNumber_OUT'] ?? 'N/A';
             _remark = vehicleDetails['remark'] ?? 'N/A';
@@ -2579,14 +2605,6 @@ class _GmsExportPageState extends State<GmsExportPage> {
                             // if (_isLoading) CircularProgressIndicator();
                             print("Submit button pressed for $_gateType");
                           },
-                          child: const Text(
-                            'Submit',
-                            style: TextStyle(
-                              fontSize: 16, // Text size
-                              fontWeight: FontWeight.bold, // Text boldness
-                              color: Colors.white, // Text color
-                            ),
-                          ),
                           color: Colors.blue, // Background color
                           padding: const EdgeInsets.symmetric(
                               vertical: 10.0,
@@ -2600,7 +2618,15 @@ class _GmsExportPageState extends State<GmsExportPage> {
                               12, // Elevation when the button is pressed
                           splashColor: Colors.blueAccent
                               .withOpacity(0.3), // Splash color on tap
-                          textColor: Colors.white, // Text color on tap
+                          textColor: Colors.white,
+                          child: const Text(
+                            'Submit',
+                            style: TextStyle(
+                              fontSize: 16, // Text size
+                              fontWeight: FontWeight.bold, // Text boldness
+                              color: Colors.white, // Text color
+                            ),
+                          ), // Text color on tap
                         ),
                       ),
               // if (_isLoading)
