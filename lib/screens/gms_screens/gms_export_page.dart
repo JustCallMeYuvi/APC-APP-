@@ -2183,8 +2183,14 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     ),
                     children: [
                       _customTextField(
-                          "Invoice Packing", _invoicePackingController),
-                      _customTextField("Buyer's PO", _buyersPoController),
+                          enabled: false,
+                          "Invoice Packing",
+                          _invoicePackingController),
+                      _customTextField(
+                        "Buyer's PO",
+                        _buyersPoController,
+                        enabled: false,
+                      ),
                       _customTextField("Consignee", _consigneeController),
                       // _customTextField("Description", _descriptionController),
                       TextFormField(
@@ -2209,8 +2215,16 @@ class _GmsExportPageState extends State<GmsExportPage> {
                           print('Entered text: $text');
                         },
                       ),
-                      _customTextField("Piece Count", _pieceCountController),
-                      _customTextField("Carton Boxes", _cartonBoxesController),
+                      _customTextField(
+                        "Piece Count",
+                        _pieceCountController,
+                        enabled: false,
+                      ),
+                      _customTextField(
+                        "Carton Boxes",
+                        _cartonBoxesController,
+                        enabled: false,
+                      ),
                       _customTextField("Gross Weight", _grossWeightController),
                       _customTextField(
                           "Forwarder Details", _forwarderDetailsController),
@@ -2665,32 +2679,79 @@ class _GmsExportPageState extends State<GmsExportPage> {
   }
 
   // Modify TextFields to show error state
-  Widget _customTextField(String label, TextEditingController controller) {
+  // Widget _customTextField(
+  //   String label,
+  //   TextEditingController controller, {
+  //   bool enabled = true,
+  // }) {
+  //   final isError = _highlightedControllers.contains(controller);
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(vertical: 8.0),
+  //     child: TextField(
+  //       controller: controller,
+  //       enabled: true,
+  //       decoration: InputDecoration(
+  //         labelText: label,
+  //         filled: true,
+  //         fillColor: Colors.grey[50],
+  //         border: OutlineInputBorder(
+  //           borderRadius: BorderRadius.circular(8),
+  //           borderSide: BorderSide(
+  //             color: isError ? Colors.red : Colors.grey, // Highlight error
+  //           ),
+  //         ),
+  //         enabledBorder: OutlineInputBorder(
+  //           borderRadius: BorderRadius.circular(8),
+  //           borderSide: BorderSide(
+  //             color: isError ? Colors.red : Colors.grey, // Highlight error
+  //           ),
+  //         ),
+  //         focusedBorder: OutlineInputBorder(
+  //           borderRadius: BorderRadius.circular(8),
+  //           borderSide: BorderSide(
+  //             color: isError ? Colors.red : Colors.blue, // Highlight error
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  // Modify TextFields to show error state + disable support and show error state
+  Widget _customTextField(
+    String label,
+    TextEditingController controller, {
+    bool enabled = true, // 👈 NEW
+  }) {
     final isError = _highlightedControllers.contains(controller);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
         controller: controller,
+        enabled: enabled, // 👈 IMPORTANT
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          fillColor: Colors.grey[50],
+          fillColor: enabled
+              ? Colors.grey[50]
+              : Colors.grey[200], // 👈 grey when disabled
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(
-              color: isError ? Colors.red : Colors.grey, // Highlight error
+              color: isError ? Colors.red : Colors.grey,
             ),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(
-              color: isError ? Colors.red : Colors.grey, // Highlight error
+              color: isError ? Colors.red : Colors.grey,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(
-              color: isError ? Colors.red : Colors.blue, // Highlight error
+              color: isError ? Colors.red : Colors.blue,
             ),
           ),
         ),
@@ -2830,12 +2891,12 @@ class _GmsExportPageState extends State<GmsExportPage> {
         // _fireGateOutPurposeController,
         // _fireGateOutSourceToController,
         _fireGateOutStageInController,
-        _invoicePackingController,
-        _buyersPoController,
+        // _invoicePackingController, // for not mandatory
+        // _buyersPoController, // for not mandatory
         _consigneeController,
         // _descriptionController,
-        _pieceCountController,
-        _cartonBoxesController,
+        // _pieceCountController, // for not mandatory
+        // _cartonBoxesController, // for not mandatory
         _grossWeightController,
         _forwarderDetailsController,
         // _engineNoController,
