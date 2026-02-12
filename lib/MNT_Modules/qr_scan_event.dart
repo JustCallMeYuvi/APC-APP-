@@ -5,3 +5,4 @@ class FetchPanelDetails extends QrScanEvent {
   final String panelId;
   FetchPanelDetails(this.panelId);
 }
+class ClearPanelEvent extends QrScanEvent {}

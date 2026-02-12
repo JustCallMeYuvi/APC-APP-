@@ -24,6 +24,8 @@ class _MaintenanceQrCodeScannerScreenState
   String switchCondition = 'Good';
   String cableCondition = 'OK';
   String overallCondition = 'Good';
+  bool _isLoading = false;
+  bool _isSubmitted = false;
 
   // ✅ ADD THIS
   int _mapCondition(String value) {
@@ -34,10 +36,7 @@ class _MaintenanceQrCodeScannerScreenState
     required String powerPanelId,
     required LoginModelApi userData,
   }) async {
-    // final url = Uri.parse('http://10.3.0.70:9042/api/MNT_/insert-qr-record');
-    final url = Uri.parse(
-      '${ApiHelper.mntURL}insert-qr-record',
-    );
+    final url = Uri.parse('${ApiHelper.mntURL}insert-qr-record');
 
     final body = {
       "powerPanelId": powerPanelId,
@@ -48,6 +47,10 @@ class _MaintenanceQrCodeScannerScreenState
       "createdBy": userData.username,
     };
 
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final response = await http.post(
         url,
@@ -55,7 +58,15 @@ class _MaintenanceQrCodeScannerScreenState
         body: jsonEncode(body),
       );
 
+      setState(() {
+        _isLoading = false;
+      });
+
       if (response.statusCode == 200) {
+        setState(() {
+          _isSubmitted = true;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Record inserted successfully')),
         );
@@ -65,6 +76,10 @@ class _MaintenanceQrCodeScannerScreenState
         );
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
@@ -113,7 +128,9 @@ class _MaintenanceQrCodeScannerScreenState
   }
 
   String formatDate(String? dateTime) {
-    if (dateTime == null || dateTime.isEmpty) return '-';
+    if (dateTime == null || dateTime.isEmpty) {
+      return 'Not Yet Started';
+    }
 
     try {
       final dt = DateTime.parse(dateTime);
@@ -121,7 +138,7 @@ class _MaintenanceQrCodeScannerScreenState
           '${dt.month.toString().padLeft(2, '0')}-'
           '${dt.year}';
     } catch (e) {
-      return '-';
+      return 'Not Yet Started';
     }
   }
 
@@ -145,7 +162,7 @@ class _MaintenanceQrCodeScannerScreenState
                 children: [
                   const SizedBox(height: 40),
 
-                  /// QR SCAN BUTTON (CENTERED & IMPROVED)
+                  /// 🔹 QR SCAN BUTTON
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -164,15 +181,132 @@ class _MaintenanceQrCodeScannerScreenState
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      // onPressed: state.isLoading
+                      //     ? null
+                      //     : () {
+                      //         setState(() {
+                      //           _isSubmitted = false; // reset when scanning again
+                      //         });
+                      //         context.read<QrScanBloc>().add(StartQrScan());
+                      //       },
+
                       onPressed: state.isLoading
                           ? null
-                          : () => context.read<QrScanBloc>().add(StartQrScan()),
+                          : () {
+                              setState(() {
+                                _isSubmitted = false;
+                              });
+
+                              context.read<QrScanBloc>().add(StartQrScan());
+                            },
                     ),
                   ),
 
                   const SizedBox(height: 20),
+
                   if (state.isLoading) const CircularProgressIndicator(),
-                  if (state.panel != null) _panelDetails(state.panel!),
+
+                  /// 🔹 SUCCESS MESSAGE (Only After Submit)
+                  if (_isSubmitted)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 10),
+                          Text(
+                            "Data Successfully Inserted",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  /// 🔹 INVALID BARCODE MESSAGE
+                  if (state.panel != null &&
+                      state.panel!.message != null &&
+                      state.panel!.message!.contains("Invalid") &&
+                      !_isSubmitted)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error, color: Colors.red),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              state.panel!.message ?? "Invalid Barcode",
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  /// 🔹 PANEL + SUBMIT BUTTON (Only if NOT Submitted)
+                  if (state.panel != null &&
+                      !_isSubmitted &&
+                      !(state.panel!.message != null &&
+                          state.panel!.message!.contains("Invalid"))) ...[
+                    _panelDetails(state.panel!),
+                    const SizedBox(height: 15),
+                    if (!(state.panel!.message != null &&
+                        state.panel!.message!.contains("Invalid")))
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                _isLoading ? Colors.grey : Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  await insertQrRecord(
+                                    powerPanelId: state.panel!.powerPanelId!,
+                                    userData: widget.userData,
+                                  );
+                                },
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  "SUBMIT DETAILS",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                  ],
                 ],
               ),
             );
@@ -263,43 +397,6 @@ class _MaintenanceQrCodeScannerScreenState
             ),
 
             const SizedBox(height: 26),
-
-            // 🔹 ACTION BUTTON (FULL WIDTH, CONSISTENT)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  backgroundColor:
-                      panel.action == 'Insert' ? Colors.green : Colors.blue,
-                ),
-                onPressed: () {
-                  if (panel.action == 'Insert') {
-                    insertQrRecord(
-                      powerPanelId: panel.powerPanelId,
-                      userData: widget.userData,
-                    );
-                  } else if (panel.action == 'Update') {
-                    updateQrRecord(
-                      lastRecordId: panel.lastRecordId!,
-                      userData: widget.userData,
-                    );
-                  }
-                },
-                child: Text(
-                  panel.action == 'Insert'
-                      ? 'INSERT DETAILS'
-                      : 'UPDATE DETAILS',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),

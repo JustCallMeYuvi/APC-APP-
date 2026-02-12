@@ -8,17 +8,20 @@ class PowerPanelModel {
   final String? lastServiceDate;
   final String? nextDueDate;
   final int? lastRecordId;
+  final String? message; // ✅ ADD THIS
 
-  PowerPanelModel(
-      {this.powerPanelId,
-      this.panelName,
-      this.capacity,
-      this.location,
-      this.panelType,
-      this.action,
-      this.lastServiceDate,
-      this.nextDueDate,
-      this.lastRecordId});
+  PowerPanelModel({
+    this.powerPanelId,
+    this.panelName,
+    this.capacity,
+    this.location,
+    this.panelType,
+    this.action,
+    this.lastServiceDate,
+    this.nextDueDate,
+    this.lastRecordId,
+    this.message,
+  });
 
   factory PowerPanelModel.fromJson(Map<String, dynamic> json) {
     return PowerPanelModel(
@@ -31,6 +34,7 @@ class PowerPanelModel {
       lastServiceDate: json['lastServiceDate'],
       nextDueDate: json['nextDueDate'],
       lastRecordId: json['lastRecordId'],
+      message: json['message'],
     );
   }
 }

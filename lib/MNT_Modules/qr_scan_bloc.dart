@@ -12,32 +12,75 @@ class QrScanBloc extends Bloc<QrScanEvent, QrScanState> {
   QrScanBloc() : super(const QrScanState()) {
     on<StartQrScan>(_onStartScan);
     on<FetchPanelDetails>(_onFetchPanelDetails);
+    // 🔥 ADD THIS
+    on<ClearPanelEvent>(_onClearPanel);
   }
+  void _onClearPanel(
+    ClearPanelEvent event,
+    Emitter<QrScanState> emit,
+  ) {
+    emit(state.copyWith(
+      panel: null,
+      error: null,
+      isLoading: false,
+    ));
+  }
+
+  // Future<void> _onStartScan(
+  //   StartQrScan event,
+  //   Emitter<QrScanState> emit,
+  // ) async {
+  //   try {
+  //     final scanResult = await FlutterBarcodeScanner.scanBarcode(
+  //       '#FF6666',
+  //       'Cancel',
+  //       true,
+  //       ScanMode.QR,
+  //     );
+
+  //     print('SCANNED VALUE 👉 $scanResult');
+
+  //     if (scanResult == '-1' || scanResult.isEmpty) {
+  //       return; // cancel
+  //     }
+
+  //     // 🔥 IMPORTANT: scan pannadhu edhuvo adha pass pannu
+  //     add(FetchPanelDetails(scanResult));
+  //   } catch (e) {
+  //     emit(state.copyWith(error: 'QR scan failed'));
+  //   }
+  // }
 
   Future<void> _onStartScan(
-    StartQrScan event,
-    Emitter<QrScanState> emit,
-  ) async {
-    try {
-      final scanResult = await FlutterBarcodeScanner.scanBarcode(
-        '#FF6666',
-        'Cancel',
-        true,
-        ScanMode.QR,
-      );
+  StartQrScan event,
+  Emitter<QrScanState> emit,
+) async {
+  // ✅ CLEAR PANEL FIRST
+  emit(state.copyWith(
+    panel: null,
+    error: null,
+  ));
 
-      print('SCANNED VALUE 👉 $scanResult');
+  try {
+    final scanResult = await FlutterBarcodeScanner.scanBarcode(
+      '#FF6666',
+      'Cancel',
+      true,
+      ScanMode.QR,
+    );
 
-      if (scanResult == '-1' || scanResult.isEmpty) {
-        return; // cancel
-      }
+    print('SCANNED VALUE 👉 $scanResult');
 
-      // 🔥 IMPORTANT: scan pannadhu edhuvo adha pass pannu
-      add(FetchPanelDetails(scanResult));
-    } catch (e) {
-      emit(state.copyWith(error: 'QR scan failed'));
+    if (scanResult == '-1' || scanResult.isEmpty) {
+      return;
     }
+
+    add(FetchPanelDetails(scanResult));
+  } catch (e) {
+    emit(state.copyWith(error: 'QR scan failed'));
   }
+}
+
 
   Future<void> _onFetchPanelDetails(
     FetchPanelDetails event,
