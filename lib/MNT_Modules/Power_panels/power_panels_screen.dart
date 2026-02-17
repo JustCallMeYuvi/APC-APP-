@@ -72,6 +72,7 @@ class _PowerPanelsScreenState extends State<PowerPanelsScreen>
       create: (_) => bloc,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.transparent,
           onPressed: () {
             _scrollController.animateTo(
               0,

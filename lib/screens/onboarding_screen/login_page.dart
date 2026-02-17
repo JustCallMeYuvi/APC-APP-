@@ -839,6 +839,7 @@ class LoginModelApi {
   String? token;
   // 🔥 NEW FIELD
   String? deptName;
+  String? position;
 
   LoginModelApi({
     required this.empNo,
@@ -849,6 +850,7 @@ class LoginModelApi {
     required this.success,
     this.token,
     this.deptName,
+    this.position,
   });
 
   factory LoginModelApi.fromJson(Map<String, dynamic> json) => LoginModelApi(
@@ -862,6 +864,7 @@ class LoginModelApi {
         token: json["token"], // Token is nullable, no default needed
         // ✅ MAP DEPARTMENT NAME
         deptName: json["depT_NAME"]?.toString(),
+        position: json["position"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -875,5 +878,6 @@ class LoginModelApi {
 
         // optional
         "depT_NAME": deptName,
+        "position": position,
       };
 }

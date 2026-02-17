@@ -42,6 +42,7 @@
 import 'package:animated_movies_app/MNT_Modules/Panels_Screen/PanelsDueScreen.dart';
 import 'package:animated_movies_app/MNT_Modules/Power_panels/power_panels_screen.dart';
 import 'package:animated_movies_app/MNT_Modules/maintenance_qr_code_scanner_screen.dart';
+import 'package:animated_movies_app/Salary_Module/salary_screen.dart';
 import 'package:animated_movies_app/dormitory/resident_complaint_page.dart';
 import 'package:animated_movies_app/hr_department/employee_punch_page.dart';
 import 'package:animated_movies_app/it_modules/asset_management_screen.dart';
@@ -373,6 +374,12 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                                                   )
                                                                                                                                                                                 : widget.pageRoute == 'Power_Panels'
                                                                                                                                                                                     ? PowerPanelsScreen(
+                                                                                                                                                                                        userData: widget.userData,
+                                                                                                                                                                                        // userData:
+                                                                                                                                                                                        //     widget.userData,
+                                                                                                                                                                                      )
+                                                                                                                                                                                             : widget.pageRoute == 'Salary_Slip'
+                                                                                                                                                                                    ? SalaryScreen(
                                                                                                                                                                                         userData: widget.userData,
                                                                                                                                                                                         // userData:
                                                                                                                                                                                         //     widget.userData,

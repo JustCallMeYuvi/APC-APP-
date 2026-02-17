@@ -204,17 +204,42 @@ class _PanelsDueScreenState extends State<PanelsDueScreen> {
 
   Widget _infoRow(String title, String value) {
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$title: ',
-            style: const TextStyle(
+          /// 🔹 FIXED WIDTH TITLE
+          SizedBox(
+            width: 120, // adjust based on longest title
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.black54,
+              ),
+            ),
+          ),
+
+          /// 🔹 COLON
+          const Text(
+            ":",
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               color: Colors.black54,
             ),
           ),
-          Expanded(child: Text(value)),
+
+          const SizedBox(width: 8),
+
+          /// 🔹 VALUE (aligned properly)
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.black87,
+              ),
+            ),
+          ),
         ],
       ),
     );
