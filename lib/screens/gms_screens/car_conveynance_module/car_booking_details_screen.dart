@@ -28,6 +28,11 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
   List<Map<String, dynamic>> availableCars = [];
   String? selectedCarId;
 
+  String? selectedCarOutTime;
+
+  final TextEditingController driverNameController = TextEditingController();
+  final TextEditingController mailCc1Controller = TextEditingController();
+  final TextEditingController mailCc2Controller = TextEditingController();
   String _carDisplayText(Map<String, dynamic> car) {
     return "${car["carNo"]} • ${car["carName"]} • ${car["capacity"]} seats";
   }
@@ -160,15 +165,6 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          const Text(
-                            "Car Assignment",
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
                           // Card(
                           //   elevation: 3,
                           //   shape: RoundedRectangleBorder(
@@ -405,7 +401,6 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                           const SizedBox(height: 20),
 
                           // 🔷 ASSIGN VEHICLE
-                          // 🔷 ASSIGN VEHICLE
                           if (availableCars.isNotEmpty)
                             buildGlassCard(
                               title: "Assign Vehicle",
@@ -421,7 +416,7 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                       dropdownSearchDecoration: InputDecoration(
                                         labelText: "Select Car",
                                         labelStyle:
-                                            TextStyle(color: Colors.white70),
+                                            TextStyle(color: Colors.white),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide:
                                               BorderSide(color: Colors.white38),
@@ -437,11 +432,151 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                       icon: Icon(Icons.keyboard_arrow_down,
                                           color: Colors.white),
                                     ),
+                                    dropdownBuilder: (context, selectedItem) {
+                                      return Text(
+                                        selectedItem == null
+                                            ? "Select Car"
+                                            : _carDisplayText(selectedItem),
+                                        style: const TextStyle(
+                                          color: Colors
+                                              .white, // ✅ Selected text white
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      );
+                                    },
                                     onChanged: (car) {
                                       setState(() {
                                         selectedCarId = car?["carId"];
                                       });
                                     },
+                                  ),
+                                  const SizedBox(height: 16),
+
+// ⏰ CAR OUT TIME
+                                  if (selectedCarId != null)
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Car Out Time",
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        GestureDetector(
+                                          onTap: selectedCarOutTime == null
+                                              ? () async {
+                                                  TimeOfDay? picked =
+                                                      await showTimePicker(
+                                                    context: context,
+                                                    initialTime:
+                                                        TimeOfDay.now(),
+                                                  );
+
+                                                  if (picked != null) {
+                                                    setState(() {
+                                                      selectedCarOutTime =
+                                                          "${picked.hour}:${picked.minute}";
+                                                    });
+                                                  }
+                                                }
+                                              : null,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 14),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                  color: Colors.white38),
+                                              color: Colors.white
+                                                  .withOpacity(0.05),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  selectedCarOutTime ??
+                                                      "Select Time",
+                                                  style: const TextStyle(
+                                                      color: Colors.white),
+                                                ),
+                                                const Icon(Icons.access_time,
+                                                    color: Colors.white70),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                  const SizedBox(height: 16),
+
+                                  TextField(
+                                    controller: driverNameController,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      labelText: "Driver Name",
+                                      labelStyle: const TextStyle(
+                                          color: Colors.white70),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white38),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.cyan),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  TextField(
+                                    controller: mailCc1Controller,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      labelText: "Mail CC1",
+                                      labelStyle: const TextStyle(
+                                          color: Colors.white70),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white38),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.cyan),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  TextField(
+                                    controller: mailCc2Controller,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      labelText: "Mail CC2",
+                                      labelStyle: const TextStyle(
+                                          color: Colors.white70),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white38),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.cyan),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
                                   ),
 
                                   const SizedBox(height: 20),
@@ -469,17 +604,33 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                   const SizedBox(height: 20),
 
                                   // 📸 UPLOAD BUTTON
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: ElevatedButton.icon(
-                                      // onPressed: addImage,
-                                      onPressed: showImageSourceSheet,
-                                      icon: const Icon(Icons.upload),
-                                      label: const Text("Upload Image"),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            Colors.cyanAccent.shade700,
-                                        foregroundColor: Colors.black,
+                                  GestureDetector(
+                                    onTap: showImageSourceSheet,
+                                    child: Container(
+                                      height: 50,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                            color: Colors.grey.shade300),
+                                      ),
+                                      child: const Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.add_a_photo_outlined,
+                                              size: 20,
+                                              color: Colors.pinkAccent),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            "Tap to Upload Image",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -565,37 +716,6 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                       ),
                     ),
         ),
-      ),
-    );
-  }
-
-  // 🔹 ROW BUILDER (NULL SAFE)
-  Widget _row(String title, dynamic value) {
-    if (!_hasValue(value)) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 4,
-            child: Text(
-              "$title:",
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 6,
-            child: Text(
-              value.toString(),
-              style: const TextStyle(fontSize: 15),
-            ),
-          ),
-        ],
       ),
     );
   }

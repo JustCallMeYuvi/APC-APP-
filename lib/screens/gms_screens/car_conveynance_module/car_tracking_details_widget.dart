@@ -36,8 +36,7 @@ class CarTrackingDetailsStep extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: isCompleted
-                  ? const Icon(Icons.check,
-                      size: 14, color: Colors.black)
+                  ? const Icon(Icons.check, size: 14, color: Colors.black)
                   : null,
             ),
             if (!isLast)
@@ -60,8 +59,7 @@ class CarTrackingDetailsStep extends StatelessWidget {
                     : isCurrent
                         ? Colors.orangeAccent
                         : Colors.white54,
-                fontWeight:
-                    isCurrent ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ),
