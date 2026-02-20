@@ -31,6 +31,8 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
   String? selectedCarOutTime;
 
   final TextEditingController driverNameController = TextEditingController();
+  final TextEditingController driverNumberController = TextEditingController();
+
   final TextEditingController mailCc1Controller = TextEditingController();
   final TextEditingController mailCc2Controller = TextEditingController();
   String _carDisplayText(Map<String, dynamic> car) {
@@ -46,6 +48,8 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
 
   File? selectedImage;
   final ImagePicker _picker = ImagePicker();
+
+  Map<String, dynamic>? selectedCar;
   @override
   void initState() {
     super.initState();
@@ -102,6 +106,44 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
     );
   }
 
+  Future<void> _fetchCarOutTime(String carId) async {
+    try {
+      final url = "${ApiHelper.carConveynanceUrl}CarTime/$carId";
+
+      final response = await http.get(Uri.parse(url));
+
+      debugPrint("CarTime Response: ${response.body}");
+      debugPrint("Car time out URL $url");
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+
+        // ✅ If travelTime exists
+        if (decoded is Map && decoded["travelTime"] != null) {
+          setState(() {
+            selectedCarOutTime = decoded["travelTime"].toString();
+          });
+        }
+        // ✅ If message = No active booking found
+        else if (decoded is Map &&
+            decoded["message"] == "No active booking found") {
+          setState(() {
+            selectedCarOutTime = null; // allow manual
+          });
+        }
+      } else {
+        setState(() {
+          selectedCarOutTime = null;
+        });
+      }
+    } catch (e) {
+      debugPrint("Car time error: $e");
+      setState(() {
+        selectedCarOutTime = null;
+      });
+    }
+  }
+
   // 🔹 API CALL
   Future<void> _fetchBookingDetails() async {
     try {
@@ -128,9 +170,34 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
     }
   }
 
+  // void _showError(String msg) {
+  //   setState(() => _isLoading = false);
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  // }
   void _showError(String msg) {
-    setState(() => _isLoading = false);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: const Text(
+            "Error",
+            style: TextStyle(color: Colors.red),
+          ),
+          content: Text(msg),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // 🔹 NULL / EMPTY SAFE CHECK
@@ -138,6 +205,200 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
     return value != null &&
         value.toString().trim().isNotEmpty &&
         value.toString().toLowerCase() != "null";
+  }
+
+  Future<void> _assignCar() async {
+    // ✅ Mandatory validations
+    if (selectedCarId == null) {
+      _showError("Please select a car");
+      return;
+    }
+
+    if (selectedCarOutTime == null || selectedCarOutTime!.isEmpty) {
+      _showError("Please select car out time");
+      return;
+    }
+
+    if (driverNameController.text.trim().isEmpty) {
+      _showError("Driver Name is required");
+      return;
+    }
+    if (driverNumberController.text.trim().isEmpty) {
+      _showError("Driver Number is required");
+      return;
+    }
+
+    if (selectedImage == null) {
+      _showError("Driver Image is required");
+      return;
+    }
+
+    try {
+      final url = "${ApiHelper.carConveynanceUrl}CarAssign";
+
+      var request = http.MultipartRequest(
+        "POST",
+        Uri.parse(url),
+      );
+
+      // 🔥 Mandatory Fields from bookingDetails
+      request.fields["CarBookingId"] =
+          bookingDetails?["carBookingId"]?.toString() ?? "";
+
+      request.fields["Name"] = bookingDetails?["name"]?.toString() ?? "";
+
+      request.fields["Department"] =
+          bookingDetails?["department"]?.toString() ?? "";
+
+      request.fields["Position"] =
+          bookingDetails?["position"]?.toString() ?? "";
+
+      request.fields["Reason"] = bookingDetails?["reason"]?.toString() ?? "";
+
+      request.fields["Barcode"] = bookingDetails?["barcode"]?.toString() ?? "";
+
+      request.fields["TravelFrom"] =
+          bookingDetails?["travelFrom"]?.toString() ?? "";
+
+      request.fields["DestinationTo"] =
+          bookingDetails?["destinationTo"]?.toString() ?? "";
+
+      request.fields["TripDuration"] =
+          bookingDetails?["tripDuration"]?.toString() ?? "";
+
+      request.fields["Distance"] =
+          bookingDetails?["distance"]?.toString() ?? "";
+
+      request.fields["Travellers"] =
+          bookingDetails?["travellers"]?.toString() ?? "";
+
+      request.fields["SelectedBookingType"] =
+          bookingDetails?["selectedBookingType"]?.toString() ?? "";
+
+      request.fields["ApplicantEmail"] =
+          bookingDetails?["applicantEmail"]?.toString() ?? "";
+
+      request.fields["InchargeStatus"] =
+          bookingDetails?["inchargeStatus"]?.toString() ?? "";
+
+      request.fields["SecStatus"] =
+          bookingDetails?["secStatus"]?.toString() ?? "";
+
+      request.fields["GMOStatus"] =
+          bookingDetails?["gmoStatus"]?.toString() ?? "";
+
+      request.fields["SecSpvStatus"] =
+          bookingDetails?["secSpvStatus"]?.toString() ?? "";
+
+      request.fields["FinalStatus"] =
+          bookingDetails?["finalStatus"]?.toString() ?? "";
+
+      // 🔥 Car Details
+      request.fields["CarDetailsId"] = selectedCarId!;
+      request.fields["TravelStartTime"] = selectedCarOutTime!;
+
+      // Optional
+      // request.fields["CarName"] = bookingDetails?["carName"]?.toString() ?? "";
+
+      // request.fields["CarNo"] = bookingDetails?["carNo"]?.toString() ?? "";
+
+      request.fields["CarName"] = selectedCar?["carName"]?.toString() ?? "";
+
+      request.fields["CarNo"] = selectedCar?["carNo"]?.toString() ?? "";
+
+      request.fields["DriverName"] = driverNameController.text.trim();
+
+      // request.fields["DriverNo"] = ""; // if you add field later
+      request.fields["DriverNo"] = driverNumberController.text.trim();
+
+      request.fields["ccmaiL1"] = mailCc1Controller.text.trim();
+
+      request.fields["ccmaiL2"] = mailCc2Controller.text.trim();
+
+      request.fields["Remark"] = remarkController.text.trim();
+
+      // 🔥 Image
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "DriverImage",
+          selectedImage!.path,
+        ),
+      );
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text("Car Assigned Successfully!")),
+        // );
+
+        _showSuccessDialog();
+      } else {
+        debugPrint("Assign Error: $responseData");
+        debugPrint("Selected Car: $selectedCar");
+        debugPrint("Car Name: ${selectedCar?["carName"]}");
+        debugPrint("Car No: ${selectedCar?["carNo"]}");
+        _showError("Failed to assign car");
+      }
+    } catch (e) {
+      _showError("Something went wrong");
+    }
+  }
+
+  void _showSuccessDialog() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: "",
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+          ),
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 70,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Car Assigned Successfully!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // close dialog
+                    Navigator.pop(context); // go back screen
+                  },
+                  child: const Text(
+                    "OK",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -165,178 +426,25 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          // Card(
-                          //   elevation: 3,
-                          //   shape: RoundedRectangleBorder(
-                          //     borderRadius: BorderRadius.circular(12),
-                          //   ),
-                          //   child: Padding(
-                          //     padding: const EdgeInsets.all(16),
-                          //     child: Column(
-                          //       crossAxisAlignment: CrossAxisAlignment.start,
-                          //       children: [
-                          //         _row("Booking ID",
-                          //             bookingDetails!["carBookingId"]),
-                          //         _row("Name", bookingDetails!["name"]),
-                          //         _row("Department",
-                          //             bookingDetails!["department"]),
-                          //         _row("Position", bookingDetails!["position"]),
-                          //         _row("Booking Type",
-                          //             bookingDetails!["selectedBookingType"]),
-                          //         _row("Reason", bookingDetails!["reason"]),
-                          //         _row("Travel From",
-                          //             bookingDetails!["travelFrom"]),
-                          //         _row("Travel To",
-                          //             bookingDetails!["destinationTo"]),
-                          //         _row("Reach Time",
-                          //             bookingDetails!["reachTime"]),
-                          //         _row("Trip Duration",
-                          //             bookingDetails!["tripDuration"]),
-                          //         _row("Distance", bookingDetails!["distance"]),
-                          //         _row("Travellers Count",
-                          //             bookingDetails!["travellersCount"]),
-                          //         _row("Incharge Status",
-                          //             bookingDetails!["inchargeStatus"]),
-                          //         _row("Secretary Status",
-                          //             bookingDetails!["secStatus"]),
-                          //         _row("GMO Status",
-                          //             bookingDetails!["gmoStatus"]),
-                          //         _row("CAR Assign",
-                          //             bookingDetails!["secSpvStatus"]),
-                          //         _row("Final Status",
-                          //             bookingDetails!["finalStatus"]),
-                          //         _row("Car Name", bookingDetails!["carName"]),
-                          //         _row("Car No", bookingDetails!["carNo"]),
-
-                          //         // 🚗 CAR ASSIGN DROPDOWN
-                          //         if (availableCars.isNotEmpty) ...[
-                          //           const SizedBox(height: 20),
-                          //           const Text(
-                          //             "Car Assign",
-                          //             style: TextStyle(
-                          //               fontSize: 16,
-                          //               fontWeight: FontWeight.bold,
-                          //             ),
-                          //           ),
-                          //           const SizedBox(height: 8),
-                          //           // DropdownButtonFormField<String>(
-                          //           //   decoration: InputDecoration(
-                          //           //     hintText: "Select Car",
-                          //           //     border: OutlineInputBorder(
-                          //           //       borderRadius: BorderRadius.circular(12),
-                          //           //     ),
-                          //           //     contentPadding: const EdgeInsets.symmetric(
-                          //           //         horizontal: 12, vertical: 14),
-                          //           //   ),
-                          //           //   value: selectedCarId,
-                          //           //   isExpanded: true, // ✅ IMPORTANT
-                          //           //   items: availableCars
-                          //           //       .map<DropdownMenuItem<String>>((car) {
-                          //           //     return DropdownMenuItem<String>(
-                          //           //       value: car["carId"],
-                          //           //       child: Row(
-                          //           //         children: [
-                          //           //           const Icon(Icons.directions_car,
-                          //           //               size: 18),
-                          //           //           const SizedBox(width: 8),
-
-                          //           //           // ✅ FIX: bounded width, NO Expanded
-                          //           //           SizedBox(
-                          //           //             width: 200,
-                          //           //             child: Text(
-                          //           //               "${car["carNo"]} • ${car["carName"]} • ${car["capacity"]} seats",
-                          //           //               maxLines: 1,
-                          //           //               overflow: TextOverflow.ellipsis,
-                          //           //               style: const TextStyle(fontSize: 12),
-                          //           //             ),
-                          //           //           ),
-                          //           //         ],
-                          //           //       ),
-                          //           //     );
-                          //           //   }).toList(),
-                          //           //   onChanged: (value) {
-                          //           //     setState(() {
-                          //           //       selectedCarId = value;
-                          //           //     });
-                          //           //     debugPrint("Selected Car ID: $selectedCarId");
-                          //           //   },
-                          //           // ),
-
-                          //           DropdownSearch<Map<String, dynamic>>(
-                          //             selectedItem: availableCars
-                          //                     .firstWhere(
-                          //                       (car) =>
-                          //                           car["carId"] ==
-                          //                           selectedCarId,
-                          //                       orElse: () => {},
-                          //                     )
-                          //                     .isEmpty
-                          //                 ? null
-                          //                 : availableCars.firstWhere(
-                          //                     (car) =>
-                          //                         car["carId"] == selectedCarId,
-                          //                   ),
-                          //             items: availableCars,
-                          //             itemAsString: (car) =>
-                          //                 _carDisplayText(car),
-                          //             popupProps: const PopupProps.menu(
-                          //               showSearchBox: true,
-                          //               searchFieldProps: TextFieldProps(
-                          //                 decoration: InputDecoration(
-                          //                   hintText: "Search car...",
-                          //                   border: OutlineInputBorder(),
-                          //                 ),
-                          //               ),
-                          //             ),
-                          //             dropdownDecoratorProps:
-                          //                 const DropDownDecoratorProps(
-                          //               dropdownSearchDecoration:
-                          //                   InputDecoration(
-                          //                 labelText: "Car Assign",
-                          //                 hintText: "Select Car",
-                          //                 border: OutlineInputBorder(),
-                          //                 contentPadding: EdgeInsets.symmetric(
-                          //                     horizontal: 12, vertical: 14),
-                          //               ),
-                          //             ),
-                          //             onChanged: (car) {
-                          //               setState(() {
-                          //                 selectedCarId = car?["carId"];
-                          //               });
-
-                          //               debugPrint(
-                          //                   "Selected Car ID: $selectedCarId");
-                          //             },
-                          //           ),
-                          //         ],
-
-                          //         const SizedBox(height: 20),
-                          //         const Divider(),
-                          //         const Center(
-                          //           child: Text(
-                          //             "End of Details",
-                          //             style: TextStyle(
-                          //               fontWeight: FontWeight.w500,
-                          //               color: Colors.grey,
-                          //             ),
-                          //           ),
-                          //         ),
-                          //       ],
-                          //     ),
-                          //   ),
-                          // ),
-
                           // 🔷 BOOKING DETAILS
                           buildGlassCard(
                             title: "Booking Details",
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                buildDetailRow(
+                                    "Barcode", bookingDetails!["barcode"]),
+                                buildDetailRow("Travellers",
+                                    bookingDetails!["travellers"]),
                                 buildDetailRow("Booking ID",
                                     bookingDetails!["carBookingId"]),
-                                buildDetailRow("Name", bookingDetails!["name"]),
+                                buildDetailRow(
+                                    "Booking Type",
+                                    bookingDetails?["selectedBookingType"] ??
+                                        "-"),
                                 buildDetailRow("Department",
                                     bookingDetails!["department"]),
+                                buildDetailRow("Name", bookingDetails!["name"]),
                                 buildDetailRow(
                                     "Position", bookingDetails!["position"]),
                                 buildDetailRow(
@@ -351,8 +459,10 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                     bookingDetails!["tripDuration"]),
                                 buildDetailRow(
                                     "Distance", bookingDetails!["distance"]),
-                                buildDetailRow("Travellers",
+                                buildDetailRow("Travellers Count",
                                     bookingDetails!["travellersCount"]),
+                                buildDetailRow("Application Mail",
+                                    bookingDetails!["applicantEmail"]),
                               ],
                             ),
                           ),
@@ -447,13 +557,20 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                     },
                                     onChanged: (car) {
                                       setState(() {
+                                        selectedCar = car;
                                         selectedCarId = car?["carId"];
+                                        selectedCarOutTime =
+                                            null; // reset first
                                       });
+                                      if (selectedCarId != null) {
+                                        _fetchCarOutTime(
+                                            selectedCarId!); // 👈 CALL API
+                                      }
                                     },
                                   ),
                                   const SizedBox(height: 16),
 
-// ⏰ CAR OUT TIME
+                                  // ⏰ CAR OUT TIME
                                   if (selectedCarId != null)
                                     Column(
                                       crossAxisAlignment:
@@ -468,23 +585,20 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                         ),
                                         const SizedBox(height: 8),
                                         GestureDetector(
-                                          onTap: selectedCarOutTime == null
-                                              ? () async {
-                                                  TimeOfDay? picked =
-                                                      await showTimePicker(
-                                                    context: context,
-                                                    initialTime:
-                                                        TimeOfDay.now(),
-                                                  );
+                                          onTap: () async {
+                                            TimeOfDay? picked =
+                                                await showTimePicker(
+                                              context: context,
+                                              initialTime: TimeOfDay.now(),
+                                            );
 
-                                                  if (picked != null) {
-                                                    setState(() {
-                                                      selectedCarOutTime =
-                                                          "${picked.hour}:${picked.minute}";
-                                                    });
-                                                  }
-                                                }
-                                              : null,
+                                            if (picked != null) {
+                                              setState(() {
+                                                selectedCarOutTime =
+                                                    "${picked.hour}:${picked.minute.toString().padLeft(2, '0')}";
+                                              });
+                                            }
+                                          },
                                           child: Container(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 14, vertical: 14),
@@ -526,8 +640,30 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                       labelStyle: const TextStyle(
                                           color: Colors.white70),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white38),
+                                        borderSide: const BorderSide(
+                                            color: Colors.white38),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.cyan),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  TextField(
+                                    controller: driverNumberController,
+                                    keyboardType: TextInputType.phone,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      labelText: "Driver Number",
+                                      labelStyle: const TextStyle(
+                                          color: Colors.white70),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.white38),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       focusedBorder: OutlineInputBorder(
@@ -546,8 +682,8 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                       labelStyle: const TextStyle(
                                           color: Colors.white70),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white38),
+                                        borderSide: const BorderSide(
+                                            color: Colors.white38),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       focusedBorder: OutlineInputBorder(
@@ -567,8 +703,8 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                       labelStyle: const TextStyle(
                                           color: Colors.white70),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white38),
+                                        borderSide: const BorderSide(
+                                            color: Colors.white38),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       focusedBorder: OutlineInputBorder(
@@ -690,15 +826,16 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                               BorderRadius.circular(12),
                                         ),
                                       ),
-                                      onPressed: () {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                "Car Assigned Successfully!"),
-                                          ),
-                                        );
-                                      },
+                                      // onPressed: () {
+                                      //   ScaffoldMessenger.of(context)
+                                      //       .showSnackBar(
+                                      //     const SnackBar(
+                                      //       content: Text(
+                                      //           "Car Assigned Successfully!"),
+                                      //     ),
+                                      //   );
+                                      // },
+                                      onPressed: _assignCar,
                                       child: const Text(
                                         "Assign Car",
                                         style: TextStyle(
