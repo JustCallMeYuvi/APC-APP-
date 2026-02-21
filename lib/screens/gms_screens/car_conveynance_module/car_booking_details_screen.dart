@@ -9,10 +9,12 @@ import 'package:image_picker/image_picker.dart';
 
 class CarBookingDetailsScreen extends StatefulWidget {
   final String bookingId;
+  final String? level; // 👈 ADD
 
   const CarBookingDetailsScreen({
     Key? key,
     required this.bookingId,
+    this.level,
   }) : super(key: key);
 
   @override
@@ -23,6 +25,7 @@ class CarBookingDetailsScreen extends StatefulWidget {
 class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
   bool _isLoading = true;
 
+  bool _isSubmitting = false;
   Map<String, dynamic>? bookingDetails;
   // List<dynamic> availableCars = [];
   List<Map<String, dynamic>> availableCars = [];
@@ -73,6 +76,90 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
     setState(() {
       selectedImage = null;
     });
+  }
+
+  Future<void> _approveBooking() async {
+    try {
+      setState(() {
+        _isSubmitting = true;
+      });
+      final url = "${ApiHelper.carConveynanceUrl}CarAssign";
+
+      var request = http.MultipartRequest(
+        "POST",
+        Uri.parse(url),
+      );
+
+      // 🔥 COMMON BOOKING DETAILS
+      request.fields["CarBookingId"] =
+          bookingDetails?["carBookingId"]?.toString() ?? "";
+
+      request.fields["Name"] = bookingDetails?["name"]?.toString() ?? "";
+
+      request.fields["Department"] =
+          bookingDetails?["department"]?.toString() ?? "";
+
+      request.fields["Position"] =
+          bookingDetails?["position"]?.toString() ?? "";
+
+      request.fields["Reason"] = bookingDetails?["reason"]?.toString() ?? "";
+
+      request.fields["Barcode"] = bookingDetails?["barcode"]?.toString() ?? "";
+
+      request.fields["TravelFrom"] =
+          bookingDetails?["travelFrom"]?.toString() ?? "";
+
+      request.fields["DestinationTo"] =
+          bookingDetails?["destinationTo"]?.toString() ?? "";
+
+      request.fields["TripDuration"] =
+          bookingDetails?["tripDuration"]?.toString() ?? "";
+
+      request.fields["Distance"] =
+          bookingDetails?["distance"]?.toString() ?? "";
+
+      request.fields["Travellers"] =
+          bookingDetails?["travellers"]?.toString() ?? "";
+
+      request.fields["SelectedBookingType"] =
+          bookingDetails?["selectedBookingType"]?.toString() ?? "";
+
+      request.fields["ApplicantEmail"] =
+          bookingDetails?["applicantEmail"]?.toString() ?? "";
+
+      // 🔥 IMPORTANT PART — STATUS UPDATE
+
+      request.fields["InchargeStatus"] = "APPROVED";
+      request.fields["SecStatus"] =
+          bookingDetails?["secStatus"]?.toString() ?? "";
+      request.fields["GMOStatus"] =
+          bookingDetails?["gmoStatus"]?.toString() ?? "";
+      request.fields["SecSpvStatus"] =
+          bookingDetails?["secSpvStatus"]?.toString() ?? "";
+      request.fields["FinalStatus"] =
+          bookingDetails?["finalStatus"]?.toString() ?? "";
+
+      // 🔥 Remark
+      request.fields["Remark"] = remarkController.text.trim();
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showSuccessDialog();
+      } else {
+        debugPrint("Approval Error: $responseData");
+        _showError("Approval failed");
+      }
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+      _showError("Something went wrong");
+    }
   }
 
   void showImageSourceSheet() {
@@ -234,6 +321,10 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
     }
 
     try {
+      // 🔥 START LOADER
+      setState(() {
+        _isSubmitting = true;
+      });
       final url = "${ApiHelper.carConveynanceUrl}CarAssign";
 
       var request = http.MultipartRequest(
@@ -328,6 +419,13 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
       var response = await request.send();
       var responseData = await response.stream.bytesToString();
 
+      // 🔥 STOP LOADER
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         // ScaffoldMessenger.of(context).showSnackBar(
         //   const SnackBar(content: Text("Car Assigned Successfully!")),
@@ -342,11 +440,21 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
         _showError("Failed to assign car");
       }
     } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
       _showError("Something went wrong");
     }
   }
 
   void _showSuccessDialog() {
+    String message;
+
+    if (widget.level == "Approval") {
+      message = "Car Approved Successfully!";
+    } else {
+      message = "Car Assigned Successfully!";
+    }
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -362,19 +470,20 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            content: const Column(
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.check_circle,
                   color: Colors.green,
                   size: 70,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
-                  "Car Assigned Successfully!",
+                  // "Car Assigned Successfully!",
+                  message,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -422,435 +531,563 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
               ? const Center(child: CircularProgressIndicator())
               : bookingDetails == null
                   ? const Center(child: Text("No details found"))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          // 🔷 BOOKING DETAILS
-                          buildGlassCard(
-                            title: "Booking Details",
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                buildDetailRow(
-                                    "Barcode", bookingDetails!["barcode"]),
-                                buildDetailRow("Travellers",
-                                    bookingDetails!["travellers"]),
-                                buildDetailRow("Booking ID",
-                                    bookingDetails!["carBookingId"]),
-                                buildDetailRow(
-                                    "Booking Type",
-                                    bookingDetails?["selectedBookingType"] ??
-                                        "-"),
-                                buildDetailRow("Department",
-                                    bookingDetails!["department"]),
-                                buildDetailRow("Name", bookingDetails!["name"]),
-                                buildDetailRow(
-                                    "Position", bookingDetails!["position"]),
-                                buildDetailRow(
-                                    "Reason", bookingDetails!["reason"]),
-                                buildDetailRow("Travel From",
-                                    bookingDetails!["travelFrom"]),
-                                buildDetailRow("Destination",
-                                    bookingDetails!["destinationTo"]),
-                                buildDetailRow(
-                                    "Reach Time", bookingDetails!["reachTime"]),
-                                buildDetailRow("Duration",
-                                    bookingDetails!["tripDuration"]),
-                                buildDetailRow(
-                                    "Distance", bookingDetails!["distance"]),
-                                buildDetailRow("Travellers Count",
-                                    bookingDetails!["travellersCount"]),
-                                buildDetailRow("Application Mail",
-                                    bookingDetails!["applicantEmail"]),
-                              ],
-                            ),
-                          ),
+                  : Stack(
+                      children: [
+                        SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              // 🔷 BOOKING DETAILS
+                              buildGlassCard(
+                                title: "Booking Details",
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    buildDetailRow(
+                                        "Barcode", bookingDetails!["barcode"]),
+                                    buildDetailRow("Travellers",
+                                        bookingDetails!["travellers"]),
+                                    buildDetailRow("Booking ID",
+                                        bookingDetails!["carBookingId"]),
+                                    buildDetailRow(
+                                        "Booking Type",
+                                        bookingDetails?[
+                                                "selectedBookingType"] ??
+                                            "-"),
+                                    buildDetailRow("Department",
+                                        bookingDetails!["department"]),
+                                    buildDetailRow(
+                                        "Name", bookingDetails!["name"]),
+                                    buildDetailRow("Position",
+                                        bookingDetails!["position"]),
+                                    buildDetailRow(
+                                        "Reason", bookingDetails!["reason"]),
+                                    buildDetailRow("Travel From",
+                                        bookingDetails!["travelFrom"]),
+                                    buildDetailRow("Destination",
+                                        bookingDetails!["destinationTo"]),
+                                    buildDetailRow("Reach Time",
+                                        bookingDetails!["reachTime"]),
+                                    buildDetailRow("Duration",
+                                        bookingDetails!["tripDuration"]),
+                                    buildDetailRow("Distance",
+                                        bookingDetails!["distance"]),
+                                    buildDetailRow("Travellers Count",
+                                        bookingDetails!["travellersCount"]),
+                                    buildDetailRow("Application Mail",
+                                        bookingDetails!["applicantEmail"]),
+                                  ],
+                                ),
+                              ),
 
-                          const SizedBox(height: 20),
+                              const SizedBox(height: 20),
 
-                          // 🔷 APPROVAL TRACKING
-                          buildGlassCard(
-                            title: "Approval Tracking",
-                            child: Column(
-                              children: [
-                                CarTrackingDetailsStep(
-                                  title: "Incharge Approval",
-                                  isCompleted: _isApproved(
-                                      bookingDetails!["inchargeStatus"]),
-                                  isLast: false,
-                                ),
-                                CarTrackingDetailsStep(
-                                  title: "Secretary Approval",
-                                  isCompleted:
-                                      _isApproved(bookingDetails!["secStatus"]),
-                                  isLast: false,
-                                ),
-                                CarTrackingDetailsStep(
-                                  title: "GMO Approval",
-                                  isCompleted:
-                                      _isApproved(bookingDetails!["gmoStatus"]),
-                                  isLast: false,
-                                ),
-                                CarTrackingDetailsStep(
-                                  title: "Car Assigned",
-                                  isCompleted: _isApproved(
-                                      bookingDetails!["secSpvStatus"]),
-                                  isLast: false,
-                                ),
-                                CarTrackingDetailsStep(
-                                  title: "Final Approval",
-                                  isCompleted: _isApproved(
-                                      bookingDetails!["finalStatus"]),
-                                  isLast: true,
-                                ),
-                              ],
-                            ),
-                          ),
+                              // 🔷 APPROVAL TRACKING
+                              // buildGlassCard(
+                              //   title: "Approval Tracking",
+                              //   child: Column(
+                              //     children: [
+                              //       CarTrackingDetailsStep(
+                              //         title: "Incharge Approval",
+                              //         isCompleted: _isApproved(
+                              //             bookingDetails!["inchargeStatus"]),
+                              //         isLast: false,
+                              //       ),
+                              //       CarTrackingDetailsStep(
+                              //         title: "Secretary Approval",
+                              //         isCompleted:
+                              //             _isApproved(bookingDetails!["secStatus"]),
+                              //         isLast: false,
+                              //       ),
+                              //       CarTrackingDetailsStep(
+                              //         title: "GMO Approval",
+                              //         isCompleted:
+                              //             _isApproved(bookingDetails!["gmoStatus"]),
+                              //         isLast: false,
+                              //       ),
+                              //       CarTrackingDetailsStep(
+                              //         title: "Car Assigned",
+                              //         isCompleted: _isApproved(
+                              //             bookingDetails!["secSpvStatus"]),
+                              //         isLast: false,
+                              //       ),
+                              //       CarTrackingDetailsStep(
+                              //         title: "Final Approval",
+                              //         isCompleted: _isApproved(
+                              //             bookingDetails!["finalStatus"]),
+                              //         isLast: true,
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
 
-                          const SizedBox(height: 20),
+                              buildGlassCard(
+                                title: "Approval Tracking",
+                                child: Column(
+                                  children: [
+                                    // 🔵 COMMON STEPS (Both Approval & Car Assign)
+                                    CarTrackingDetailsStep(
+                                      title: "Incharge Approval",
+                                      isCompleted: _isApproved(
+                                          bookingDetails!["inchargeStatus"]),
+                                      isLast: false,
+                                    ),
+                                    CarTrackingDetailsStep(
+                                      title: "Secretary Approval",
+                                      isCompleted: _isApproved(
+                                          bookingDetails!["secStatus"]),
+                                      isLast: false,
+                                    ),
 
-                          // 🔷 ASSIGN VEHICLE
-                          if (availableCars.isNotEmpty)
-                            buildGlassCard(
-                              title: "Assign Vehicle",
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // 🚗 DROPDOWN
-                                  DropdownSearch<Map<String, dynamic>>(
-                                    items: availableCars,
-                                    itemAsString: (car) => _carDisplayText(car),
-                                    dropdownDecoratorProps:
-                                        const DropDownDecoratorProps(
-                                      dropdownSearchDecoration: InputDecoration(
-                                        labelText: "Select Car",
-                                        labelStyle:
-                                            TextStyle(color: Colors.white),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: Colors.white38),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: Colors.cyan),
-                                        ),
+                                    // 🟢 EXTRA STEPS ONLY FOR CAR ASSIGN
+                                    if (widget.level == "Car Assign") ...[
+                                      CarTrackingDetailsStep(
+                                        title: "GMO Approval",
+                                        isCompleted: _isApproved(
+                                            bookingDetails!["gmoStatus"]),
+                                        isLast: false,
                                       ),
-                                    ),
-                                    dropdownButtonProps:
-                                        const DropdownButtonProps(
-                                      icon: Icon(Icons.keyboard_arrow_down,
-                                          color: Colors.white),
-                                    ),
-                                    dropdownBuilder: (context, selectedItem) {
-                                      return Text(
-                                        selectedItem == null
-                                            ? "Select Car"
-                                            : _carDisplayText(selectedItem),
-                                        style: const TextStyle(
-                                          color: Colors
-                                              .white, // ✅ Selected text white
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      );
-                                    },
-                                    onChanged: (car) {
-                                      setState(() {
-                                        selectedCar = car;
-                                        selectedCarId = car?["carId"];
-                                        selectedCarOutTime =
-                                            null; // reset first
-                                      });
-                                      if (selectedCarId != null) {
-                                        _fetchCarOutTime(
-                                            selectedCarId!); // 👈 CALL API
-                                      }
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
+                                      CarTrackingDetailsStep(
+                                        title: "Car Assigned",
+                                        isCompleted: _isApproved(
+                                            bookingDetails!["secSpvStatus"]),
+                                        isLast: false,
+                                      ),
+                                    ],
 
-                                  // ⏰ CAR OUT TIME
-                                  if (selectedCarId != null)
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          "Car Out Time",
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 14,
+                                    // 🔴 FINAL APPROVAL (Always Last)
+                                    CarTrackingDetailsStep(
+                                      title: "Final Approval",
+                                      isCompleted: _isApproved(
+                                          bookingDetails!["finalStatus"]),
+                                      isLast: true,
+                                    ),
+
+                                    const SizedBox(height: 20),
+
+                                    // 🟡 SHOW REMARK + BUTTON ONLY FOR APPROVAL TYPE
+                                    if (widget.level == "Approval") ...[
+                                      TextField(
+                                        controller: remarkController,
+                                        maxLines: 3,
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                        decoration: const InputDecoration(
+                                          labelText: "Remarks (Optional)",
+                                          labelStyle:
+                                              TextStyle(color: Colors.white70),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.white38),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide:
+                                                BorderSide(color: Colors.cyan),
                                           ),
                                         ),
-                                        const SizedBox(height: 8),
-                                        GestureDetector(
-                                          onTap: () async {
-                                            TimeOfDay? picked =
-                                                await showTimePicker(
-                                              context: context,
-                                              initialTime: TimeOfDay.now(),
-                                            );
-
-                                            if (picked != null) {
-                                              setState(() {
-                                                selectedCarOutTime =
-                                                    "${picked.hour}:${picked.minute.toString().padLeft(2, '0')}";
-                                              });
-                                            }
-                                          },
-                                          child: Container(
+                                      ),
+                                      const SizedBox(height: 20),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 14, vertical: 14),
-                                            decoration: BoxDecoration(
+                                                vertical: 14),
+                                            backgroundColor:
+                                                Colors.orangeAccent,
+                                          ),
+                                          onPressed: _approveBooking,
+                                          child: const Text(
+                                            "Approval",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+
+                              // 🔷 ASSIGN VEHICLE
+                              if (availableCars.isNotEmpty)
+                                buildGlassCard(
+                                  title: "Assign Vehicle",
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // 🚗 DROPDOWN
+                                      DropdownSearch<Map<String, dynamic>>(
+                                        items: availableCars,
+                                        itemAsString: (car) =>
+                                            _carDisplayText(car),
+                                        dropdownDecoratorProps:
+                                            const DropDownDecoratorProps(
+                                          dropdownSearchDecoration:
+                                              InputDecoration(
+                                            labelText: "Select Car",
+                                            labelStyle:
+                                                TextStyle(color: Colors.white),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.white38),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.cyan),
+                                            ),
+                                          ),
+                                        ),
+                                        dropdownButtonProps:
+                                            const DropdownButtonProps(
+                                          icon: Icon(Icons.keyboard_arrow_down,
+                                              color: Colors.white),
+                                        ),
+                                        dropdownBuilder:
+                                            (context, selectedItem) {
+                                          return Text(
+                                            selectedItem == null
+                                                ? "Select Car"
+                                                : _carDisplayText(selectedItem),
+                                            style: const TextStyle(
+                                              color: Colors
+                                                  .white, // ✅ Selected text white
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          );
+                                        },
+                                        onChanged: (car) {
+                                          setState(() {
+                                            selectedCar = car;
+                                            selectedCarId = car?["carId"];
+                                            selectedCarOutTime =
+                                                null; // reset first
+                                          });
+                                          if (selectedCarId != null) {
+                                            _fetchCarOutTime(
+                                                selectedCarId!); // 👈 CALL API
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      // ⏰ CAR OUT TIME
+                                      if (selectedCarId != null)
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Car Out Time",
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            GestureDetector(
+                                              onTap: () async {
+                                                TimeOfDay? picked =
+                                                    await showTimePicker(
+                                                  context: context,
+                                                  initialTime: TimeOfDay.now(),
+                                                );
+
+                                                if (picked != null) {
+                                                  setState(() {
+                                                    selectedCarOutTime =
+                                                        "${picked.hour}:${picked.minute.toString().padLeft(2, '0')}";
+                                                  });
+                                                }
+                                              },
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 14,
+                                                        vertical: 14),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                      color: Colors.white38),
+                                                  color: Colors.white
+                                                      .withOpacity(0.05),
+                                                ),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      selectedCarOutTime ??
+                                                          "Select Time",
+                                                      style: const TextStyle(
+                                                          color: Colors.white),
+                                                    ),
+                                                    const Icon(
+                                                        Icons.access_time,
+                                                        color: Colors.white70),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                      const SizedBox(height: 16),
+
+                                      TextField(
+                                        controller: driverNameController,
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                        decoration: InputDecoration(
+                                          labelText: "Driver Name",
+                                          labelStyle: const TextStyle(
+                                              color: Colors.white70),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.white38),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.cyan),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      TextField(
+                                        controller: driverNumberController,
+                                        keyboardType: TextInputType.phone,
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                        decoration: InputDecoration(
+                                          labelText: "Driver Number",
+                                          labelStyle: const TextStyle(
+                                              color: Colors.white70),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.white38),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.cyan),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      TextField(
+                                        controller: mailCc1Controller,
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                        decoration: InputDecoration(
+                                          labelText: "Mail CC1",
+                                          labelStyle: const TextStyle(
+                                              color: Colors.white70),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.white38),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.cyan),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      TextField(
+                                        controller: mailCc2Controller,
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                        decoration: InputDecoration(
+                                          labelText: "Mail CC2",
+                                          labelStyle: const TextStyle(
+                                              color: Colors.white70),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.white38),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.cyan),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 20),
+
+                                      // 📝 REMARK FIELD
+                                      TextField(
+                                        controller: remarkController,
+                                        maxLines: 3,
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                        decoration: const InputDecoration(
+                                          labelText: "Remarks",
+                                          labelStyle:
+                                              TextStyle(color: Colors.white70),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.white38),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide:
+                                                BorderSide(color: Colors.cyan),
+                                          ),
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 20),
+
+                                      // 📸 UPLOAD BUTTON
+                                      GestureDetector(
+                                        onTap: showImageSourceSheet,
+                                        child: Container(
+                                          height: 50,
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade100,
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            border: Border.all(
+                                                color: Colors.grey.shade300),
+                                          ),
+                                          child: const Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.add_a_photo_outlined,
+                                                  size: 20,
+                                                  color: Colors.pinkAccent),
+                                              SizedBox(height: 8),
+                                              Text(
+                                                "Tap to Upload Image",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 15),
+
+                                      // 🖼 IMAGE PREVIEW
+                                      // if (imageUrl != null)
+                                      if (selectedImage != null)
+                                        Stack(
+                                          children: [
+                                            ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12),
-                                              border: Border.all(
-                                                  color: Colors.white38),
-                                              color: Colors.white
-                                                  .withOpacity(0.05),
+                                              child: Image.file(
+                                                selectedImage!,
+                                                height: 180,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                              ),
                                             ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  selectedCarOutTime ??
-                                                      "Select Time",
-                                                  style: const TextStyle(
-                                                      color: Colors.white),
+                                            Positioned(
+                                              right: 8,
+                                              top: 8,
+                                              child: GestureDetector(
+                                                onTap: removeImage,
+                                                child: Container(
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    color: Colors.red,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.all(6),
+                                                  child: const Icon(
+                                                    Icons.close,
+                                                    color: Colors.white,
+                                                    size: 18,
+                                                  ),
                                                 ),
-                                                const Icon(Icons.access_time,
-                                                    color: Colors.white70),
-                                              ],
+                                              ),
+                                            )
+                                          ],
+                                        ),
+
+                                      const SizedBox(height: 20),
+
+                                      // ✅ ASSIGN BUTTON
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 14),
+                                            backgroundColor:
+                                                Colors.cyanAccent.shade700,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-
-                                  const SizedBox(height: 16),
-
-                                  TextField(
-                                    controller: driverNameController,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      labelText: "Driver Name",
-                                      labelStyle: const TextStyle(
-                                          color: Colors.white70),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: Colors.white38),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: Colors.cyan),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-
-                                  TextField(
-                                    controller: driverNumberController,
-                                    keyboardType: TextInputType.phone,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      labelText: "Driver Number",
-                                      labelStyle: const TextStyle(
-                                          color: Colors.white70),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: Colors.white38),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: Colors.cyan),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  TextField(
-                                    controller: mailCc1Controller,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      labelText: "Mail CC1",
-                                      labelStyle: const TextStyle(
-                                          color: Colors.white70),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: Colors.white38),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: Colors.cyan),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-
-                                  TextField(
-                                    controller: mailCc2Controller,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      labelText: "Mail CC2",
-                                      labelStyle: const TextStyle(
-                                          color: Colors.white70),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: Colors.white38),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: Colors.cyan),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  // 📝 REMARK FIELD
-                                  TextField(
-                                    controller: remarkController,
-                                    maxLines: 3,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: const InputDecoration(
-                                      labelText: "Remarks",
-                                      labelStyle:
-                                          TextStyle(color: Colors.white70),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white38),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.cyan),
-                                      ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  // 📸 UPLOAD BUTTON
-                                  GestureDetector(
-                                    onTap: showImageSourceSheet,
-                                    child: Container(
-                                      height: 50,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade100,
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                            color: Colors.grey.shade300),
-                                      ),
-                                      child: const Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.add_a_photo_outlined,
-                                              size: 20,
-                                              color: Colors.pinkAccent),
-                                          SizedBox(height: 8),
-                                          Text(
-                                            "Tap to Upload Image",
+                                          // onPressed: () {
+                                          //   ScaffoldMessenger.of(context)
+                                          //       .showSnackBar(
+                                          //     const SnackBar(
+                                          //       content: Text(
+                                          //           "Car Assigned Successfully!"),
+                                          //     ),
+                                          //   );
+                                          // },
+                                          onPressed: _assignCar,
+                                          child: const Text(
+                                            "Assign Car",
                                             style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.black54,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
                                             ),
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-
-                                  const SizedBox(height: 15),
-
-                                  // 🖼 IMAGE PREVIEW
-                                  // if (imageUrl != null)
-                                  if (selectedImage != null)
-                                    Stack(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          child: Image.file(
-                                            selectedImage!,
-                                            height: 180,
-                                            width: double.infinity,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                        Positioned(
-                                          right: 8,
-                                          top: 8,
-                                          child: GestureDetector(
-                                            onTap: removeImage,
-                                            child: Container(
-                                              decoration: const BoxDecoration(
-                                                color: Colors.red,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              padding: const EdgeInsets.all(6),
-                                              child: const Icon(
-                                                Icons.close,
-                                                color: Colors.white,
-                                                size: 18,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-
-                                  const SizedBox(height: 20),
-
-                                  // ✅ ASSIGN BUTTON
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 14),
-                                        backgroundColor:
-                                            Colors.cyanAccent.shade700,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                      ),
-                                      // onPressed: () {
-                                      //   ScaffoldMessenger.of(context)
-                                      //       .showSnackBar(
-                                      //     const SnackBar(
-                                      //       content: Text(
-                                      //           "Car Assigned Successfully!"),
-                                      //     ),
-                                      //   );
-                                      // },
-                                      onPressed: _assignCar,
-                                      child: const Text(
-                                        "Assign Car",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
+                            ],
+                          ),
+                        ),
+                        // 🔥 LOADER OVERLAY (MUST BE INSIDE STACK)
+                        if (_isSubmitting)
+                          Container(
+                            color: Colors.black.withOpacity(0.4),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.cyanAccent,
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
         ),
       ),

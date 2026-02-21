@@ -300,6 +300,7 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
                                       // CarBookingDetailsScreen(booking: booking),
                                       CarBookingDetailsScreen(
                                     bookingId: booking["carBookingId"],
+                                         level: _selectedLevel, // 👈 ADD THIS
                                   ),
                                 ),
                               );
