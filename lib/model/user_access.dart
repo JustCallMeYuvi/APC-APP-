@@ -145,6 +145,14 @@ IconData getIconForPage(Page page) {
       return Icons.assistant_navigation;
     case 'Car Conveyance Charts':
       return Icons.graphic_eq_sharp;
+    case 'QR Code':
+      return Icons.qr_code_scanner;
+    case 'Power Panels':
+      return Icons.palette_sharp;
+    case 'Panels Due':
+      return Icons.pallet;
+    case 'Salary':
+      return Icons.currency_rupee_sharp;
     default:
       return Icons.help_outline; // Fallback icon
   }
