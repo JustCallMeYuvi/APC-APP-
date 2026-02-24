@@ -162,7 +162,11 @@ class _PanelsDueScreenState extends State<PanelsDueScreen> {
                                   'Interval', '${panel.intervalDays} days'),
                               _infoRow(
                                   'Completed', '${panel.daysCompleted} days'),
-                              _infoRow('Last Scan', panel.lastCreatedDate),
+                              // _infoRow('Last Scan', panel.lastCreatedDate),
+                              _infoRow(
+                                'Last Scan',
+                                panel.lastCreatedDate.replaceAll('T', ' '),
+                              ),
                             ],
                           ),
                         );

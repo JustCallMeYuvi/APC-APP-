@@ -470,20 +470,49 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
 
   // MONTH dropdown
   final TextEditingController _monthController = TextEditingController();
+  // final List<String> _monthOptions = [
+  //   '1',
+  //   '2',
+  //   '3',
+  //   '4',
+  //   '5',
+  //   '6',
+  //   '7',
+  //   '8',
+  //   '9',
+  //   '10',
+  //   '11',
+  //   '12',
+  // ];
   final List<String> _monthOptions = [
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    '11',
-    '12',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
+
+  final Map<String, String> _monthApiMap = {
+    'Jan': '1',
+    'Feb': '2',
+    'Mar': '3',
+    'Apr': '4',
+    'May': '5',
+    'Jun': '6',
+    'Jul': '7',
+    'Aug': '8',
+    'Sep': '9',
+    'Oct': '10',
+    'Nov': '11',
+    'Dec': '12',
+  };
   String? _selectedMonth;
 
   bool _isLoading = false;
@@ -512,7 +541,11 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
     _selectedYear = currentYear.toString();
     _yearController.text = _selectedYear!;
 
-    _selectedMonth = DateTime.now().month.toString();
+    // _selectedMonth = DateTime.now().month.toString();
+    // _monthController.text = _selectedMonth!;
+
+    int currentMonth = DateTime.now().month;
+    _selectedMonth = _monthOptions[currentMonth - 1];
     _monthController.text = _selectedMonth!;
 
     _fetchEmpCount(); // initial load
@@ -560,8 +593,12 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
         });
         return;
       }
+      // uri = Uri.parse(
+      //     '$baseUrl?type=monthwise&year=$_selectedYear&month=$_selectedMonth');
+      final apiMonth = _monthApiMap[_selectedMonth] ?? '1';
+
       uri = Uri.parse(
-          '$baseUrl?type=monthwise&year=$_selectedYear&month=$_selectedMonth');
+          '$baseUrl?type=monthwise&year=$_selectedYear&month=$apiMonth');
     }
 
     try {
@@ -747,7 +784,10 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
                   },
                   onSuggestionSelected: (suggestion) {
                     setState(() {
-                      _selectedYear = suggestion;
+                      // _selectedYear = suggestion;
+                      final selected = suggestion;
+
+                      _selectedYear = selected;
                       _yearController.text = suggestion;
                     });
                     _fetchEmpCount();
@@ -780,8 +820,9 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
                     return ListTile(title: Text(suggestion));
                   },
                   onSuggestionSelected: (suggestion) {
+                    final selected = suggestion;
                     setState(() {
-                      _selectedMonth = suggestion;
+                      _selectedMonth = selected;
                       _monthController.text = suggestion;
                     });
                     _fetchEmpCount();

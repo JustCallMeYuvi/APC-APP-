@@ -423,12 +423,32 @@ class _CarChartsScreenState extends State<CarChartsScreen> {
   }
 
   /// Prepare pie chart data: each car becomes its own slice
+  // List<_PieData> _prepareChartData() {
+  //   return _carData.map((car) {
+  //     print("Travellers: ${car.travellers}, Details: ${car.cardetails}");
+  //     return _PieData(
+  //       "${car.travellers} - ${car.cardetails}", // Label
+  //       1, // Count per car
+  //       car, // Store individual car
+
+  //     );
+
+  //   }).toList();
+  // }
+
   List<_PieData> _prepareChartData() {
     return _carData.map((car) {
+      print("Travellers: ${car.travellers}, Details: ${car.cardetails}");
+
+      final travellerName =
+          (car.travellers == "_" || car.travellers.trim().isEmpty)
+              ? "Unknown"
+              : car.travellers;
+
       return _PieData(
-        "${car.travellers} - ${car.cardetails}", // Label
-        1, // Count per car
-        car, // Store individual car
+        '${car.carNo ?? ""}',
+        1,
+        car,
       );
     }).toList();
   }
@@ -481,7 +501,7 @@ class _CarChartsScreenState extends State<CarChartsScreen> {
                   : SfCircularChart(
                       title: ChartTitle(
                           text: 'Car Details for ${_selectedStatus ?? ""}'),
-                      legend: Legend(isVisible: false),
+                      legend: const Legend(isVisible: false),
                       tooltipBehavior: TooltipBehavior(
                         enable: true,
                         builder: (dynamic data, dynamic point, dynamic series,

@@ -748,8 +748,26 @@ class _OverTimeScreenState extends State<OverTimeScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        icon: const Icon(Icons.search),
-        label: const Text("Search"),
+        icon: const Icon(Icons.search, color: Colors.white),
+        label: const Text(
+          "Search",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple, // 🔥 Button color
+          foregroundColor: Colors.white, // Text & icon color
+          elevation: 6, // Shadow
+          padding: const EdgeInsets.symmetric(
+            vertical: 14,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // Rounded corners
+          ),
+        ),
         onPressed: () {
           context.read<OverTimeBloc>().add(
                 FetchOverTime(
