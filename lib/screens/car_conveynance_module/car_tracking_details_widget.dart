@@ -5,6 +5,7 @@ class CarTrackingDetailsStep extends StatelessWidget {
   final bool isCompleted;
   final bool isLast;
   final bool isCurrent;
+  final bool isRejected;
 
   const CarTrackingDetailsStep({
     super.key,
@@ -12,12 +13,32 @@ class CarTrackingDetailsStep extends StatelessWidget {
     required this.isCompleted,
     required this.isLast,
     this.isCurrent = false,
+    this.isRejected = false,
   });
 
   @override
   Widget build(BuildContext context) {
     Color activeColor = Colors.greenAccent;
+    Color rejectColor = Colors.redAccent;
     Color pendingColor = Colors.grey;
+
+    // 🔥 Decide circle color + icon
+    Color circleColor;
+    IconData? icon;
+
+    if (isRejected) {
+      circleColor = rejectColor;
+      icon = Icons.close; // ❌ Reject icon
+    } else if (isCompleted) {
+      circleColor = activeColor;
+      icon = Icons.check; // ✅ Approved icon
+    } else if (isCurrent) {
+      circleColor = Colors.orangeAccent;
+      icon = null;
+    } else {
+      circleColor = pendingColor;
+      icon = null;
+    }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,22 +49,18 @@ class CarTrackingDetailsStep extends StatelessWidget {
               width: 22,
               height: 22,
               decoration: BoxDecoration(
-                color: isCompleted
-                    ? activeColor
-                    : isCurrent
-                        ? Colors.orangeAccent
-                        : pendingColor,
+                color: circleColor,
                 shape: BoxShape.circle,
               ),
-              child: isCompleted
-                  ? const Icon(Icons.check, size: 14, color: Colors.black)
+              child: icon != null
+                  ? Icon(icon, size: 14, color: Colors.black)
                   : null,
             ),
             if (!isLast)
               Container(
                 width: 2,
                 height: 45,
-                color: isCompleted ? activeColor : pendingColor,
+                color: circleColor,
               ),
           ],
         ),
@@ -54,12 +71,18 @@ class CarTrackingDetailsStep extends StatelessWidget {
             child: Text(
               title,
               style: TextStyle(
+                // color: isRejected
+                //     ? Colors.redAccent
+                //     : isCompleted
+                //         ? Colors.white
+                //         : isCurrent
+                //             ? Colors.orangeAccent
+                //             : Colors.white54,
                 color: isCompleted
                     ? Colors.white
                     : isCurrent
                         ? Colors.orangeAccent
-                        : Colors.white54,
-                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                        : Colors.white,
               ),
             ),
           ),

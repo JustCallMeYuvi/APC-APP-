@@ -1,6 +1,7 @@
-import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/add_cars_screen.dart';
-import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/delete_car_screen.dart';
-import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/edit_car_screen.dart';
+
+import 'package:animated_movies_app/screens/car_conveynance_module/add_cars_screen.dart';
+import 'package:animated_movies_app/screens/car_conveynance_module/delete_car_screen.dart';
+import 'package:animated_movies_app/screens/car_conveynance_module/edit_car_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 

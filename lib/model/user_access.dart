@@ -153,6 +153,8 @@ IconData getIconForPage(Page page) {
       return Icons.pallet;
     case 'Salary':
       return Icons.currency_rupee_sharp;
+         case 'Car History':
+      return Icons.car_rental_sharp;
     default:
       return Icons.help_outline; // Fallback icon
   }

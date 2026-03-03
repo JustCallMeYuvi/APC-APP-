@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:animated_movies_app/api/apis_page.dart';
-import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_booking_details_screen.dart';
+import 'package:animated_movies_app/screens/car_conveynance_module/car_booking_details_screen.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
@@ -67,6 +67,7 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
         value.toString().trim().isNotEmpty &&
         value.toString().toLowerCase() != "null";
   }
+  
 
   List<dynamic> _carBookings = []; // Store API results here
 
@@ -301,6 +302,7 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
                                       CarBookingDetailsScreen(
                                     bookingId: booking["carBookingId"],
                                          level: _selectedLevel, // 👈 ADD THIS
+                                         status: _selectedStatus, // 👈 IMPORTANT
                                   ),
                                 ),
                               );
@@ -345,7 +347,9 @@ class _CarApprovalsScreenState extends State<CarApprovalsScreen> {
                                           decoration: BoxDecoration(
                                             color: booking["inchargeStatus"] ==
                                                     "APPROVED"
-                                                ? Colors.green.shade100
+                                                // ? Colors.green.shade100
+                                                ? Colors.transparent
+
                                                 : booking["inchargeStatus"] ==
                                                         "REJECTED"
                                                     ? Colors.red.shade100

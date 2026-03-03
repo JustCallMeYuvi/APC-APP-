@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:animated_movies_app/screens/gms_screens/car_conveynance_module/car_tracking_details_widget.dart';
+import 'package:animated_movies_app/screens/car_conveynance_module/car_tracking_details_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:animated_movies_app/api/apis_page.dart';
@@ -10,11 +10,13 @@ import 'package:image_picker/image_picker.dart';
 class CarBookingDetailsScreen extends StatefulWidget {
   final String bookingId;
   final String? level; // 👈 ADD
+  final String? status; // PENDING / APPROVED / REJECTED
 
   const CarBookingDetailsScreen({
     Key? key,
     required this.bookingId,
     this.level,
+    this.status,
   }) : super(key: key);
 
   @override
@@ -512,6 +514,11 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool _isRejected(dynamic status) {
+      if (status == null) return false;
+      return status.toString().toUpperCase() == "REJECTED";
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightGreen,
@@ -626,15 +633,27 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                 child: Column(
                                   children: [
                                     // 🔵 COMMON STEPS (Both Approval & Car Assign)
+                                    // CarTrackingDetailsStep(
+                                    //   title: "Incharge Approval",
+                                    //   isCompleted: _isApproved(
+                                    //       bookingDetails!["inchargeStatus"]),
+                                    //   isLast: false,
+                                    // ),
+
+                                    // 🔵 Incharge Step (Always show for Approval)
                                     CarTrackingDetailsStep(
                                       title: "Incharge Approval",
                                       isCompleted: _isApproved(
+                                          bookingDetails!["inchargeStatus"]),
+                                      isRejected: _isRejected(
                                           bookingDetails!["inchargeStatus"]),
                                       isLast: false,
                                     ),
                                     CarTrackingDetailsStep(
                                       title: "Secretary Approval",
                                       isCompleted: _isApproved(
+                                          bookingDetails!["secStatus"]),
+                                      isRejected: _isRejected(
                                           bookingDetails!["secStatus"]),
                                       isLast: false,
                                     ),
@@ -645,11 +664,15 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                         title: "GMO Approval",
                                         isCompleted: _isApproved(
                                             bookingDetails!["gmoStatus"]),
+                                        isRejected: _isRejected(
+                                            bookingDetails!["gmoStatus"]),
                                         isLast: false,
                                       ),
                                       CarTrackingDetailsStep(
                                         title: "Car Assigned",
                                         isCompleted: _isApproved(
+                                            bookingDetails!["secSpvStatus"]),
+                                        isRejected: _isRejected(
                                             bookingDetails!["secSpvStatus"]),
                                         isLast: false,
                                       ),
@@ -660,13 +683,16 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                       title: "Final Approval",
                                       isCompleted: _isApproved(
                                           bookingDetails!["finalStatus"]),
+                                      isRejected: _isRejected(
+                                          bookingDetails!["finalStatus"]),
                                       isLast: true,
                                     ),
 
                                     const SizedBox(height: 20),
 
                                     // 🟡 SHOW REMARK + BUTTON ONLY FOR APPROVAL TYPE
-                                    if (widget.level == "Approval") ...[
+                                    if (widget.level == "Approval" &&
+                                        widget.status == "PENDING") ...[
                                       TextField(
                                         controller: remarkController,
                                         maxLines: 3,
@@ -791,19 +817,56 @@ class _CarBookingDetailsScreenState extends State<CarBookingDetailsScreen> {
                                             ),
                                             const SizedBox(height: 8),
                                             GestureDetector(
+                                              // onTap: () async {
+                                              //   TimeOfDay? picked =
+                                              //       await showTimePicker(
+                                              //     context: context,
+                                              //     initialTime: TimeOfDay.now(),
+                                              //   );
+
+                                              //   if (picked != null) {
+                                              //     setState(() {
+                                              //       selectedCarOutTime =
+                                              //           "${picked.hour}:${picked.minute.toString().padLeft(2, '0')}";
+                                              //     });
+                                              //   }
+                                              // },
                                               onTap: () async {
-                                                TimeOfDay? picked =
+                                                // 🔹 Pick Date
+                                                DateTime? pickedDate =
+                                                    await showDatePicker(
+                                                  context: context,
+                                                  initialDate: DateTime.now(),
+                                                  firstDate: DateTime.now(),
+                                                  lastDate: DateTime(2035),
+                                                );
+
+                                                if (pickedDate == null) return;
+
+                                                // 🔹 Pick Time
+                                                TimeOfDay? pickedTime =
                                                     await showTimePicker(
                                                   context: context,
                                                   initialTime: TimeOfDay.now(),
                                                 );
 
-                                                if (picked != null) {
-                                                  setState(() {
-                                                    selectedCarOutTime =
-                                                        "${picked.hour}:${picked.minute.toString().padLeft(2, '0')}";
-                                                  });
-                                                }
+                                                if (pickedTime == null) return;
+
+                                                // 🔹 Combine Date + Time
+                                                final DateTime finalDateTime =
+                                                    DateTime(
+                                                  pickedDate.year,
+                                                  pickedDate.month,
+                                                  pickedDate.day,
+                                                  pickedTime.hour,
+                                                  pickedTime.minute,
+                                                );
+
+                                                setState(() {
+                                                  selectedCarOutTime =
+                                                      "${finalDateTime.year}-${finalDateTime.month.toString().padLeft(2, '0')}-${finalDateTime.day.toString().padLeft(2, '0')} "
+                                                      "${pickedTime.format(context)}";
+                                                });
                                               },
                                               child: Container(
                                                 padding:
