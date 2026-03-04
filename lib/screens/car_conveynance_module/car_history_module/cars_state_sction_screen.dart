@@ -103,14 +103,12 @@ class StatTile extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-                fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(
-                fontSize: 13, color: Colors.grey),
+            style: const TextStyle(fontSize: 13, color: Colors.grey),
           ),
         ],
       ),

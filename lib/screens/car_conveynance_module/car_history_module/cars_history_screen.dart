@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/car_conveynance_module/car_history_module/car_row_screen.dart';
 import 'package:animated_movies_app/screens/car_conveynance_module/car_history_module/cars_state_sction_screen.dart';
-import 'package:animated_movies_app/screens/car_conveynance_module/car_history_module/section_header_screen.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
@@ -230,7 +229,7 @@ class _CarsHistoryScreenState extends State<CarsHistoryScreen> {
                         activeCars: vehicleCount.toString(),
                       ),
                       const SizedBox(height: 28),
-                      const SectionHeader(title: "Top Performing Cars"),
+                      // const SectionHeader(title: "Top Performing Cars"),
                       const SizedBox(height: 14),
                       ...cars.map((car) {
                         return CarRow(
