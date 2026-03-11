@@ -328,7 +328,7 @@ import 'package:url_launcher/url_launcher.dart';
 class UpdateHelper {
   static Future<bool> checkForUpdates(BuildContext context) async {
     // 🔥 CALL YOUR METHOD HERE
-    // await ApiHelper.updateUrlsBasedOnNetwork();
+    await ApiHelper.updateUrlsBasedOnNetwork();
 
     debugPrint('🌐 Detected Network IP: '
         '${ApiHelper.urlGlobalOrLocalCheck}');
