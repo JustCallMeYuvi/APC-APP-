@@ -113,6 +113,7 @@ dependencies:
 
   uuid: any
   open_filex: ^4.7.0
+  syncfusion_flutter_pdfviewer: ^26.2.14
 dev_dependencies:
   flutter_test:
     sdk: flutter

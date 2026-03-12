@@ -8,15 +8,11 @@ class SalaryBloc extends Bloc<SalaryEvent, SalaryState> {
   final SalaryRepository repository;
 
   SalaryBloc(this.repository) : super(SalaryInitial()) {
-
     on<FetchSalary>((event, emit) async {
-
       emit(SalaryLoading());
 
       try {
-
-        final List<SalaryModel>? salaries =
-            await repository.fetchSalary(
+        final List<SalaryModel>? salaries = await repository.fetchSalary(
           barcode: event.barcode,
           fromDate: event.fromDate,
           toDate: event.toDate,
@@ -26,13 +22,12 @@ class SalaryBloc extends Bloc<SalaryEvent, SalaryState> {
         if (salaries == null || salaries.isEmpty) {
           emit(SalaryNoData());
         }
+
         /// ✅ Success
         else {
           emit(SalaryLoaded(salaries));
         }
-
       } catch (e) {
-
         emit(
           SalaryError(
             e.toString(),
@@ -40,5 +35,28 @@ class SalaryBloc extends Bloc<SalaryEvent, SalaryState> {
         );
       }
     });
+
+   /// DOWNLOAD PAYSLIP
+    on<DownloadPayslip>((event, emit) async {
+
+      emit(PayslipDownloading());
+
+      try {
+
+        final filePath = await repository.downloadPayslip(
+          barcode: event.barcode,
+          dob: event.dob,
+          bookNo: event.bookNo,
+        );
+
+        emit(PayslipDownloaded(filePath));
+
+      } catch (e) {
+
+        emit(SalaryError(e.toString()));
+
+      }
+    });
+
   }
 }

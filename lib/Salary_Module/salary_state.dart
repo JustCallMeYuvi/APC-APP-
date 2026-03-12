@@ -19,3 +19,11 @@ class SalaryError extends SalaryState {
 
   SalaryError(this.message);
 }
+
+class PayslipDownloading extends SalaryState {}
+
+class PayslipDownloaded extends SalaryState {
+  final String filePath;
+
+  PayslipDownloaded(this.filePath);
+}

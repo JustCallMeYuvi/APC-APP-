@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'salary_model.dart';
 
 class SalaryRepository {
@@ -48,4 +50,35 @@ class SalaryRepository {
       'Server Error: ${response.statusCode}',
     );
   }
+
+
+Future<String> downloadPayslip({
+  required String barcode,
+  required String dob,
+  required String bookNo,
+}) async {
+
+  final url = Uri.parse(
+    "http://10.3.0.208:8089/api/Ess/PayslipDownload"
+    "?company=APC"
+    "&barcode=$barcode"
+    "&dob=$dob"
+    "&book_no=$bookNo",
+  );
+
+  final response = await http.get(url);
+
+  if (response.statusCode == 200) {
+
+    final dir = await getTemporaryDirectory();
+
+    final file = File("${dir.path}/payslip_$bookNo.pdf");
+
+    await file.writeAsBytes(response.bodyBytes);
+
+    return file.path;
+  }
+
+  throw Exception("Payslip download failed");
+}
 }
