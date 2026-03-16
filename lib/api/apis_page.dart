@@ -50,9 +50,9 @@ class ApiHelper {
   // static String _carConveynanceUrl =
   //     'http://apc-gms.apachefootwear.com:8084/api/Car_Conveyance_/'; // using new link
 
+  static String _payslipUrl = 'http://10.3.0.208:8089/api/Ess/';
 
-
-static String _payslipUrl = 'http://10.3.0.208:8089/api/Ess/';
+  static String _assetUrl = 'http://10.3.0.70:9042/api/AssetManagement/';
 
   // Getter for Production URL (optional)
   static String get productionUrl => _productionUrl;
@@ -68,7 +68,9 @@ static String _payslipUrl = 'http://10.3.0.208:8089/api/Ess/';
 
   static String get mntURL => _mntURL;
 
-static String get payslipUrl => _payslipUrl;
+  static String get payslipUrl => _payslipUrl;
+
+  static String get assetUrl => _assetUrl;
 
   static String urlGlobalOrLocalCheck = '';
 
@@ -103,7 +105,9 @@ static String get payslipUrl => _payslipUrl;
         _dormitoryURL = 'http://10.3.0.70:9042/api/Dormitory_/';
         _mntURL = 'http://10.3.0.70:9042/api/MNT_/';
 
-          _payslipUrl = 'http://10.3.0.208:8089/api/Ess/';  
+        _payslipUrl = 'http://10.3.0.208:8089/api/Ess/';
+
+        _assetUrl = 'http://10.3.0.70:9042/api/AssetManagement/';
 
 // ==============================
 // Live Server (208)
@@ -156,7 +160,9 @@ static String get payslipUrl => _payslipUrl;
         _carConveynanceUrl = 'http://115.244.47.101:9042/api/Car_Conveyance_/';
         _dormitoryURL = 'http://115.244.47.101:9042/api/Dormitory_/';
         _mntURL = 'http://115.244.47.101:9042/api/MNT_/';
-        
+
+        _assetUrl = 'http://115.244.47.101:9042/api/AssetManagement/';
+
         _payslipUrl = 'http://203.153.32.85:54349/api/Ess/';
 
         urlGlobalOrLocalCheck = '115.244.47.101';

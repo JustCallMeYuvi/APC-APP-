@@ -2,6 +2,7 @@ import 'package:animated_movies_app/model/edit_api_dialog.dart';
 import 'package:animated_movies_app/model/endpoint_model.dart';
 import 'package:animated_movies_app/screens/ui_local_and_global_api_screens/endpoint_service.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RealtimeApiScreen extends StatefulWidget {
   const RealtimeApiScreen({Key? key}) : super(key: key);
@@ -23,6 +24,14 @@ class RealtimeApiScreenState extends State<RealtimeApiScreen> {
     setState(() {
       _future = EndpointService.fetchEndpoints();
     });
+  }
+
+  Future<void> openUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $url';
+    }
   }
 
   Future<bool?> _confirmDelete(BuildContext context) {
@@ -108,8 +117,30 @@ class RealtimeApiScreenState extends State<RealtimeApiScreen> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Public: ${item.publicApiUrl}"),
-                      Text("Local: ${item.localApiUrl}"),
+                      // Text("Public: ${item.publicApiUrl}"),
+                      // Text("Local: ${item.localApiUrl}"),
+
+                      GestureDetector(
+                        onTap: () => openUrl(item.publicApiUrl),
+                        child: Text(
+                          "Public: ${item.publicApiUrl}",
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () => openUrl(item.localApiUrl),
+                        child: Text(
+                          "Local: ${item.localApiUrl}",
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   trailing: IconButton(

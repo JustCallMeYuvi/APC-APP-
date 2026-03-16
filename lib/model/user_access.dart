@@ -161,6 +161,12 @@ IconData getIconForPage(Page page) {
       return Icons.timelapse_sharp;
     case 'Maintenance':
       return Icons.home_repair_service;
+
+    case 'IT Assets':
+      return Icons.hardware_outlined;
+
+    case 'API':
+      return Icons.link_sharp;
     default:
       return Icons.help_outline; // Fallback icon
   }

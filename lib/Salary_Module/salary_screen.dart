@@ -391,6 +391,7 @@ import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
@@ -420,22 +421,15 @@ class _SalaryScreenState extends State<SalaryScreen> {
 
     if (dob.isEmpty || month.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter DOB and Month")),
+        const SnackBar(content: Text("Please enter DOB and Month")),
       );
       return;
     }
 
     setState(() {
       loading = true;
+      pdfFile = null; // remove old payslip
     });
-
-    // final url = Uri.parse(
-    //   "http://10.3.0.208:8089/api/Ess/PayslipDownload"
-    //   "?company=APC"
-    //   "&barcode=$barcode"
-    //   "&dob=$dob"
-    //   "&book_no=$month",
-    // );
 
     final url = Uri.parse(
       "${ApiHelper.payslipUrl}PayslipDownload"
@@ -444,33 +438,71 @@ class _SalaryScreenState extends State<SalaryScreen> {
       "&dob=$dob"
       "&book_no=$month",
     );
+
     try {
       final response = await http.get(url);
 
-      if (response.statusCode == 200) {
-        final dir = await getTemporaryDirectory();
+      /// ❗ Server error
+      if (response.statusCode != 200) {
+        _showAlert("Server Error", "Please try again later.");
+        setState(() => loading = false);
+        return;
+      }
 
-        final file = File("${dir.path}/payslip_$month.pdf");
+      /// ❗ Invalid DOB or No Payslip
+      if (!response.headers['content-type']!.contains("pdf")) {
+        String message = "Payslip not available for selected month.";
 
-        await file.writeAsBytes(response.bodyBytes);
+        /// If API returns DOB error text
+        String body = String.fromCharCodes(response.bodyBytes);
+
+        if (body.toLowerCase().contains("dob") ||
+            body.toLowerCase().contains("invalid")) {
+          message = "DOB is not correct. Please enter valid DOB.";
+        }
+
+        _showAlert("Payslip Error", message);
 
         setState(() {
-          pdfFile = file;
+          loading = false;
+          pdfFile = null;
         });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Payslip not found")),
-        );
+
+        return;
       }
+
+      /// Save PDF
+      final dir = await getTemporaryDirectory();
+      final file = File("${dir.path}/payslip_$month.pdf");
+
+      await file.writeAsBytes(response.bodyBytes);
+
+      setState(() {
+        pdfFile = file;
+      });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      _showAlert("Error", "Something went wrong.\n$e");
     }
 
     setState(() {
       loading = false;
     });
+  }
+
+  void _showAlert(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
   }
 
   Future<void> downloadPayslip() async {
@@ -495,7 +527,7 @@ class _SalaryScreenState extends State<SalaryScreen> {
       isDownloading = true;
     });
 
-    /// SHOW LOADER
+    /// loader
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -505,21 +537,23 @@ class _SalaryScreenState extends State<SalaryScreen> {
     );
 
     try {
-      final dir = await getApplicationDocumentsDirectory();
+      /// download folder path
+      Directory? dir = Directory('/storage/emulated/0/Download');
 
-      final downloadFile =
-          File("${dir.path}/${pdfFile!.uri.pathSegments.last}");
+      final fileName = pdfFile!.uri.pathSegments.last;
+
+      final downloadFile = File("${dir.path}/$fileName");
 
       await pdfFile!.copy(downloadFile.path);
 
-      Navigator.pop(context); // close loader
+      Navigator.pop(context);
 
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text("Download Successful"),
           content: Text(
-            "Payslip downloaded successfully.\n\nSaved at:\n${downloadFile.path}",
+            "Payslip saved in Downloads folder\n\n${downloadFile.path}",
           ),
           actions: [
             TextButton(
@@ -530,7 +564,7 @@ class _SalaryScreenState extends State<SalaryScreen> {
         ),
       );
     } catch (e) {
-      Navigator.pop(context); // close loader
+      Navigator.pop(context);
 
       showDialog(
         context: context,
@@ -567,6 +601,7 @@ class _SalaryScreenState extends State<SalaryScreen> {
         child: Column(
           children: [
             /// DOB
+
             TextField(
               controller: _dobController,
               readOnly: true,
@@ -585,7 +620,7 @@ class _SalaryScreenState extends State<SalaryScreen> {
 
                 if (pickedDate != null) {
                   String formattedDate =
-                      "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                      DateFormat('yyyy-MM-dd').format(pickedDate);
 
                   setState(() {
                     _dobController.text = formattedDate;
