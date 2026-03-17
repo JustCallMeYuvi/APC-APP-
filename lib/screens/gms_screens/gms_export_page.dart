@@ -2183,13 +2183,15 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     ),
                     children: [
                       _customTextField(
-                          enabled: false,
+                          // enabled: false,
+                          enabled: true,
                           "Invoice Packing",
                           _invoicePackingController),
                       _customTextField(
                         "Buyer's PO",
                         _buyersPoController,
-                        enabled: false,
+                        // enabled: false,
+                        enabled: true,
                       ),
                       _customTextField("Consignee", _consigneeController),
                       // _customTextField("Description", _descriptionController),
@@ -2218,12 +2220,14 @@ class _GmsExportPageState extends State<GmsExportPage> {
                       _customTextField(
                         "Piece Count",
                         _pieceCountController,
-                        enabled: false,
+                        // enabled: false,
+                        enabled: true,
                       ),
                       _customTextField(
                         "Carton Boxes",
                         _cartonBoxesController,
-                        enabled: false,
+                        // enabled: false,
+                        enabled: true,
                       ),
                       _customTextField("Gross Weight", _grossWeightController),
                       _customTextField(

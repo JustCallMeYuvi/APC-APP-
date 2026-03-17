@@ -321,6 +321,7 @@
 import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -410,6 +411,49 @@ class UpdateHelper {
     return 0;
   }
 
+  // static Future<void> _showUpdateDialog(
+  //   BuildContext context,
+  //   String latestVersion,
+  //   String downloadUrl,
+  // ) async {
+  //   return showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (ctx) => AlertDialog(
+  //       title: const Text('Update Available'),
+  //       content: Text(
+  //         'New version $latestVersion is available.\n\n'
+  //         'Please download and install the latest APK.',
+  //       ),
+  //       actions: [
+  //         // TextButton(
+  //         //   onPressed: () => Navigator.pop(ctx),
+  //         //   child: const Text('Later'),
+  //         // ),
+  //         ElevatedButton(
+  //           onPressed: () async {
+  //             final uri = Uri.parse(downloadUrl);
+  //             if (await canLaunchUrl(uri)) {
+  //               await launchUrl(
+  //                 uri,
+  //                 mode: LaunchMode.externalApplication,
+  //               );
+  //             } else {
+  //               ScaffoldMessenger.of(context).showSnackBar(
+  //                 const SnackBar(
+  //                   content: Text('Unable to open update page'),
+  //                 ),
+  //               );
+  //             }
+  //             // Navigator.pop(ctx);
+  //           },
+  //           child: const Text('Download Update'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   static Future<void> _showUpdateDialog(
     BuildContext context,
     String latestVersion,
@@ -418,37 +462,40 @@ class UpdateHelper {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Update Available'),
-        content: Text(
-          'New version $latestVersion is available.\n\n'
-          'Please download and install the latest APK.',
-        ),
-        actions: [
-          // TextButton(
-          //   onPressed: () => Navigator.pop(ctx),
-          //   child: const Text('Later'),
-          // ),
-          ElevatedButton(
-            onPressed: () async {
-              final uri = Uri.parse(downloadUrl);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(
-                  uri,
-                  mode: LaunchMode.externalApplication,
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Unable to open update page'),
-                  ),
-                );
-              }
-              // Navigator.pop(ctx);
-            },
-            child: const Text('Download Update'),
+      builder: (ctx) => WillPopScope(
+        onWillPop: () async {
+          // Close the app when back button is pressed
+          SystemNavigator.pop();
+          return false;
+        },
+        child: AlertDialog(
+          title: const Text('Update Available'),
+          content: Text(
+            'New version $latestVersion is available.\n\n'
+            'Please download and install the latest APK.',
           ),
-        ],
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                final uri = Uri.parse(downloadUrl);
+
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(
+                    uri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Unable to open update page'),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Download Update'),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -38,8 +39,12 @@ class _AddApiScreenState extends State<AddApiScreen> {
     };
 
     try {
+      // 🔹 Detect Local / Global network
+      await ApiHelper.updateUrlsBasedOnNetwork();
+
       final response = await http.post(
-        Uri.parse("http://10.3.0.70:9042/api/HR"),
+        // Uri.parse("http://10.3.0.70:9042/api/HR"),
+        Uri.parse("${ApiHelper.baseUrl}Endpoints"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );

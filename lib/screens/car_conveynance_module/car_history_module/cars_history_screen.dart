@@ -42,29 +42,70 @@ class _CarsHistoryScreenState extends State<CarsHistoryScreen> {
     "Overall",
     "Date Wise",
   ];
-  Future<void> _pickDate(bool isFrom) async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2035),
-    );
+ Future<void> _pickDate(bool isFrom) async {
+  DateTime now = DateTime.now();
 
-    if (picked != null) {
-      setState(() {
-        if (isFrom) {
-          fromDate = picked;
-        } else {
-          toDate = picked;
-        }
-      });
+  DateTime? picked = await showDatePicker(
+    context: context,
+    initialDate: isFrom
+        ? (fromDate ?? now)
+        : (toDate ?? now),
+    firstDate: DateTime(2025),
+    lastDate: now,
+  );
 
-      if (selectedFilter == "Date Wise" && fromDate != null && toDate != null) {
-        fetchCarPerformance();
+  if (picked != null) {
+    if (isFrom) {
+      // From Date should not be greater than To Date
+      if (toDate != null && picked.isAfter(toDate!)) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Invalid Date"),
+            content: const Text("From Date cannot be greater than To Date"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              )
+            ],
+          ),
+        );
+        return;
+      }
+    } else {
+      // To Date should not be less than From Date
+      if (fromDate != null && picked.isBefore(fromDate!)) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Invalid Date"),
+            content: const Text("To Date cannot be less than From Date"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              )
+            ],
+          ),
+        );
+        return;
       }
     }
-  }
 
+    setState(() {
+      if (isFrom) {
+        fromDate = picked;
+      } else {
+        toDate = picked;
+      }
+    });
+
+    if (selectedFilter == "Date Wise" && fromDate != null && toDate != null) {
+      fetchCarPerformance();
+    }
+  }
+}
   Future<void> fetchCarPerformance() async {
     try {
       setState(() => isLoading = true);

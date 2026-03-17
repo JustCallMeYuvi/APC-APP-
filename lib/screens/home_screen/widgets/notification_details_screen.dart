@@ -22,22 +22,6 @@ class NotificationDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            /// Notification Icon
-            Container(
-              height: 90,
-              width: 90,
-              decoration: BoxDecoration(
-                color: Colors.lightGreen.withOpacity(.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.notifications_active,
-                color: Colors.lightGreen,
-                size: 45,
-              ),
-            ),
-
-            const SizedBox(height: 25),
 
             /// Main Card
             Container(
@@ -118,20 +102,20 @@ class NotificationDetailsScreen extends StatelessWidget {
                     const SizedBox(height: 25),
 
                     /// Info Section
-                    const Divider(),
+                    // const Divider(),
 
-                    const SizedBox(height: 15),
+                    // const SizedBox(height: 15),
 
-                    Row(
-                      children: [
-                        const Icon(Icons.qr_code, color: Colors.grey),
-                        const SizedBox(width: 10),
-                        Text(
-                          "Barcode : ${notification.barcode}",
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   children: [
+                    //     const Icon(Icons.qr_code, color: Colors.grey),
+                    //     const SizedBox(width: 10),
+                    //     Text(
+                    //       "Barcode : ${notification.barcode}",
+                    //       style: const TextStyle(fontSize: 15),
+                    //     ),
+                    //   ],
+                    // ),
 
                     const SizedBox(height: 15),
 

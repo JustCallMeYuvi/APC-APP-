@@ -49,14 +49,56 @@ class _PowerPanelsScreenState extends State<PowerPanelsScreen>
   }
 
   Future<void> pickDate(bool isFrom) async {
+    final DateTime now = DateTime.now();
+
     final date = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: now,
       firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
+      lastDate: now, // restrict future dates
     );
 
     if (date != null) {
+      if (isFrom) {
+        // From Date cannot be greater than To Date
+        if (toDate != null && date.isAfter(toDate!)) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text("Invalid Date"),
+              content:
+                  const Text("From Date must be less than or equal to To Date"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      } else {
+        // To Date cannot be less than From Date
+        if (fromDate != null && date.isBefore(fromDate!)) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text("Invalid Date"),
+              content: const Text(
+                  "To Date must be greater than or equal to From Date"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
       setState(() {
         if (isFrom) {
           fromDate = date;
