@@ -1,18 +1,48 @@
+// class PowerPanelHistoryModel {
+//   final PanelDetails panelDetails;
+//   final Summary summary;
+//   final List<Record> records;
+
+//   PowerPanelHistoryModel({
+//     required this.panelDetails,
+//     required this.summary,
+//     required this.records,
+//   });
+
+//   factory PowerPanelHistoryModel.fromJson(Map<String, dynamic> json) {
+//     return PowerPanelHistoryModel(
+//       panelDetails: PanelDetails.fromJson(json['panelDetails']),
+//       summary: Summary.fromJson(json['summary']),
+//       records: (json['records'] as List)
+//           .map((e) => Record.fromJson(e))
+//           .toList(),
+//     );
+//   }
+// }
+
 class PowerPanelHistoryModel {
+  final bool hasData;
+  final String? message;
   final PanelDetails panelDetails;
-  final Summary summary;
+  final Summary? summary; // ✅ nullable
   final List<Record> records;
 
   PowerPanelHistoryModel({
+    required this.hasData,
+    this.message,
     required this.panelDetails,
-    required this.summary,
+    this.summary,
     required this.records,
   });
 
   factory PowerPanelHistoryModel.fromJson(Map<String, dynamic> json) {
     return PowerPanelHistoryModel(
+      hasData: json['hasData'] ?? false,
+      message: json['message'], // ✅ added
       panelDetails: PanelDetails.fromJson(json['panelDetails']),
-      summary: Summary.fromJson(json['summary']),
+      summary: json['summary'] != null
+          ? Summary.fromJson(json['summary'])
+          : null, // ✅ safe parsing
       records: (json['records'] as List)
           .map((e) => Record.fromJson(e))
           .toList(),

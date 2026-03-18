@@ -432,7 +432,7 @@ class _SalaryScreenState extends State<SalaryScreen> {
     });
 
     final url = Uri.parse(
-      "${ApiHelper.payslipUrl}PayslipDownload"
+      "${ApiHelper.payslipUrl}PayslipDownload_"
       "?company=APC"
       "&barcode=$barcode"
       "&dob=$dob"
@@ -631,6 +631,51 @@ class _SalaryScreenState extends State<SalaryScreen> {
             const SizedBox(height: 20),
 
             /// MONTH
+            // TextField(
+            //   controller: _monthController,
+            //   readOnly: true,
+            //   decoration: const InputDecoration(
+            //     labelText: "Select Month",
+            //     border: OutlineInputBorder(),
+            //     suffixIcon: Icon(Icons.calendar_today),
+            //   ),
+            //   onTap: () async {
+            //     DateTime today = DateTime.now();
+
+            //     DateTime lastDate;
+            //     DateTime firstDate;
+
+            //     /// If today < 10 → allow previous 3 months
+            //     if (today.day < 10) {
+            //       lastDate = DateTime(today.year, today.month - 1);
+            //       firstDate = DateTime(lastDate.year, lastDate.month - 2);
+            //     }
+
+            //     /// If today >= 10 → allow current + previous 2 months
+            //     else {
+            //       lastDate = DateTime(today.year, today.month);
+            //       firstDate = DateTime(lastDate.year, lastDate.month - 2);
+            //     }
+
+            //     DateTime? pickedMonth = await showDatePicker(
+            //       context: context,
+            //       initialDate: lastDate,
+            //       firstDate: firstDate,
+            //       lastDate: lastDate,
+            //       helpText: "Select Payslip Month",
+            //     );
+
+            //     if (pickedMonth != null) {
+            //       String formattedMonth =
+            //           "${pickedMonth.year}${pickedMonth.month.toString().padLeft(2, '0')}";
+
+            //       setState(() {
+            //         _monthController.text = formattedMonth;
+            //       });
+            //     }
+            //   },
+            // ),
+
             TextField(
               controller: _monthController,
               readOnly: true,
@@ -642,37 +687,43 @@ class _SalaryScreenState extends State<SalaryScreen> {
               onTap: () async {
                 DateTime today = DateTime.now();
 
-                DateTime lastDate;
-                DateTime firstDate;
+                // ✅ Always previous 3 months (no 10th logic)
+                DateTime lastDate = DateTime(today.year, today.month - 1);
+                DateTime firstDate =
+                    DateTime(lastDate.year, lastDate.month - 2);
 
-                /// If today < 10 → allow previous 3 months
-                if (today.day < 10) {
-                  lastDate = DateTime(today.year, today.month - 1);
-                  firstDate = DateTime(lastDate.year, lastDate.month - 2);
-                }
-
-                /// If today >= 10 → allow current + previous 2 months
-                else {
-                  lastDate = DateTime(today.year, today.month);
-                  firstDate = DateTime(lastDate.year, lastDate.month - 2);
-                }
-
-                DateTime? pickedMonth = await showDatePicker(
+                showDialog(
                   context: context,
-                  initialDate: lastDate,
-                  firstDate: firstDate,
-                  lastDate: lastDate,
-                  helpText: "Select Payslip Month",
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text("Select Payslip Month"),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(3, (index) {
+                          DateTime month =
+                              DateTime(lastDate.year, lastDate.month - index);
+
+                          return ListTile(
+                            leading: const Icon(Icons.calendar_month),
+                            title: Text(
+                              DateFormat('MMMM yyyy').format(month),
+                            ),
+                            onTap: () {
+                              String formatted =
+                                  "${month.year}${month.month.toString().padLeft(2, '0')}";
+
+                              setState(() {
+                                _monthController.text = formatted;
+                              });
+
+                              Navigator.pop(context);
+                            },
+                          );
+                        }),
+                      ),
+                    );
+                  },
                 );
-
-                if (pickedMonth != null) {
-                  String formattedMonth =
-                      "${pickedMonth.year}${pickedMonth.month.toString().padLeft(2, '0')}";
-
-                  setState(() {
-                    _monthController.text = formattedMonth;
-                  });
-                }
               },
             ),
             const SizedBox(height: 20),

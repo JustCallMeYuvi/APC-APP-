@@ -27,7 +27,7 @@ class PowerPanelBloc extends Bloc<PowerPanelEvent, PowerPanelState> {
         );
 
         if (history.records.isEmpty) {
-          emit(PowerPanelHistoryEmpty());
+          emit(PowerPanelHistoryEmpty(history.message ?? "No data available"));
         } else {
           emit(PowerPanelHistoryLoaded(history));
         }

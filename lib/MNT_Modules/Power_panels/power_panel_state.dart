@@ -24,4 +24,8 @@ class PowerPanelHistoryLoaded extends PowerPanelState {
   PowerPanelHistoryLoaded(this.history);
 }
 
-class PowerPanelHistoryEmpty extends PowerPanelState {}
+class PowerPanelHistoryEmpty extends PowerPanelState {
+  final String message;
+
+  PowerPanelHistoryEmpty(this.message);
+}

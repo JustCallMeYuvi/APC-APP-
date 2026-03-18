@@ -258,11 +258,36 @@ class _PowerPanelsScreenState extends State<PowerPanelsScreen>
 
                   /// EMPTY
                   if (state is PowerPanelHistoryEmpty)
-                    const Center(
-                      child: Text(
-                        "No Data Found",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 80,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 15),
+                          const Text(
+                            "No Records Found",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              state.message, // 🔥 dynamic message from API
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
@@ -287,8 +312,11 @@ class _PowerPanelsScreenState extends State<PowerPanelsScreen>
     final summary = history.summary;
     final records = history.records;
 
-    int total = summary.totalCount;
-    int overallGood = summary.overallGood;
+    // int total = summary.totalCount;
+    // int overallGood = summary.overallGood;
+
+    int total = summary?.totalCount ?? 0; // ✅ FIXED
+    int overallGood = summary?.overallGood ?? 0; // ✅ FIXED
     double percent = total == 0 ? 0 : overallGood / total;
 
     return Column(

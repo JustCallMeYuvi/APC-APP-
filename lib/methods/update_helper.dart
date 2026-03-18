@@ -369,6 +369,7 @@ class UpdateHelper {
 
           debugPrint('🌐 Network Type: '
               '${isLocalNetwork ? "LOCAL" : "PUBLIC"}');
+          debugPrint('🔍 Stored IP: ${ApiHelper.urlGlobalOrLocalCheck}');
 
           final String? downloadUrl =
               isLocalNetwork ? localApiUrl : publicApiUrl;
