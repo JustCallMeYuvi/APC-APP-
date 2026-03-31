@@ -2595,56 +2595,112 @@ class _GmsExportPageState extends State<GmsExportPage> {
                     ? const SizedBox()
                     // : _isLoading // Check if loading
                     //     ? const CircularProgressIndicator() // Show loading indicator when _isLoading is true
+                    // : SizedBox(
+                    //     width: double.infinity,
+                    //     child: MaterialButton(
+                    //       onPressed: () async {
+                    //         // Your submit logic here for FG IN, Fire Gate OUT, or Main Gate OUT
+                    //         _validateAndSubmit();
+                    //         _showAlertforManifestChasisAndEngineNo(context);
+                    //         _validateCheckList();
+                    //         // _clearGateControllers();
+                    //         // await submitData(
+                    //         //     // _mainGateFromInController.text,
+                    //         //     // _mainGateStageInController.text,
+                    //         //     // _mainGatePurposeController.text
+                    //         //     );
+                    //         // await _clearGateControllers();
+                    //         // setState(() {
+                    //         //   _isLoading = false; // Hide the loading indicator
+                    //         //   _isSubmitted =
+                    //         //       true; // Mark submission as successful
+                    //         // });
+
+                    //         // setState(() {
+                    //         //   _isLoading = true; // Start loading
+                    //         // });
+
+                    //         // if (_isLoading) CircularProgressIndicator();
+                    //         print("Submit button pressed for $_gateType");
+                    //       },
+                    //       color: Colors.blue, // Background color
+                    //       padding: const EdgeInsets.symmetric(
+                    //           vertical: 10.0,
+                    //           horizontal: 20.0), // Button padding
+                    //       shape: RoundedRectangleBorder(
+                    //         borderRadius:
+                    //             BorderRadius.circular(30), // Rounded corners
+                    //       ),
+                    //       elevation: 8, // Button shadow
+                    //       highlightElevation:
+                    //           12, // Elevation when the button is pressed
+                    //       splashColor: Colors.blueAccent
+                    //           .withOpacity(0.3), // Splash color on tap
+                    //       textColor: Colors.white,
+                    //       child: const Text(
+                    //         'Submit',
+                    //         style: TextStyle(
+                    //           fontSize: 16, // Text size
+                    //           fontWeight: FontWeight.bold, // Text boldness
+                    //           color: Colors.white, // Text color
+                    //         ),
+                    //       ), // Text color on tap
+                    //     ),
+                    //   ),
+
                     : SizedBox(
                         width: double.infinity,
                         child: MaterialButton(
-                          onPressed: () async {
-                            // Your submit logic here for FG IN, Fire Gate OUT, or Main Gate OUT
-                            _validateAndSubmit();
-                            _showAlertforManifestChasisAndEngineNo(context);
-                            _validateCheckList();
-                            // _clearGateControllers();
-                            // await submitData(
-                            //     // _mainGateFromInController.text,
-                            //     // _mainGateStageInController.text,
-                            //     // _mainGatePurposeController.text
-                            //     );
-                            // await _clearGateControllers();
-                            // setState(() {
-                            //   _isLoading = false; // Hide the loading indicator
-                            //   _isSubmitted =
-                            //       true; // Mark submission as successful
-                            // });
+                          onPressed: _isLoading
+                              ? null // ❌ Disable when loading
+                              : () async {
+                                  print("Submit button pressed for $_gateType");
 
-                            // setState(() {
-                            //   _isLoading = true; // Start loading
-                            // });
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
 
-                            // if (_isLoading) CircularProgressIndicator();
-                            print("Submit button pressed for $_gateType");
-                          },
-                          color: Colors.blue, // Background color
+                                  // ✅ Call validations + API
+                                  await _validateAndSubmit();
+                                  _showAlertforManifestChasisAndEngineNo(
+                                      context);
+                                  _validateCheckList();
+                                  print("Submit button pressed for $_gateType");
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                },
+
+                          color: _isLoading
+                              ? Colors.grey
+                              : Colors.blue, // 👈 change color
                           padding: const EdgeInsets.symmetric(
-                              vertical: 10.0,
-                              horizontal: 20.0), // Button padding
+                              vertical: 10.0, horizontal: 20.0),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(30), // Rounded corners
+                            borderRadius: BorderRadius.circular(30),
                           ),
-                          elevation: 8, // Button shadow
-                          highlightElevation:
-                              12, // Elevation when the button is pressed
-                          splashColor: Colors.blueAccent
-                              .withOpacity(0.3), // Splash color on tap
+                          elevation: 8,
+                          highlightElevation: 12,
+                          splashColor: Colors.blueAccent.withOpacity(0.3),
                           textColor: Colors.white,
-                          child: const Text(
-                            'Submit',
-                            style: TextStyle(
-                              fontSize: 16, // Text size
-                              fontWeight: FontWeight.bold, // Text boldness
-                              color: Colors.white, // Text color
-                            ),
-                          ), // Text color on tap
+
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Submit',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
               // if (_isLoading)

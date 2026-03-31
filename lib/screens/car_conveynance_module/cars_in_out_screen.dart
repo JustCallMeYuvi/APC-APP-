@@ -98,7 +98,8 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
 
 // ✅ POST method to update car IN/OUT status
   Future<void> _updateCarStatus(Map<String, dynamic> car, String action) async {
-    final url = Uri.parse("'${ApiHelper.carConveynanceUrl}/PSStatus");
+    // final url = Uri.parse("'${ApiHelper.carConveynanceUrl}PSStatus");
+    final url = Uri.parse("${ApiHelper.carConveynanceUrl}PSStatus");
 
     // Ensure CarStatus is properly formatted (backend might be case-sensitive)
     final carStatus = (action.toLowerCase() == "in") ? "In" : "Out";
@@ -117,6 +118,9 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
 
     debugPrint("POST URL: $url");
     debugPrint("Request Body: ${jsonEncode(body)}");
+
+  // 🔥 START LOADING
+  setState(() => _isLoading = true);
 
     try {
       final response = await http.post(
@@ -161,6 +165,10 @@ class _CarsInOutScreenState extends State<CarsInOutScreen> {
         const SnackBar(content: Text("Something went wrong!")),
       );
     }
+    finally {
+    // 🔥 STOP LOADING (VERY IMPORTANT)
+    setState(() => _isLoading = false);
+  }
   }
 
   @override

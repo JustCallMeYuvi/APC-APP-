@@ -95,6 +95,7 @@ import 'package:animated_movies_app/screens/ui_local_and_global_api_screens/api_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../leaves_module/employee_leaves_screen.dart';
 import '../../resident_issues_bloc_folder/resident_issues_screen.dart';
 
 class ApiDataScreen extends StatefulWidget {
@@ -408,16 +409,29 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                                                                         //     widget.userData,
                                                                                                                                                                                                       )
 
-                                                                                                                                                                                                        : widget.pageRoute == 'Disciplinary'
-                                                                                                                                                                                                    ? DisciplinaryRecordsScreen(
-                                                                                                                                                                                                        userData: widget.userData,
-                                                                                                                                                                                                        // userData:
-                                                                                                                                                                                                        //     widget.userData,
-                                                                                                                                                                                                      )
-                                                                                                                                                                                                    : Text(
-                                                                                                                                                                                                        'Data for ${widget.pageName} goes here.',
-                                                                                                                                                                                                        style: const TextStyle(fontSize: 20),
-                                                                                                                                                                                                      )
+                                                                                                                                                                                                    //     : widget.pageRoute == 'Disciplinary'
+                                                                                                                                                                                                    // ? DisciplinaryRecordsScreen(
+                                                                                                                                                                                                    //     userData: widget.userData,
+                                                                                                                                                                                                    //     // userData:
+                                                                                                                                                                                                    //     //     widget.userData,
+                                                                                                                                                                                                    //   )
+                                                                                                                                                                                                    : widget.pageRoute == 'Disciplinary'
+                                                                                                                                                                                                        ? DisciplinaryListScreen(
+                                                                                                                                                                                                            userData: widget.userData,
+                                                                                                                                                                                                            // userData:
+                                                                                                                                                                                                            //     widget.userData,
+                                                                                                                                                                                                          )
+
+                                                                                                                                                                                                               : widget.pageRoute == 'leaves'
+                                                                                                                                                                                                        ? EmployeeLeaveScreen(
+                                                                                                                                                                                                            userData: widget.userData,
+                                                                                                                                                                                                            // userData:
+                                                                                                                                                                                                            //     widget.userData,
+                                                                                                                                                                                                          )
+                                                                                                                                                                                                        : Text(
+                                                                                                                                                                                                            'Data for ${widget.pageName} goes here.',
+                                                                                                                                                                                                            style: const TextStyle(fontSize: 20),
+                                                                                                                                                                                                          )
 
             // : SignApprovalPage(
             //     userData: widget.userData,
