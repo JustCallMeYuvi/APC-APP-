@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 
+import '../api/apis_page.dart';
+
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 class EmployeeLeaveScreen extends StatefulWidget {
@@ -86,6 +88,12 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
       fromDate: _fromDate,
       toDate: _toDate,
     );
+
+    // ✅ CLOSE FILTER UI 🔥
+    setState(() {
+      _showFilter = false;
+    });
+    _anim.reverse();
   }
 
   void _showError(String message) {
@@ -108,19 +116,89 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
     });
   }
 
+  // Future<void> fetchLeaveData({DateTime? fromDate, DateTime? toDate}) async {
+  //   setState(() => _isLoading = true);
+
+  //   try {
+  //     final url = Uri.parse("http://10.3.0.70:9042/api/HR/get-employee-leaves");
+
+  //     final now = DateTime.now();
+
+  //     final start = fromDate ??
+  //         DateTime(now.year, now.month, now.day)
+  //             .subtract(const Duration(days: 270));
+
+  //     final end = toDate ?? now;
+
+  //     final body = {
+  //       "empNo": widget.userData.empNo,
+  //       "startDate": start.toIso8601String(),
+  //       "endDate": end.toIso8601String(),
+  //     };
+
+  //     print("👉 BODY: ${jsonEncode(body)}");
+
+  //     final response = await http.post(
+  //       url,
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(body),
+  //     );
+
+  //     if (response.statusCode == 200 && response.body.isNotEmpty) {
+  //       final List data = jsonDecode(response.body);
+
+  //       setState(() {
+  //         _filtered = data
+  //             .map((e) => LeaveDto(
+  //                   empNo: e['empNo'] ?? '',
+  //                   holidayCode: e['holidayCode'] ?? '',
+  //                   holidayName: e['holidayName'] ?? '',
+  //                   startDate: DateTime.parse(e['startDate']),
+  //                   endDate: DateTime.parse(e['endDate']),
+  //                   holidayQty: (e['holidayQty'] ?? 0).toDouble(),
+  //                 ))
+  //             .toList();
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print("❌ ERROR: $e");
+  //   } finally {
+  //     setState(() => _isLoading = false);
+  //   }
+  // }
+
   Future<void> fetchLeaveData({DateTime? fromDate, DateTime? toDate}) async {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse("http://10.3.0.70:9042/api/HR/get-employee-leaves");
+      // final url = Uri.parse("http://10.3.0.70:9042/api/HR/get-employee-leaves");
+
+      final url = Uri.parse('${ApiHelper.baseUrl}get-employee-leaves');
 
       final now = DateTime.now();
 
-      final start = fromDate ??
-          DateTime(now.year, now.month, now.day)
-              .subtract(const Duration(days: 270));
+      DateTime start;
+      DateTime end;
 
-      final end = toDate ?? now;
+      if (fromDate != null && toDate != null) {
+        // ✅ User filter
+        start = fromDate;
+        end = toDate;
+      } else {
+        // ✅ Default initState logic
+
+        if (now.day == 1) {
+          // 🔹 Example: April 1 → fetch March full
+          final prevMonth = DateTime(now.year, now.month - 1, 1);
+          start = prevMonth;
+          end = DateTime(now.year, now.month, 0); // last day of prev month
+        } else {
+          // 🔹 Example: April 20 → fetch March + April till today
+          final prevMonth = DateTime(now.year, now.month - 1, 1);
+          start = prevMonth;
+          end = now;
+        }
+      }
 
       final body = {
         "empNo": widget.userData.empNo,
@@ -398,10 +476,11 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
                 Row(
                   children: [
                     _hdrChip(Icons.access_time_rounded,
-                        '${_totalHours.toStringAsFixed(0)} hrs total'),
+                        // '${_totalHours.toStringAsFixed(0)} hrs total'),
+                        '${_totalHours.toStringAsFixed(2)} hrs total'),
                     const SizedBox(width: 12),
-                    _hdrChip(
-                        Icons.event_note_rounded, '${_filtered.length} leaves'),
+                    _hdrChip(Icons.event_note_rounded,
+                        '${_filtered.length} records'),
                   ],
                 ),
               ],
@@ -503,7 +582,7 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
       required double hours,
       required LeaveTypeStyle style}) {
     return Container(
-      width: 130,
+      width: 140,
       margin: const EdgeInsets.only(right: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

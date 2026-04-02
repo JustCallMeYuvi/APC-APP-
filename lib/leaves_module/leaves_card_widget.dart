@@ -1,4 +1,3 @@
-
 // ─── Leave Card ───────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -87,9 +86,12 @@ class LeaveCard extends StatelessWidget {
                               size: 12, color: Colors.white),
                           const SizedBox(width: 4),
                           Text(
+                            // days == days.roundToDouble()
+                            //     ? '${days.toInt()} ${days == 1 ? 'Day' : 'Days'}'
+                            //     : '${leave.holidayQty.toStringAsFixed(0)} Hrs',
                             days == days.roundToDouble()
                                 ? '${days.toInt()} ${days == 1 ? 'Day' : 'Days'}'
-                                : '${leave.holidayQty.toStringAsFixed(0)} Hrs',
+                                : '${leave.holidayQty.toStringAsFixed(2)} Hrs', // ✅ FIX
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -132,7 +134,9 @@ class LeaveCard extends StatelessWidget {
                         child: _infoTile(
                       icon: Icons.hourglass_bottom_rounded,
                       label: 'HOURS',
-                      value: '${leave.holidayQty.toStringAsFixed(0)} hrs',
+                      // value: '${leave.holidayQty.toStringAsFixed(0)} hrs',
+
+                      value: '${leave.holidayQty.toStringAsFixed(2)} hrs',
                       color: C.navy,
                       bg: C.tag,
                     )),

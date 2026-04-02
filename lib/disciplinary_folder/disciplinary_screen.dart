@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/disciplinary_folder/disciplinary_model.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 import 'package:flutter/material.dart';
@@ -90,15 +91,21 @@ class _DisciplinaryListScreenState extends State<DisciplinaryListScreen>
       return;
     }
 
-    // ❌ Case 5: Max 9 months
-    final diffDays = _toDate!.difference(_fromDate!).inDays;
-    if (diffDays > 270) {
-      _showError("Date range should not exceed 9 months");
-      return;
-    }
+    // // ❌ Case 5: Max 9 months
+    // final diffDays = _toDate!.difference(_fromDate!).inDays;
+    // if (diffDays > 270) {
+    //   _showError("Date range should not exceed 9 months");
+    //   return;
+    // }
 
     // ✅ Valid → call API
     fetchDisciplinaryData();
+
+    // ✅ CLOSE FILTER UI 🔥
+    setState(() {
+      _showFilter = false;
+    });
+    // _anim.reverse();
   }
 
   void _showError(String message) {
@@ -121,76 +128,87 @@ class _DisciplinaryListScreenState extends State<DisciplinaryListScreen>
   }
 
   Future<void> fetchDisciplinaryData() async {
-  try {
-    final url =
-        Uri.parse("http://10.3.0.70:9042/api/HR/Get_Disciplinary_Data");
+    try {
+      // final url =
+      //     Uri.parse("http://10.3.0.70:9042/api/HR/Get_Disciplinary_Data");
 
-    final now = DateTime.now();
+      final url = Uri.parse('${ApiHelper.baseUrl}Get_Disciplinary_Data');
+      final now = DateTime.now();
 
-    // 🔥 If user didn't select dates → default last 9 months
-    final fromDate = _fromDate ??
-        DateTime(now.year, now.month - 9, now.day);
+      // 🔥 If user didn't select dates → default last 9 months
+      final fromDate = _fromDate ?? DateTime(now.year, now.month - 9, now.day);
 
-    final toDate = _toDate ?? now;
+      final toDate = _toDate ?? now;
 
-    final requestBody = {
-      "empNo": widget.userData.empNo,
-      "fromDate": fromDate.toString().split(' ')[0],
-      "toDate": toDate.toString().split(' ')[0],
-    };
+      final requestBody = {
+        "empNo": widget.userData.empNo,
+        "fromDate": fromDate.toString().split(' ')[0],
+        "toDate": toDate.toString().split(' ')[0],
+      };
 
-    // 🔥 PRINT REQUEST
-    print("👉 URL: $url");
-    print("👉 BODY: ${jsonEncode(requestBody)}");
+      // 🔥 PRINT REQUEST
+      print("👉 URL: $url");
+      print("👉 BODY: ${jsonEncode(requestBody)}");
 
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(requestBody),
-    );
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(requestBody),
+      );
 
-    // 🔥 PRINT RESPONSE
-    print("✅ STATUS CODE: ${response.statusCode}");
-    print("✅ RESPONSE BODY: ${response.body}");
+      // 🔥 PRINT RESPONSE
+      print("✅ STATUS CODE: ${response.statusCode}");
+      print("✅ RESPONSE BODY: ${response.body}");
 
-    if (response.statusCode == 200 && response.body.isNotEmpty) {
-      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        final data = jsonDecode(response.body);
 
-      final List list = data['data'] ?? [];
+        final List list = data['data'] ?? [];
 
-      setState(() {
-        _filtered = list
-            .map((e) => DisciplinaryDto(
-                  empNo: e['empNo'] ?? '',
-                  empName: e['empName'] ?? '',
-                  deptName: e['deptName'] ?? '',
-                  disciplinaryDate: e['disciplinaryDate'] ?? '',
-                  rewardCode: e['rewardCode'] ?? '',
-                  rewardName: e['rewardName'] ?? '',
-                  rewardQuantity: e['rewardQuantity'] ?? '',
-                  rewardAmount: e['rewardAmount'] ?? '',
-                  reason: e['reason'] ?? '',
-                ))
-            .toList();
-      });
-    } else {
-      print("❌ API Error: ${response.body}");
+        setState(() {
+          _filtered = list
+              .map((e) => DisciplinaryDto(
+                    empNo: e['empNo'] ?? '',
+                    empName: e['empName'] ?? '',
+                    deptName: e['deptName'] ?? '',
+                    disciplinaryDate: e['disciplinaryDate'] ?? '',
+                    rewardCode: e['rewardCode'] ?? '',
+                    rewardName: e['rewardName'] ?? '',
+                    rewardQuantity: e['rewardQuantity'] ?? '',
+                    rewardAmount: e['rewardAmount'] ?? '',
+                    reason: e['reason'] ?? '',
+                  ))
+              .toList();
+        });
+      } else {
+        print("❌ API Error: ${response.body}");
+      }
+    } catch (e) {
+      print("🚨 ERROR: $e");
     }
-  } catch (e) {
-    print("🚨 ERROR: $e");
   }
-}
 
   Future<void> _pickDate(bool isFrom) async {
     final now = DateTime.now();
-    final initial =
-        isFrom ? (_fromDate ?? DateTime(now.year, 1, 1)) : (_toDate ?? now);
+    // ✅ 9 months back from today
+    final nineMonthsAgo = DateTime(
+      now.year,
+      now.month - 9,
+      now.day,
+    );
+    // final initial =
+    //     isFrom ? (_fromDate ?? DateTime(now.year, 1, 1)) : (_toDate ?? now);
+
+    final initial = isFrom ? (_fromDate ?? nineMonthsAgo) : (_toDate ?? now);
 
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
+      // firstDate: DateTime(2020),
+      // lastDate: DateTime(2030),
+      // ✅ Restriction applied here
+      firstDate: nineMonthsAgo,
+      lastDate: now,
       builder: (ctx, child) => Theme(
         data: ThemeData.light().copyWith(
           colorScheme: const ColorScheme.light(
@@ -207,10 +225,11 @@ class _DisciplinaryListScreenState extends State<DisciplinaryListScreen>
 
     if (picked != null) {
       setState(() {
-        if (isFrom)
+        if (isFrom) {
           _fromDate = picked;
-        else
+        } else {
           _toDate = picked;
+        }
       });
     }
   }
@@ -302,7 +321,6 @@ class _DisciplinaryListScreenState extends State<DisciplinaryListScreen>
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-             
               ],
             ),
           ),
@@ -369,7 +387,6 @@ class _DisciplinaryListScreenState extends State<DisciplinaryListScreen>
       ),
     );
   }
-
 
   // ── Filter Panel ────────────────────────────────────────────────────────────
   Widget _buildFilterPanel() {

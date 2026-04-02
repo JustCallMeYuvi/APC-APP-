@@ -1,4 +1,3 @@
-
 // ─── Data Model ───────────────────────────────────────────────────────────────
 
 import 'dart:ui';
@@ -114,10 +113,21 @@ String _month(int m) => const [
       'Dec'
     ][m];
 
+// String hrsLabel(double qty) {
+//   final days = qty / 8;
+//   if (days == days.roundToDouble()) {
+//     return '${days.toInt()}d';
+//   }
+//   return '${qty.toStringAsFixed(0)}h';
+// }
 String hrsLabel(double qty) {
   final days = qty / 8;
+
+  // Show days if exact full days
   if (days == days.roundToDouble()) {
     return '${days.toInt()}d';
   }
-  return '${qty.toStringAsFixed(0)}h';
+
+  // ✅ Show hours with decimals
+  return '${qty.toStringAsFixed(2)} hrs';
 }
