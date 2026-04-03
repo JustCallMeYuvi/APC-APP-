@@ -196,10 +196,22 @@ class _MissPunchesScreenState extends State<MissPunchesScreen> {
   }
 
   // Summary counts from filtered
+  // Map<String, int> _counts(List<Day> days) {
+  //   final m = <String, int>{};
+  //   for (final d in days)
+  //     for (final p in d.punches) m[p.reason] = (m[p.reason] ?? 0) + 1;
+  //   return m;
+  // }
+
   Map<String, int> _counts(List<Day> days) {
     final m = <String, int>{};
-    for (final d in days)
-      for (final p in d.punches) m[p.reason] = (m[p.reason] ?? 0) + 1;
+
+    for (final d in days) {
+      for (final p in d.punches) {
+        m[p.reason] = (m[p.reason] ?? 0) + 1;
+      }
+    }
+
     return m;
   }
 
@@ -226,7 +238,7 @@ class _MissPunchesScreenState extends State<MissPunchesScreen> {
         if (_to.isBefore(_from)) _from = _to;
       }
     });
-      fetchMissPunches(); // 🔥 MUST ADD THIS
+    fetchMissPunches(); // 🔥 MUST ADD THIS
   }
 
   // void _quick(int days) => setState(() {
