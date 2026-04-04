@@ -520,12 +520,17 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     visible: showNew,
                     icon: Icons.lock_outline,
                     onToggle: () => setState(() => showNew = !showNew),
+                    // onChanged: (v) {
+                    //   setState(() => strength = _calcStrength(v));
+                    // },
                     onChanged: (v) {
-                      setState(() => strength = _calcStrength(v));
+                      final s = _calcStrength(v);
+                      print("Password: $v Strength: $s"); // 👈 debug
+                      setState(() => strength = s);
                     },
                   ),
                   const SizedBox(height: 6),
-                  // _strengthBar(strength),
+                  _strengthBar(strength),
                   const SizedBox(height: 12),
 
                   // ── Confirm password ──
@@ -618,6 +623,14 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                           return;
                         }
 
+                        // 🔥 ADD THIS BLOCK
+                        double currentStrength = _calcStrength(nw);
+
+                        if (currentStrength < 0.5) {
+                          setState(() => errorText =
+                              "Use uppercase, number & special character");
+                          return;
+                        }
                         setState(() {
                           isLoading = true;
                           errorText = "";
@@ -746,50 +759,63 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     );
   }
 
+  // double _calcStrength(String v) {
+  //   double s = 0;
+  //   if (v.length >= 8) s += 0.25;
+  //   if (RegExp(r'[A-Z]').hasMatch(v)) s += 0.25;
+  //   if (RegExp(r'[0-9]').hasMatch(v)) s += 0.25;
+  //   if (RegExp(r'[^A-Za-z0-9]').hasMatch(v)) s += 0.25;
+  //   return s;
+  // }
   double _calcStrength(String v) {
+    if (v.isEmpty) return 0;
+
     double s = 0;
-    if (v.length >= 8) s += 0.25;
-    if (RegExp(r'[A-Z]').hasMatch(v)) s += 0.25;
-    if (RegExp(r'[0-9]').hasMatch(v)) s += 0.25;
-    if (RegExp(r'[^A-Za-z0-9]').hasMatch(v)) s += 0.25;
-    return s;
+
+    if (v.length >= 6) s += 0.2;
+    if (v.length >= 10) s += 0.2;
+    if (RegExp(r'[A-Z]').hasMatch(v)) s += 0.2;
+    if (RegExp(r'[0-9]').hasMatch(v)) s += 0.2;
+    if (RegExp(r'[^A-Za-z0-9]').hasMatch(v)) s += 0.2;
+
+    return s.clamp(0, 1);
   }
 
-// Widget _strengthBar(double strength) {
-//   Color color = strength <= 0.25
-//       ? Colors.red
-//       : strength <= 0.5
-//           ? Colors.orange
-//           : strength <= 0.75
-//               ? Colors.lightGreen
-//               : Colors.green;
-//   String label = strength <= 0
-//       ? ""
-//       : strength <= 0.25
-//           ? "Weak"
-//           : strength <= 0.5
-//               ? "Fair"
-//               : strength <= 0.75
-//                   ? "Good"
-//                   : "Strong";
-//   return Column(
-//     crossAxisAlignment: CrossAxisAlignment.start,
-//     children: [
-//       ClipRRect(
-//         borderRadius: BorderRadius.circular(2),
-//         child: LinearProgressIndicator(
-//           value: strength,
-//           backgroundColor: Colors.grey.shade200,
-//           valueColor: AlwaysStoppedAnimation<Color>(color),
-//           minHeight: 3,
-//         ),
-//       ),
-//       if (label.isNotEmpty)
-//         Padding(
-//           padding: const EdgeInsets.only(top: 3),
-//           child: Text(label, style: TextStyle(fontSize: 11, color: color)),
-//         ),
-//     ],
-//   );
-// }
+  Widget _strengthBar(double strength) {
+    Color color = strength <= 0.25
+        ? Colors.red
+        : strength <= 0.5
+            ? Colors.orange
+            : strength <= 0.75
+                ? Colors.lightGreen
+                : Colors.green;
+    String label = strength <= 0
+        ? ""
+        : strength <= 0.25
+            ? "Weak"
+            : strength <= 0.5
+                ? "Fair"
+                : strength <= 0.75
+                    ? "Good"
+                    : "Strong";
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(2),
+          child: LinearProgressIndicator(
+            value: strength,
+            backgroundColor: Colors.grey.shade200,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 6,
+          ),
+        ),
+        if (label.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(label, style: TextStyle(fontSize: 11, color: color)),
+          ),
+      ],
+    );
+  }
 }
