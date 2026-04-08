@@ -2,11 +2,11 @@ import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:flutter/material.dart';
 
 // Cast name and role widget used in details screen
-class CastWidget extends StatelessWidget {
+class DevelopersWidget extends StatelessWidget {
   final String name;
   final String role;
   final String imgUrl;
-  const CastWidget({
+  const DevelopersWidget({
     super.key,
     required this.name,
     required this.role,

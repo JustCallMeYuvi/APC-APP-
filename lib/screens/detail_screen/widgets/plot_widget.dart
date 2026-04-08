@@ -17,7 +17,7 @@ class PlotWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Plot",
+            "About",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w600,

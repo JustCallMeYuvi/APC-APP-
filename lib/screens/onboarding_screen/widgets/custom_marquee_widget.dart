@@ -24,14 +24,14 @@ class CustomMarqueeWidget extends StatelessWidget {
           direction: direction,
           restartAfterInteraction: true,
           interaction: false,
-          itemCount: MoviesData.movies.length,
+          itemCount: ApacheData.apacheList.length,
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.all(8.0),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: UiConstants.image(
-                  path: MoviesData.movies[index].coverImage,
+                  path: ApacheData.apacheList[index].image,
                   height: 120,
                   width: 150,
                   fit: BoxFit.cover,

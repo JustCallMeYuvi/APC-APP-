@@ -616,24 +616,34 @@ class _HomeContentState extends State<HomeContent> {
                     height: size.height * 0.4,
                     padding: const EdgeInsets.all(38),
                     child: AnimatedStackWidget(
-                      itemCount: MoviesData.movies.length,
+                      itemCount: ApacheData.apacheList.length,
                       itemBuilder: (context, index) => GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
+                            // zoomNavigation(
+                            //   DetailScreen(
+                            //     movieName: ApacheData.apacheList[index].name,
+                            //     movieTypeAndEpisode: ApacheData
+                            //         .apacheList[index].movieTypeAndEpisode,
+                            //     plot: ApacheData.apacheList[index].plot,
+                            //     movieImage: ApacheData.apacheList[index].coverImage,
+                            //     rating: ApacheData.apacheList[index].rating,
+                            //   ),
+                            // ),
                             zoomNavigation(
                               DetailScreen(
-                                movieName: MoviesData.movies[index].name,
-                                movieTypeAndEpisode: MoviesData
-                                    .movies[index].movieTypeAndEpisode,
-                                plot: MoviesData.movies[index].plot,
-                                movieImage: MoviesData.movies[index].coverImage,
-                                rating: MoviesData.movies[index].rating,
+                                movieName: ApacheData.apacheList[index].name,
+                                movieTypeAndEpisode:
+                                    ApacheData.apacheList[index].department,
+                                plot: ApacheData.apacheList[index].description,
+                                movieImage: ApacheData.apacheList[index].image,
+                                rating: ApacheData.apacheList[index].rating,
                               ),
                             ),
                           );
                         },
                         child: MagazineCoverImage(
-                            movies: MoviesData.movies[index]),
+                            movies: ApacheData.apacheList[index]),
                       ),
                     ),
                   ),

@@ -8,7 +8,7 @@ class MagazineCoverImage extends StatelessWidget {
     this.height,
   });
 
-  final Movies movies;
+  final ApacheModel movies;
   final double? height;
 
   @override
@@ -22,7 +22,7 @@ class MagazineCoverImage extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(movies.coverImage),
+                image: AssetImage(movies.image),
                 fit: BoxFit.cover,
               ),
               boxShadow: const [

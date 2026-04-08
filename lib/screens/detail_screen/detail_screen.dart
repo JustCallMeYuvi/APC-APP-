@@ -25,33 +25,36 @@ class DetailScreen extends StatelessWidget {
     return Scaffold(
       body: Container(
         decoration: UiConstants.backgroundGradient,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Movie cover image and play button widget
-              MovieCoverAndPlayButton(
-                size: size,
-                movieImage: movieImage,
-              ),
-              // Movie type and episode info
-              MovieInfoAndRating(
-                movieName: movieName,
-                movieTypeAndEpisode: movieTypeAndEpisode,
-                movieRating: rating,
-              ),
-
-              // Movie plot widget
-              PlotWidget(
-                moviePlot: plot,
-              ),
-              // Movies cast
-              const MoviesCast(),
-            ],
+        child: SizedBox(
+            height: MediaQuery.of(context).size.height, // ✅ FIX
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Movie cover image and play button widget
+                MovieCoverAndPlayButton(
+                  size: size,
+                  movieImage: movieImage,
+                ),
+                // Movie type and episode info
+                MovieInfoAndRating(
+                  movieName: movieName,
+                  movieTypeAndEpisode: movieTypeAndEpisode,
+                  movieRating: rating,
+                ),
+          
+                // Movie plot widget
+                PlotWidget(
+                  moviePlot: plot,
+                ),
+                // Movies cast
+                const AppDevelopersWidget(),
+              ],
+            ),
           ),
         ),
       ),
-      bottomNavigationBar: WatchNowButton(size: size),
+      // bottomNavigationBar: WatchNowButton(size: size),
     );
   }
 }

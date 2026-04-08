@@ -18,6 +18,8 @@ class ImagePath {
   // Movies cover Images
   static String avengers = 'assets/movies/avengers.png';
   static String appache = 'assets/movies/appache.png';
+  static String addidas = 'assets/movies/addidas.webp';
+
   static String app = 'assets/movies/app.png';
   static String payroll = 'assets/movies/payroll.png';
   static String itTeam = 'assets/movies/IT.png';

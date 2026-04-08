@@ -2,8 +2,8 @@ import 'package:animated_movies_app/constants/images_path.dart';
 import 'package:animated_movies_app/screens/detail_screen/widgets/cast_widget.dart';
 import 'package:flutter/material.dart';
 
-class MoviesCast extends StatelessWidget {
-  const MoviesCast({
+class AppDevelopersWidget extends StatelessWidget {
+  const AppDevelopersWidget({
     super.key,
   });
 
@@ -16,7 +16,7 @@ class MoviesCast extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.only(left: 16),
           child: Text(
-            "Cast",
+            "Developed By",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w600,
@@ -26,32 +26,33 @@ class MoviesCast extends StatelessWidget {
         ),
         Row(
           children: [
-            CastWidget(
-              name: "Yuvaraj",
-              role: "Flutter Developer",
-              imgUrl: ImagePath.yuvarajpic,
-            ),
-            CastWidget(
+                DevelopersWidget(
               name: "Imran",
               role: "Mobility Team Lead",
               imgUrl: ImagePath.person2,
             ),
+            DevelopersWidget(
+              name: "Yuvaraj",
+              role: "Flutter Developer",
+              imgUrl: ImagePath.yuvarajpic,
+            ),
+        
           ],
         ),
-        Row(
-          children: [
-            CastWidget(
-              name: "Upendra",
-              role: "Junior Developer ",
-              imgUrl: ImagePath.person3,
-            ),
-            CastWidget(
-              name: "Premika ",
-              role: "Full Stack Developer",
-              imgUrl: ImagePath.person4,
-            ),
-          ],
-        ),
+        // Row(
+        //   children: [
+        //     DevelopersWidget(
+        //       name: "Upendra",
+        //       role: "Junior Developer ",
+        //       imgUrl: ImagePath.person3,
+        //     ),
+        //     DevelopersWidget(
+        //       name: "Premika ",
+        //       role: "Full Stack Developer",
+        //       imgUrl: ImagePath.person4,
+        //     ),
+        //   ],
+        // ),
       ],
     );
   }
