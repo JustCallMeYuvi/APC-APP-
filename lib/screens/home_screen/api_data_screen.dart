@@ -95,6 +95,7 @@ import 'package:animated_movies_app/screens/ui_local_and_global_api_screens/api_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../leaves_dashboard_folder/leaves_dashboard_screen.dart';
 import '../../leaves_module/employee_leaves_screen.dart';
 import '../../miss_punches_folder/miss_punches_screen.dart';
 import '../../resident_issues_bloc_folder/resident_issues_screen.dart';
@@ -428,16 +429,22 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                                                                                 // userData:s
                                                                                                                                                                                                                 //     widget.userData,
                                                                                                                                                                                                               )
-                                                                                                                                                                                                               : widget.pageRoute == 'MissPunches'
-                                                                                                                                                                                                            ? MissPunchesScreen(
-                                                                                                                                                                                                                userData: widget.userData,
-                                                                                                                                                                                                                // userData:s
-                                                                                                                                                                                                                //     widget.userData,
-                                                                                                                                                                                                              )
-                                                                                                                                                                                                            : Text(
-                                                                                                                                                                                                                'Data for ${widget.pageName} goes here.',
-                                                                                                                                                                                                                style: const TextStyle(fontSize: 20),
-                                                                                                                                                                                                              )
+                                                                                                                                                                                                            : widget.pageRoute == 'MissPunches'
+                                                                                                                                                                                                                ? MissPunchesScreen(
+                                                                                                                                                                                                                    userData: widget.userData,
+                                                                                                                                                                                                                    // userData:s
+                                                                                                                                                                                                                    //     widget.userData,
+                                                                                                                                                                                                                  )
+                                                                                                                                                                                                                : widget.pageRoute == 'LeavesDashboard'
+                                                                                                                                                                                                                    ? LeavesDashboardScreen(
+                                                                                                                                                                                                                        userData: widget.userData,
+                                                                                                                                                                                                                        // userData:s
+                                                                                                                                                                                                                        //     widget.userData,
+                                                                                                                                                                                                                      )
+                                                                                                                                                                                                                    : Text(
+                                                                                                                                                                                                                        'Data for ${widget.pageName} goes here.',
+                                                                                                                                                                                                                        style: const TextStyle(fontSize: 20),
+                                                                                                                                                                                                                      )
 
             // : SignApprovalPage(
             //     userData: widget.userData,

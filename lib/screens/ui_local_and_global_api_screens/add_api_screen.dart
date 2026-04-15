@@ -40,7 +40,7 @@ class _AddApiScreenState extends State<AddApiScreen> {
 
     try {
       // 🔹 Detect Local / Global network
-      await ApiHelper.updateUrlsBasedOnNetwork();
+      // await ApiHelper.updateUrlsBasedOnNetwork();
 
       final response = await http.post(
         // Uri.parse("http://10.3.0.70:9042/api/HR"),

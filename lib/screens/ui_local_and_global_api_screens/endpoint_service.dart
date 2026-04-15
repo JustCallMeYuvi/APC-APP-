@@ -99,7 +99,7 @@ class EndpointService {
 
   /// FETCH ENDPOINTS
   static Future<List<EndpointModel>> fetchEndpoints() async {
-    await ApiHelper.updateUrlsBasedOnNetwork();
+    // await ApiHelper.updateUrlsBasedOnNetwork();
 
     final response = await http.get(Uri.parse(baseUrl));
 
@@ -113,7 +113,7 @@ class EndpointService {
 
   /// ADD ENDPOINT
   static Future<bool> addEndpoint(EndpointModel model) async {
-    await ApiHelper.updateUrlsBasedOnNetwork();
+    // await ApiHelper.updateUrlsBasedOnNetwork();
 
     final response = await http.post(
       Uri.parse(baseUrl),
@@ -135,7 +135,7 @@ class EndpointService {
 
   /// UPDATE ACTIVE / INACTIVE
   static Future<bool> updateActive(EndpointModel model, bool isActive) async {
-    await ApiHelper.updateUrlsBasedOnNetwork();
+    // await ApiHelper.updateUrlsBasedOnNetwork();
 
     final response = await http.put(
       Uri.parse("${ApiHelper.baseUrl}Endpoints/${model.id}"),
@@ -157,7 +157,7 @@ class EndpointService {
 
   /// UPDATE ENDPOINT
   static Future<bool> updateEndpoint(EndpointModel model) async {
-    await ApiHelper.updateUrlsBasedOnNetwork();
+    // await ApiHelper.updateUrlsBasedOnNetwork();
 
     final response = await http.put(
       Uri.parse("${ApiHelper.baseUrl}Endpoints/${model.id}"),
@@ -177,7 +177,7 @@ class EndpointService {
 
   /// DELETE ENDPOINT
   static Future<bool> deleteEndpoint(int id) async {
-    await ApiHelper.updateUrlsBasedOnNetwork();
+    // await ApiHelper.updateUrlsBasedOnNetwork();
 
     final response = await http.delete(
       Uri.parse("${ApiHelper.baseUrl}Endpoints/$id"),

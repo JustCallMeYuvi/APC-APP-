@@ -49,6 +49,7 @@
 // below  fcm token inside debug console
 
 import 'dart:async';
+import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/services/feedback_provider.dart';
 import 'package:animated_movies_app/services/provider_services.dart';
 import 'package:flutter/material.dart';
@@ -111,6 +112,9 @@ Future<void> main() async {
   // Call the update check function before running the app
   // await checkForUpdates(); // Call this to check for updates
 
+
+  // ✅ ADD THIS LINE HERE (VERY IMPORTANT)
+  await ApiHelper.updateUrlsBasedOnNetwork();
   // Request notification permissions (necessary for Android 13+)
   NotificationSettings settings =
       await FirebaseMessaging.instance.requestPermission(

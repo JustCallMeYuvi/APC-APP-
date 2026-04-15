@@ -396,7 +396,8 @@ class ApiHelper {
 //       if (ipAddress.startsWith('10.3.') ||
 //           ipAddress.startsWith('10.4.') ||
 //           ipAddress.startsWith('10.5.') ||
-//           ipAddress.startsWith('10.0.')) {
+//            ipAddress.startsWith('10.0.')
+//           ) {
 //         // ==============================
 //         // LOCAL SERVER
 //         // ==============================
@@ -410,7 +411,9 @@ class ApiHelper {
 //         // PUBLIC SERVER
 //         // ==============================
 
-//         _baseApi = 'http://apc-gms.apachefootwear.com:8084/api/';
+//         // _baseApi = 'http://apc-gms.apachefootwear.com:8084/api/';
+//         _baseApi = 'https://apc-gms.apachefootwear.com:8443/api/';// new public url
+
 //         _payslipUrl = 'http://203.153.32.85:54349/api/Ess/';
 //         // urlGlobalOrLocalCheck = 'GLOBAL';
 //         urlGlobalOrLocalCheck = ipAddress;

@@ -171,8 +171,10 @@ IconData getIconForPage(Page page) {
       return Icons.gavel_rounded;
     case 'Leaves':
       return Icons.holiday_village;
-       case 'Miss Punches':
+    case 'Miss Punches':
       return Icons.punch_clock;
+    case 'Leaves Dashboard':
+      return Icons.dashboard;
     default:
       return Icons.help_outline; // Fallback icon
   }
