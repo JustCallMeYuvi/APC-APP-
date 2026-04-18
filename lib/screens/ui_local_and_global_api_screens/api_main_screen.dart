@@ -78,37 +78,37 @@ class _ApiMainScreenState extends State<ApiMainScreen>
         child: Column(
           children: [
             /// 🔷 HEADER
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xff0f2027),
-                    Color(0xff203a43),
-                    Color(0xff2c5364),
-                  ],
-                ),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    "API Manager",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    "Manage Local & Realtime APIs",
-                    style: TextStyle(color: Colors.white70),
-                  )
-                ],
-              ),
-            ),
+            // Container(
+            //   padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+            //   width: double.infinity,
+            //   decoration: const BoxDecoration(
+            //     gradient: LinearGradient(
+            //       colors: [
+            //         Color(0xff0f2027),
+            //         Color(0xff203a43),
+            //         Color(0xff2c5364),
+            //       ],
+            //     ),
+            //   ),
+            //   child: const Column(
+            //     crossAxisAlignment: CrossAxisAlignment.center,
+            //     children: [
+            //       Text(
+            //         "API Manager",
+            //         style: TextStyle(
+            //           color: Colors.white,
+            //           fontSize: 22,
+            //           fontWeight: FontWeight.bold,
+            //         ),
+            //       ),
+            //       SizedBox(height: 4),
+            //       Text(
+            //         "Manage Local & Realtime APIs",
+            //         style: TextStyle(color: Colors.white70),
+            //       )
+            //     ],
+            //   ),
+            // ),
 
             const SizedBox(height: 16),
 

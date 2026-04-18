@@ -156,33 +156,86 @@ class EndpointService {
   }
 
   /// UPDATE ENDPOINT
+  // static Future<bool> updateEndpoint(EndpointModel model) async {
+  //   // await ApiHelper.updateUrlsBasedOnNetwork();
+
+  //   final response = await http.put(
+  //     Uri.parse("${ApiHelper.baseUrl}Endpoints/${model.id}"),
+  //     headers: {"Content-Type": "application/json"},
+  //     body: jsonEncode({
+  //       "id": model.id,
+  //       "server": model.server,
+  //       "projectName": model.projectName,
+  //       "publicApiUrl": model.publicApiUrl,
+  //       "localApiUrl": model.localApiUrl,
+  //       "isActive": model.isActive,
+  //     }),
+  //   );
+
+  //   return response.statusCode == 200 || response.statusCode == 204;
+  // }
+
+  /// UPDATE ENDPOINT
   static Future<bool> updateEndpoint(EndpointModel model) async {
-    // await ApiHelper.updateUrlsBasedOnNetwork();
+  final url = Uri.parse("${ApiHelper.baseUrl}Endpoints/${model.id}");
+  // final url = Uri.parse("${ApiHelper.baseUrl}${model.id}");
+
+  final body = {
+    "id": model.id,
+    "server": model.server,
+    "projectName": model.projectName,
+    "publicApiUrl": model.publicApiUrl,
+    "localApiUrl": model.localApiUrl,
+    "isActive": model.isActive,
+  };
+
+  try {
+    print("🔵 UPDATE URL: $url");
+    print("🟡 BODY: ${jsonEncode(body)}");
 
     final response = await http.put(
-      Uri.parse("${ApiHelper.baseUrl}Endpoints/${model.id}"),
+      url,
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "id": model.id,
-        "server": model.server,
-        "projectName": model.projectName,
-        "publicApiUrl": model.publicApiUrl,
-        "localApiUrl": model.localApiUrl,
-        "isActive": model.isActive,
-      }),
+      body: jsonEncode(body),
     );
 
+    print("🟢 STATUS: ${response.statusCode}");
+    print("🟣 RESPONSE: ${response.body}");
+
     return response.statusCode == 200 || response.statusCode == 204;
+  } catch (e) {
+    print("🔴 ERROR: $e");
+    return false;
   }
+}
+
+  /// DELETE ENDPOINT
+  // static Future<bool> deleteEndpoint(int id) async {
+  //   // await ApiHelper.updateUrlsBasedOnNetwork();
+
+  //   final response = await http.delete(
+  //     Uri.parse("${ApiHelper.baseUrl}Endpoints/$id"),
+  //   );
+
+  //   return response.statusCode == 200 || response.statusCode == 204;
+  // }
 
   /// DELETE ENDPOINT
   static Future<bool> deleteEndpoint(int id) async {
-    // await ApiHelper.updateUrlsBasedOnNetwork();
+  final url = Uri.parse("${ApiHelper.baseUrl}$id");
 
-    final response = await http.delete(
-      Uri.parse("${ApiHelper.baseUrl}Endpoints/$id"),
-    );
+  try {
+    print("🔵 DELETE URL: $url");
+
+    final response = await http.delete(url);
+
+    print("🟢 STATUS: ${response.statusCode}");
+    print("🟣 RESPONSE: ${response.body}");
 
     return response.statusCode == 200 || response.statusCode == 204;
+  } catch (e) {
+    print("🔴 ERROR: $e");
+    return false;
   }
+}
 }

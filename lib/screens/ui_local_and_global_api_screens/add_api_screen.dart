@@ -22,44 +22,97 @@ class _AddApiScreenState extends State<AddApiScreen> {
   bool _isActive = false;
   bool _isLoading = false;
 
+  // Future<void> _submit() async {
+  //   if (!_formKey.currentState!.validate()) return;
+
+  //   setState(() => _isLoading = true);
+
+  //   final body = {
+  //     "id": 0,
+  //     "server": widget.server,
+  //     "projectName": _projectNameController.text.trim(),
+  //     "publicApiUrl": _publicApiController.text.trim(),
+  //     "localApiUrl": _localApiController.text.trim(),
+  //     "isActive": _isActive,
+  //     "createdAt": DateTime.now().toIso8601String(),
+  //     "updatedAt": DateTime.now().toIso8601String(),
+  //   };
+
+  //   try {
+  //     // 🔹 Detect Local / Global network
+  //     // await ApiHelper.updateUrlsBasedOnNetwork();
+
+  //     final response = await http.post(
+  //       // Uri.parse("http://10.3.0.70:9042/api/HR"),
+  //       Uri.parse("${ApiHelper.baseUrl}Endpoints"),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(body),
+  //     );
+
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       Navigator.pop(context, true);
+  //     } else {}
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text(e.toString())),
+  //     );
+  //   } finally {
+  //     setState(() => _isLoading = false);
+  //   }
+  // }
+
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+  setState(() => _isLoading = true);
 
-    final body = {
-      "id": 0,
-      "server": widget.server,
-      "projectName": _projectNameController.text.trim(),
-      "publicApiUrl": _publicApiController.text.trim(),
-      "localApiUrl": _localApiController.text.trim(),
-      "isActive": _isActive,
-      "createdAt": DateTime.now().toIso8601String(),
-      "updatedAt": DateTime.now().toIso8601String(),
-    };
+  final body = {
+    "id": 0,
+    "server": widget.server,
+    "projectName": _projectNameController.text.trim(),
+    "publicApiUrl": _publicApiController.text.trim(),
+    "localApiUrl": _localApiController.text.trim(),
+    "isActive": _isActive,
+    "createdAt": DateTime.now().toIso8601String(),
+    "updatedAt": DateTime.now().toIso8601String(),
+  };
 
-    try {
-      // 🔹 Detect Local / Global network
-      // await ApiHelper.updateUrlsBasedOnNetwork();
+  try {
+    // final url = Uri.parse("${ApiHelper.baseUrl}Endpoints");
+    final url =Uri.parse("${ApiHelper.baseUrl}CreateAPI");
 
-      final response = await http.post(
-        // Uri.parse("http://10.3.0.70:9042/api/HR"),
-        Uri.parse("${ApiHelper.baseUrl}Endpoints"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
-      );
+    print("🔵 API URL: $url");
+    print("🟡 Request Body: ${jsonEncode(body)}");
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Navigator.pop(context, true);
-      } else {}
-    } catch (e) {
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
+    );
+
+    print("🟢 Status Code: ${response.statusCode}");
+    print("🟣 Response Body: ${response.body}");
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Navigator.pop(context, true);
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(
+          content: Text(
+              "Error: ${response.statusCode} \n${response.body}"),
+        ),
       );
-    } finally {
-      setState(() => _isLoading = false);
     }
+  } catch (e) {
+    print("🔴 Exception: $e");
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(e.toString())),
+    );
+  } finally {
+    setState(() => _isLoading = false);
   }
+}
 
   @override
   Widget build(BuildContext context) {

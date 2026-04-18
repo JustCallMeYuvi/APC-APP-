@@ -107,28 +107,66 @@ class _SplashScreenWithCheckAppUpdatesState
 
   @override
   Widget build(BuildContext context) {
-    if (_isCheckingUpdate) {
-      return const Scaffold(
-        body: Center(
-            child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              "Checking for latest APK version...",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-          ],
-        )),
-      );
-    }
+    // if (_isCheckingUpdate) {
+    //   return const Scaffold(
+    //     body: Center(
+    //         child: Column(
+    //       mainAxisAlignment: MainAxisAlignment.center,
+    //       children: [
+    //         CircularProgressIndicator(),
+    //         SizedBox(height: 16),
+    //         Text(
+    //           "Checking for latest APK version...",
+    //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //         ),
+    //       ],
+    //     )),
+    //   );
+    // }
+
+    // final authProvider = Provider.of<AuthProvider>(context);
+    // if (authProvider.isLoggedIn) {
+    //   return HomeScreen(userData: authProvider.userData!);
+    // } else {
+    //   return const OnboardingScreen();
+    // }
 
     final authProvider = Provider.of<AuthProvider>(context);
+
+    Widget mainScreen;
     if (authProvider.isLoggedIn) {
-      return HomeScreen(userData: authProvider.userData!);
+      mainScreen = HomeScreen(userData: authProvider.userData!);
     } else {
-      return const OnboardingScreen();
+      mainScreen = const OnboardingScreen();
     }
+    return Stack(
+      children: [
+        // 👇 Main UI (always visible)
+        mainScreen,
+
+        // 👇 Loader Overlay
+        if (_isCheckingUpdate)
+          Container(
+            color: Colors.black.withOpacity(0.5), // dim background
+            child: const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
+                    "Checking for latest APK version...",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }

@@ -409,6 +409,12 @@ class _LoginPageState extends State<LoginPage> {
       // 👇 Ensure URLs are updated based on Wi-Fi network first
       // await ApiHelper.updateUrlsBasedOnNetwork();
 
+      // // ✅ ADD HERE
+      // if (ApiHelper.urlGlobalOrLocalCheck.isEmpty) {
+      //   await ApiHelper.updateUrlsBasedOnNetwork();
+      // }
+      // print("FINAL BASE URL: ${ApiHelper.baseUrl}");
+
       // 👇 Now build login URL with the correct base URL
       final url = Uri.parse(ApiHelper.login(barcode, password));
       print('Login URL: $url');

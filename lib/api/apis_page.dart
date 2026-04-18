@@ -355,6 +355,8 @@ class ApiHelper {
 
 // below is live api
 
+// import 'dart:io';
+
 // import 'package:flutter/material.dart';
 // import 'package:network_info_plus/network_info_plus.dart';
 
@@ -384,45 +386,111 @@ class ApiHelper {
 //   // 🔥 AUTO SWITCH (WIFI / GLOBAL)
 //   // =====================================
 
+//   // static Future<void> updateUrlsBasedOnNetwork() async {
+//   //   String? ipAddress = await _getWifiIPAddress();
+//   //
+//   //   print('Detected IP: $ipAddress');
+//   //
+//   //   // ✅ store actual IP
+//   //   urlGlobalOrLocalCheck = ipAddress ?? '';
+//   //
+//   //   if (ipAddress != null) {
+//   //     if (ipAddress.startsWith('10.3.') ||
+//   //         ipAddress.startsWith('10.4.') ||
+//   //         ipAddress.startsWith('10.5.')
+//   //         //  ipAddress.startsWith('10.0.')
+//   //         ) {
+//   //       // ==============================
+//   //       // LOCAL SERVER
+//   //       // ==============================
+//   //
+//   //       _baseApi = 'http://10.3.0.208:8084/api/';
+//   //       _payslipUrl = 'http://10.3.0.208:8089/api/Ess/';
+//   //       // urlGlobalOrLocalCheck = 'LOCAL';
+//   //       urlGlobalOrLocalCheck = ipAddress;
+//   //     } else {
+//   //       // ==============================
+//   //       // PUBLIC SERVER
+//   //       // ==============================
+//   //
+//   //       // _baseApi = 'http://apc-gms.apachefootwear.com:8084/api/';
+//   //       _baseApi = 'https://apc-gms.apachefootwear.com:8443/api/';// new public url
+//   //
+//   //       _payslipUrl = 'http://203.153.32.85:54349/api/Ess/';
+//   //       // urlGlobalOrLocalCheck = 'GLOBAL';
+//   //       urlGlobalOrLocalCheck = ipAddress;
+//   //     }
+//   //
+//   //     print('Base API: $_baseApi');
+//   //   }
+//   // }
+
 //   static Future<void> updateUrlsBasedOnNetwork() async {
 //     String? ipAddress = await _getWifiIPAddress();
 
 //     print('Detected IP: $ipAddress');
 
-//     // ✅ store actual IP
 //     urlGlobalOrLocalCheck = ipAddress ?? '';
 
-//     if (ipAddress != null) {
-//       if (ipAddress.startsWith('10.3.') ||
-//           ipAddress.startsWith('10.4.') ||
-//           ipAddress.startsWith('10.5.') ||
-//            ipAddress.startsWith('10.0.')
-//           ) {
-//         // ==============================
-//         // LOCAL SERVER
-//         // ==============================
+//     if (ipAddress != null &&
+//         (ipAddress.startsWith('10.3.') ||
+//             ipAddress.startsWith('10.4.') ||
+//             ipAddress.startsWith('10.5.')||
+//             ipAddress.startsWith('10.0.')
 
-//         _baseApi = 'http://10.3.0.208:8084/api/';
-//         _payslipUrl = 'http://10.3.0.208:8089/api/Ess/';
-//         // urlGlobalOrLocalCheck = 'LOCAL';
-//         urlGlobalOrLocalCheck = ipAddress;
+//         )) {
+
+//       // ==============================
+//       // LOCAL SERVER
+//       // ==============================
+//       _baseApi = 'http://10.3.0.208:8084/api/';
+//       _payslipUrl = 'http://10.3.0.208:8089/api/Ess/';
+//     } else {
+
+//       // ==============================
+//       // PRIMARY SERVER
+//       // ==============================
+//       String primaryUrl = 'https://apc-gms.apachefootwear.com:8443/api/';
+
+//       // String primaryUrl = 'http://10.3.0.70:9042/api/';
+//       String backupUrl = 'http://115.244.47.101:8084/api/';
+
+//       bool isPrimaryWorking = await _isServerReachable(primaryUrl);
+
+//       if (isPrimaryWorking) {
+//         print("✅ Using PRIMARY server");
+//         _baseApi = primaryUrl;
 //       } else {
-//         // ==============================
-//         // PUBLIC SERVER
-//         // ==============================
-
-//         // _baseApi = 'http://apc-gms.apachefootwear.com:8084/api/';
-//         _baseApi = 'https://apc-gms.apachefootwear.com:8443/api/';// new public url
-
-//         _payslipUrl = 'http://203.153.32.85:54349/api/Ess/';
-//         // urlGlobalOrLocalCheck = 'GLOBAL';
-//         urlGlobalOrLocalCheck = ipAddress;
+//         print("⚠️ Primary down, switching to BACKUP");
+//         _baseApi = backupUrl;
 //       }
 
-//       print('Base API: $_baseApi');
+//       _payslipUrl = 'http://203.153.32.85:54349/api/Ess/';
 //     }
+
+//     print('Final Base API: $_baseApi');
 //   }
 
+
+//   static Future<bool> _isServerReachable(String url) async {
+//     try {
+//       final uri = Uri.parse(url);
+
+//       final request = await HttpClient()
+//           .getUrl(uri)
+//           .timeout(const Duration(seconds: 3));
+
+//       final response = await request.close();
+
+//       print("Server responded: ${response.statusCode}");
+
+//       // ✅ CHANGE HERE
+//       return true; // If response came, server is reachable
+//     } catch (e) {
+//       print("Server not reachable: $url");
+//       return false;
+//     }
+//   }
 //   /// WIFI IP
 //   static Future<String?> _getWifiIPAddress() async {
 //     try {
