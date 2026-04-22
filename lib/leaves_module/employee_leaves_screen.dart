@@ -116,57 +116,6 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
     });
   }
 
-  // Future<void> fetchLeaveData({DateTime? fromDate, DateTime? toDate}) async {
-  //   setState(() => _isLoading = true);
-
-  //   try {
-  //     final url = Uri.parse("http://10.3.0.70:9042/api/HR/get-employee-leaves");
-
-  //     final now = DateTime.now();
-
-  //     final start = fromDate ??
-  //         DateTime(now.year, now.month, now.day)
-  //             .subtract(const Duration(days: 270));
-
-  //     final end = toDate ?? now;
-
-  //     final body = {
-  //       "empNo": widget.userData.empNo,
-  //       "startDate": start.toIso8601String(),
-  //       "endDate": end.toIso8601String(),
-  //     };
-
-  //     print("👉 BODY: ${jsonEncode(body)}");
-
-  //     final response = await http.post(
-  //       url,
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode(body),
-  //     );
-
-  //     if (response.statusCode == 200 && response.body.isNotEmpty) {
-  //       final List data = jsonDecode(response.body);
-
-  //       setState(() {
-  //         _filtered = data
-  //             .map((e) => LeaveDto(
-  //                   empNo: e['empNo'] ?? '',
-  //                   holidayCode: e['holidayCode'] ?? '',
-  //                   holidayName: e['holidayName'] ?? '',
-  //                   startDate: DateTime.parse(e['startDate']),
-  //                   endDate: DateTime.parse(e['endDate']),
-  //                   holidayQty: (e['holidayQty'] ?? 0).toDouble(),
-  //                 ))
-  //             .toList();
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print("❌ ERROR: $e");
-  //   } finally {
-  //     setState(() => _isLoading = false);
-  //   }
-  // }
-
   Future<void> fetchLeaveData({DateTime? fromDate, DateTime? toDate}) async {
     setState(() => _isLoading = true);
 
@@ -205,6 +154,12 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
         "startDate": start.toIso8601String(),
         "endDate": end.toIso8601String(),
       };
+      final debugUrl = "${ApiHelper.baseUrl}get-employee-leaves"
+          "?empNo=${widget.userData.empNo}"
+          "&startDate=${start.toIso8601String()}"
+          "&endDate=${end.toIso8601String()}";
+
+      print("🌐 DEBUG URL: $debugUrl");
 
       print("👉 BODY: ${jsonEncode(body)}");
 
@@ -274,34 +229,104 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
 
   bool get _isFiltered => _fromDate != null || _toDate != null;
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     backgroundColor: C.bg,
+  //     body: Stack(
+  //       children: [
+  //         SingleChildScrollView(
+  //           physics: const ClampingScrollPhysics(),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               _buildHeader(), // ✅ NEW HEADER
+
+  //               _buildEmpHeader(),
+  //               _buildSummarySection(),
+  //               _buildListLabel(),
+  //               _filtered.isEmpty
+  //                   ? _buildEmpty()
+  //                   : Column(
+  //                       children:
+  //                           _filtered.map((l) => LeaveCard(leave: l)).toList(),
+  //                     ),
+  //               const SizedBox(height: 30),
+  //             ],
+  //           ),
+  //         ),
+
+  //         // 🔥 LOADING OVERLAY (FULL SCREEN FIX)
+  //         if (_isLoading)
+  //           Positioned.fill(
+  //             child: Container(
+  //               color: Colors.black.withOpacity(0.3),
+  //               child: const Center(
+  //                 child: CircularProgressIndicator(),
+  //               ),
+  //             ),
+  //           ),
+
+  //         // ── Filter Panel ──
+  //         if (_showFilter)
+  //           Positioned(
+  //             top: 0,
+  //             left: 0,
+  //             right: 0,
+  //             child: FadeTransition(
+  //               opacity: _fade,
+  //               child: SlideTransition(
+  //                 position: _slide,
+  //                 child: _buildFilterPanel(),
+  //               ),
+  //             ),
+  //           ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: C.bg,
       body: Stack(
         children: [
-          SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(), // ✅ NEW HEADER
+          Column(
+            children: [
+              _buildHeader(), // ✅ Always visible (title + filter)
 
-                _buildEmpHeader(),
-                _buildSummarySection(),
-                _buildListLabel(),
-                _filtered.isEmpty
-                    ? _buildEmpty()
-                    : Column(
-                        children:
-                            _filtered.map((l) => LeaveCard(leave: l)).toList(),
-                      ),
-                const SizedBox(height: 30),
-              ],
-            ),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+
+                    // ✅ ONLY EMPTY UI
+                    : _filtered.isEmpty
+                        ? _buildEmpty()
+
+                        // ✅ FULL UI WHEN DATA EXISTS
+                        : SingleChildScrollView(
+                            physics: const ClampingScrollPhysics(),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildEmpHeader(),
+                                _buildSummarySection(),
+                                _buildListLabel(),
+                                Column(
+                                  children: _filtered
+                                      .map((l) => LeaveCard(leave: l))
+                                      .toList(),
+                                ),
+                                const SizedBox(height: 30),
+                              ],
+                            ),
+                          ),
+              ),
+            ],
           ),
 
-          // 🔥 LOADING OVERLAY (FULL SCREEN FIX)
+          // 🔥 LOADING OVERLAY (optional - you can keep or remove)
           if (_isLoading)
             Positioned.fill(
               child: Container(
@@ -312,7 +337,7 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
               ),
             ),
 
-          // ── Filter Panel ──
+          // 🔥 FILTER PANEL
           if (_showFilter)
             Positioned(
               top: 0,
@@ -475,7 +500,8 @@ class _EmployeeLeaveScreenState extends State<EmployeeLeaveScreen>
                 const SizedBox(height: 5),
                 Row(
                   children: [
-                    _hdrChip(Icons.access_time_rounded,
+                    _hdrChip(
+                        Icons.access_time_rounded,
                         // '${_totalHours.toStringAsFixed(0)} hrs total'),
                         '${_totalHours.toStringAsFixed(2)} hrs total'),
                     const SizedBox(width: 12),

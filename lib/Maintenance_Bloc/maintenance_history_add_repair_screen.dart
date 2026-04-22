@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 
+import '../api/apis_page.dart';
+
 class MaintenanceHistoryAndRepairScreen extends StatefulWidget {
   final LoginModelApi userData;
 
@@ -32,7 +34,7 @@ class _MaintenanceHistoryAndRepairScreenState
 
   bool isLoading = false;
 
-  final String baseUrl = "http://10.3.0.70:9042/api/MNT_/";
+  // final String baseUrl = "http://10.3.0.70:9042/api/MNT_/";
 
   @override
   void initState() {
@@ -74,7 +76,10 @@ class _MaintenanceHistoryAndRepairScreenState
     });
 
     try {
-      final response = await http.get(Uri.parse("$baseUrl$id"));
+      // final response = await http.get(Uri.parse("$baseUrl$id"));
+      final response = await http.get(
+        Uri.parse("${ApiHelper.mntURL}$id"),
+      );
 
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
@@ -116,8 +121,10 @@ class _MaintenanceHistoryAndRepairScreenState
     setState(() => isLoading = true);
 
     try {
+      // final response = await http.post(
+      //   Uri.parse("${baseUrl}addrepair"),
       final response = await http.post(
-        Uri.parse("${baseUrl}addrepair"),
+        Uri.parse("${ApiHelper.mntURL}addrepair"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "loginBarcode": widget.userData.empNo,

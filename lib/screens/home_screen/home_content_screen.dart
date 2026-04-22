@@ -207,18 +207,14 @@ class _HomeContentState extends State<HomeContent> {
   //   setState(() {
   //     _connectionStatus = result;
   //   });
-  //   // ignore: avoid_print
+
   //   print('Connectivity changed: $_connectionStatus');
-  //   // Show a Snackbar with the connection status
+
   //   String message;
   //   Color backgroundColor;
-  //   // if (_connectionStatus ==ConnectivityResult.none) {
-  //   //   message = 'No internet connection';
-  //   //   backgroundColor = Colors.red;
-  //   // } else {
-  //   //   message = 'Connected: ${_connectionStatus.toString()}';
-  //   //   backgroundColor = Colors.green;
-  //   // }
+  //   String? wifiIpAddress;
+  //   String? gmsUrlToShow;
+  //   String? urlType; // Local or Public
 
   //   if (_connectionStatus.contains(ConnectivityResult.none)) {
   //     message = 'No internet connection';
@@ -226,6 +222,35 @@ class _HomeContentState extends State<HomeContent> {
   //   } else if (_connectionStatus.contains(ConnectivityResult.wifi)) {
   //     message = 'Connected to Wi-Fi';
   //     backgroundColor = Colors.green;
+  //     if (await _requestLocationPermissionforWifiIP()) {
+  //       wifiIpAddress = await _getWifiIPAddress();
+  //       print('Wi-Fi IP Address: $wifiIpAddress'); // Print the IP address
+  //     } else {
+  //       print("Location permission denied.");
+  //     }
+
+  //     // Enable the function below when updating the app for live, as it determines whether to use local or global APIs based on Wi-Fi or mobile networks.
+  //     // await ApiHelper.updateUrlsBasedOnNetwork(); // for wifi apache and apc IT
+  //     gmsUrlToShow =
+  //         ApiHelper.urlGlobalOrLocalCheck; // Fetch GMS URL after update
+  //     // ✅ Get REAL API URL
+  //     gmsUrlToShow = ApiHelper.baseUrl;
+
+  //     // ✅ Get server type
+  //     String serverStatus = ApiHelper.serverStatus;
+
+  //     if (gmsUrlToShow.contains('10.3.')) {
+  //       urlType = 'Local URL';
+  //     } else {
+  //       urlType = 'Public URL';
+  //     }
+  //     // ✅ FINAL MESSAGE
+  //     message += '\nURL: $gmsUrlToShow'
+  //         '\nType: $urlType'
+  //         '\nServer: $serverStatus';
+
+  //     // 🟢 Now, build the message string with the updated URL
+  //     message += ' (URL: $gmsUrlToShow\nURLType: $urlType';
   //   } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
   //     message = 'Connected to Mobile Network';
   //     backgroundColor = Colors.green;
@@ -233,12 +258,12 @@ class _HomeContentState extends State<HomeContent> {
   //     message = 'Connected to another network type';
   //     backgroundColor = Colors.blue;
   //   }
-  //   // Show the Snackbar
+
   //   ScaffoldMessenger.of(context).showSnackBar(
   //     SnackBar(
   //       content: Text(message),
   //       backgroundColor: backgroundColor,
-  //       duration: Duration(seconds: 3), // Adjust duration as needed
+  //       duration: Duration(seconds: 3),
   //     ),
   //   );
   // }
@@ -252,41 +277,36 @@ class _HomeContentState extends State<HomeContent> {
 
     String message;
     Color backgroundColor;
-    String? wifiIpAddress;
-    String? gmsUrlToShow;
-    String? urlType; // Local or Public
 
     if (_connectionStatus.contains(ConnectivityResult.none)) {
       message = 'No internet connection';
       backgroundColor = Colors.red;
     } else if (_connectionStatus.contains(ConnectivityResult.wifi)) {
-      message = 'Connected to Wi-Fi';
       backgroundColor = Colors.green;
-      if (await _requestLocationPermissionforWifiIP()) {
-        wifiIpAddress = await _getWifiIPAddress();
-        print('Wi-Fi IP Address: $wifiIpAddress'); // Print the IP address
-      } else {
-        print("Location permission denied.");
-      }
 
-      // Enable the function below when updating the app for live, as it determines whether to use local or global APIs based on Wi-Fi or mobile networks.
-      // await ApiHelper.updateUrlsBasedOnNetwork(); // for wifi apache and apc IT
-      gmsUrlToShow =
-          ApiHelper.urlGlobalOrLocalCheck; // Fetch GMS URL after update
-      // 👉 Check if it’s local or public
-      // if (gmsUrlToShow != null && gmsUrlToShow.contains("10.3.")) {
-      //   urlType = "Local URL";
-      // } else {
-      //   urlType = "Public URL";
-      // }
-      if (gmsUrlToShow.contains('10.3.')) {
-        urlType = 'Local URL';
-      } else {
-        urlType = 'Public URL';
-      }
+      // 🔥 MUST CALL THIS
+      await ApiHelper.updateUrlsBasedOnNetwork();
 
-      // 🟢 Now, build the message string with the updated URL
-      message += ' (URL: $gmsUrlToShow\nURLType: $urlType';
+      String baseUrl = ApiHelper.baseUrl;
+      String serverStatus = ApiHelper.serverStatus;
+
+      // ✅ LOCAL WIFI
+      if (baseUrl.contains('10.3.') ||
+          baseUrl.contains('10.4.') ||
+          baseUrl.contains('10.5.') ||
+          baseUrl.contains('10.0.')) {
+        message = 'Connected to Local WiFi\nConnected to Local URL';
+      }
+      // ✅ PRIMARY SERVER
+      else if (serverStatus.contains('Primary')) {
+        message = 'Connected to WiFi\nConnected to Primary URL';
+      }
+      // ✅ BACKUP SERVER
+      else if (serverStatus.contains('Backup')) {
+        message = 'Connected to WiFi\nConnected to Backup URL';
+      } else {
+        message = 'Connected to WiFi\nServer not reachable';
+      }
     } else if (_connectionStatus.contains(ConnectivityResult.mobile)) {
       message = 'Connected to Mobile Network';
       backgroundColor = Colors.green;
@@ -299,7 +319,7 @@ class _HomeContentState extends State<HomeContent> {
       SnackBar(
         content: Text(message),
         backgroundColor: backgroundColor,
-        duration: Duration(seconds: 3),
+        duration: const Duration(seconds: 3),
       ),
     );
   }

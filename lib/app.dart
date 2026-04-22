@@ -155,7 +155,7 @@ class _SplashScreenWithCheckAppUpdatesState
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
                   Text(
-                    "Checking for latest APK version...",
+                    "Checking for latest APP version...",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
