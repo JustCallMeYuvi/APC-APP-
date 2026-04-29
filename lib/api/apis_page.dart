@@ -449,11 +449,11 @@ class ApiHelper {
       // ==============================
       // PRIMARY SERVER
       // ==============================
-      // String primaryUrl = 'https://apc-gms.apachefootwear.com:8443/api/';
+      String primaryUrl = 'https://apc-gms.apachefootwear.com:8443/api/';
 
       // String primaryUrl = 'http://10.3.0.70:9042/api/';
 
-      String primaryUrl = 'http://115.244.47.101:9042/api/'; // 70 public url
+      // String primaryUrl = 'http://115.244.47.101:9042/api/'; // 70 public url
       // String backupUrl = 'http://115.244.47.101:8084/api/';
       String backupUrl = 'https://apc-mobility.apachefootwear.com:8443/api/';
 

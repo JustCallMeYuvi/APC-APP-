@@ -359,7 +359,7 @@ class _GmsChartsState extends State<GmsCharts> {
           return SfCircularChart(
             margin: const EdgeInsets.only(top: 50), // Adjusts outer padding
             // title: ChartTitle(text: 'Vehicle Tracking Status'),
-            legend: Legend(
+            legend: const Legend(
                 isVisible: true, overflowMode: LegendItemOverflowMode.wrap),
             series: <CircularSeries>[
               PieSeries<ChartData, String>(
@@ -405,14 +405,14 @@ class _GmsChartsState extends State<GmsCharts> {
                       //title: Text(clickedData.label),
                       title: Text(
                         clickedData.label,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold, // Makes the text bold
                         ),
                       ),
 
                       content: Text(
                         'Count: ${clickedData.totalStatusCount}\nVehicles: ${matchedVehicles.join(', ')}',
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       actions: [

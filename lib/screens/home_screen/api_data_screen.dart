@@ -44,6 +44,7 @@ import 'package:animated_movies_app/MNT_Modules/Power_panels/power_panels_screen
 import 'package:animated_movies_app/MNT_Modules/maintenance_qr_code_scanner_screen.dart';
 import 'package:animated_movies_app/Maintenance_Bloc/maintenance_history_add_repair_screen.dart';
 import 'package:animated_movies_app/Salary_Module/salary_screen.dart';
+import 'package:animated_movies_app/api/leave_request_module/leave_request_screen.dart';
 import 'package:animated_movies_app/disciplinary_folder/disciplinary_screen.dart';
 import 'package:animated_movies_app/dormitory/resident_complaint_page.dart';
 import 'package:animated_movies_app/hr_department/employee_punch_page.dart';
@@ -441,10 +442,16 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                                                                                         // userData:s
                                                                                                                                                                                                                         //     widget.userData,
                                                                                                                                                                                                                       )
-                                                                                                                                                                                                                    : Text(
-                                                                                                                                                                                                                        'Data for ${widget.pageName} goes here.',
-                                                                                                                                                                                                                        style: const TextStyle(fontSize: 20),
-                                                                                                                                                                                                                      )
+                                                                                                                                                                                                                    : widget.pageRoute == 'Leaves_Request'
+                                                                                                                                                                                                                        ? LeaveRequestScreen(
+                                                                                                                                                                                                                            userData: widget.userData,
+                                                                                                                                                                                                                            // userData:s
+                                                                                                                                                                                                                            //     widget.userData,
+                                                                                                                                                                                                                          )
+                                                                                                                                                                                                                        : Text(
+                                                                                                                                                                                                                            'Data for ${widget.pageName} goes here.',
+                                                                                                                                                                                                                            style: const TextStyle(fontSize: 20),
+                                                                                                                                                                                                                          )
 
             // : SignApprovalPage(
             //     userData: widget.userData,
