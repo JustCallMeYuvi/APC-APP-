@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:animated_movies_app/api/apis_page.dart';
+import 'package:animated_movies_app/model/user_access.dart';
 import 'package:animated_movies_app/screens/home_screen/account_screen.dart';
 
 import 'package:animated_movies_app/screens/home_screen/home_content_screen.dart';
@@ -25,38 +26,286 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+// class _HomeScreenState extends State<HomeScreen> {
+//   // final NotificationService _notificationService = NotificationService();
+//   int _selectedIndex = 0;
+//   bool _isLoading = false;
+
+//   late final List<Widget> _widgetOptions;
+//   List<UserAccess> userAccessList = [];
+//   Future<void> fetchUserAccess() async {
+//     int roleId = int.parse(widget.userData.useRRole); // or from API
+
+//     String apiUrl = '${ApiHelper.baseUrl}userpersmissions?roleid=$roleId';
+
+//     final response = await http.get(Uri.parse(apiUrl));
+
+//     if (response.statusCode == 200) {
+//       setState(() {
+//         userAccessList = userAccessFromJson(response.body);
+//       });
+//     }
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     // _notificationService.initNotification((payload) {
+//     //   _onItemTapped(1); // Navigate to notifications screen
+//     // });
+//     // checkForUpdates(); // Call update check on initialization
+//     fetchUserAccess(); // Fetch user access data on initialization
+//     _widgetOptions = <Widget>[
+//       HomeContent(
+//         userData: widget.userData,
+//       ),
+
+//       NotificationsScreen(
+//         userData: widget.userData,
+//       ),
+//       // ChatScreen(),
+//       // ContactsPage(
+//       //   userData: widget.userData,
+//       // ),
+//       MultipleForms(
+//         userData: widget.userData,
+//       ),
+//       // AboutScreen(),
+//       AccountDetailsScreen(
+//         userData: widget.userData,
+//         userAccessList: userAccessList, // ✅ now works
+//       ), // Pass userData here
+//     ];
+//   }
+
+//   void _onItemTapped(int index) {
+//     setState(() {
+//       _selectedIndex = index;
+//     });
+//   }
+
+//   // Future<void> checkForUpdates() async {
+//   //   setState(() {
+//   //     _isLoading = true; // Start loading
+//   //   });
+
+//   //   PackageInfo packageInfo = await PackageInfo.fromPlatform();
+//   //   String currentVersion = packageInfo.version;
+
+//   //   // final url = Uri.parse(
+//   //   //     'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
+//   //   final Uri url = ApiHelper.checkUpdateApi(currentVersion);
+//   //   try {
+//   //     final response = await http.get(url);
+
+//   //     if (response.statusCode == 200) {
+//   //       final data = json.decode(response.body);
+
+//   //       if (data != null &&
+//   //           data.containsKey('latestVersion') &&
+//   //           data.containsKey('apkFileData')) {
+//   //         String latestVersion = data['latestVersion'];
+//   //         String apkFileData =
+//   //             data['apkFileData']; // Base64 encoded APK file data
+
+//   //         if (currentVersion != latestVersion) {
+//   //           _showUpdateDialog(latestVersion, apkFileData);
+//   //         } else {
+//   //           // _showNoUpdateDialog();
+//   //         }
+//   //       } else {
+//   //         print(
+//   //             'Invalid response: latestVersion or apkFileData key not found.');
+//   //       }
+//   //     } else if (response.statusCode == 404) {
+//   //       // Handle the case when no update is available
+//   //       if (response.body == "No update available") {
+//   //         // _showNoUpdateDialog();
+//   //       } else {
+//   //         print('Unexpected response body: ${response.body}');
+//   //       }
+//   //     } else {
+//   //       print(
+//   //           'Failed to check for updates: ${response.statusCode} ${response.reasonPhrase}');
+//   //     }
+//   //   } catch (e) {
+//   //     print('Error while checking for updates: $e');
+//   //   } finally {
+//   //     setState(() {
+//   //       _isLoading = false; // Stop loading
+//   //     });
+//   //   }
+//   // }
+
+//   void _showUpdateDialog(String latestVersion, String apkFileData) {
+//     showDialog(
+//       context: context,
+//       barrierDismissible:
+//           false, // Prevent dismissing the dialog by tapping outside
+//       builder: (BuildContext context) {
+//         return WillPopScope(
+//           // Prevent the dialog from closing using the back button
+//           onWillPop: () async => false,
+//           child: AlertDialog(
+//             title: Text("Update Available"),
+//             content: Text(
+//                 "A new version ($latestVersion) is available. Please update the app."),
+//             actions: <Widget>[
+//               // TextButton(
+//               //   child: Text("Later"),
+//               //   onPressed: () {
+//               //     Navigator.of(context).pop(); // Close the dialog
+//               //   },
+//               // ),
+//               TextButton(
+//                 child: Text("Update Now"),
+//                 onPressed: () async {
+//                   Navigator.of(context).pop(); // Close the dialog
+
+//                   try {
+//                     // Start downloading the APK file
+//                     await _downloadAndInstallApk(apkFileData);
+//                   } catch (e) {
+//                     print('Failed to download or install APK: $e');
+//                   }
+//                 },
+//               ),
+//             ],
+//           ),
+//         );
+//       },
+//     );
+//   }
+
+//   Future<void> _downloadAndInstallApk(String apkFileData) async {
+//     try {
+//       // Decode the base64 APK data and save to a local file
+//       final bytes = base64Decode(apkFileData);
+//       final directory =
+//           await getExternalStorageDirectory(); // Use external storage
+//       if (directory == null) {
+//         throw Exception("External storage directory is null");
+//       }
+//       final filePath = '${directory.path}/update.apk';
+//       final file = File(filePath);
+//       print('File Path: $filePath');
+
+//       await file.writeAsBytes(bytes);
+//       print('APK file written successfully.');
+
+//       // Install the APK using install_plugin
+//       final result = await InstallPlugin.installApk(filePath,
+//           appId: 'com.example.animated_movies_app');
+//       print('Install result: $result');
+
+//       // if (result == true) {
+//       //   // Assuming the result indicates success
+//       //   _showRestartDialog();
+//       // }
+//     } catch (e) {
+//       print('Failed to download or install APK: $e');
+//     }
+//   }
+
+//   void _showRestartDialog() {
+//     showDialog(
+//       context: context,
+//       builder: (BuildContext context) {
+//         return AlertDialog(
+//           title: Text("Restart Required"),
+//           content: Text("The app needs to be restarted to apply the updates."),
+//           actions: <Widget>[
+//             TextButton(
+//               child: Text("OK"),
+//               onPressed: () {
+//                 // Restart the app (this could also be done by closing the app)
+//                 SystemNavigator.pop(); // or use your method to restart the app
+//               },
+//             ),
+//           ],
+//         );
+//       },
+//     );
+//   }
+
+//   // void _showNoUpdateDialog() {
+//   //   showDialog(
+//   //     context: context,
+//   //     builder: (BuildContext context) {
+//   //       return AlertDialog(
+//   //         title: Text("No Update Available"),
+//   //         content: Text("Your app is up-to-date!"),
+//   //         actions: <Widget>[
+//   //           TextButton(
+//   //             child: Text("OK"),
+//   //             onPressed: () {
+//   //               Navigator.of(context).pop(); // Close the dialog
+//   //             },
+//   //           ),
+//   //         ],
+//   //       );
+//   //     },
+//   //   );
+//   // }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: _isLoading // Show loading indicator if loading
+//           ? Center(
+//               // child: CircularProgressIndicator(),
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   CircularProgressIndicator(),
+//                   const SizedBox(height: 20),
+//                   const Text(
+//                     'App updating, please wait...',
+//                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+//                   ),
+//                 ],
+//               ),
+//             )
+//           : IndexedStack(
+//               index: _selectedIndex,
+//               children: _widgetOptions,
+//             ),
+//       bottomNavigationBar: BottomNavBar(
+//         selectedIndex: _selectedIndex,
+//         onItemTapped: _onItemTapped,
+//         // notificationService: _notificationService,
+//         userData: widget.userData,
+//       ),
+//     );
+//   }
+// }
+
+
 class _HomeScreenState extends State<HomeScreen> {
-  // final NotificationService _notificationService = NotificationService();
   int _selectedIndex = 0;
   bool _isLoading = false;
 
-  late final List<Widget> _widgetOptions;
+  List<UserAccess> userAccessList = [];
+
+  Future<void> fetchUserAccess() async {
+    int roleId = int.parse(widget.userData.useRRole);
+
+    String apiUrl =
+        '${ApiHelper.baseUrl}userpersmissions?roleid=$roleId';
+
+    final response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      setState(() {
+        userAccessList = userAccessFromJson(response.body);
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    // _notificationService.initNotification((payload) {
-    //   _onItemTapped(1); // Navigate to notifications screen
-    // });
-    // checkForUpdates(); // Call update check on initialization
-    _widgetOptions = <Widget>[
-      HomeContent(
-        userData: widget.userData,
-      ),
-
-      NotificationsScreen(
-        userData: widget.userData,
-      ),
-      // ChatScreen(),
-      // ContactsPage(
-      //   userData: widget.userData,
-      // ),
-      MultipleForms(
-        userData: widget.userData,
-      ),
-      // AboutScreen(),
-      AccountDetailsScreen(userData: widget.userData), // Pass userData here
-    ];
+    fetchUserAccess();
   }
 
   void _onItemTapped(int index) {
@@ -65,196 +314,28 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Future<void> checkForUpdates() async {
-  //   setState(() {
-  //     _isLoading = true; // Start loading
-  //   });
-
-  //   PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  //   String currentVersion = packageInfo.version;
-
-  //   // final url = Uri.parse(
-  //   //     'http://10.3.0.70:9042/api/HR/check-update?appVersion=$currentVersion');
-  //   final Uri url = ApiHelper.checkUpdateApi(currentVersion);
-  //   try {
-  //     final response = await http.get(url);
-
-  //     if (response.statusCode == 200) {
-  //       final data = json.decode(response.body);
-
-  //       if (data != null &&
-  //           data.containsKey('latestVersion') &&
-  //           data.containsKey('apkFileData')) {
-  //         String latestVersion = data['latestVersion'];
-  //         String apkFileData =
-  //             data['apkFileData']; // Base64 encoded APK file data
-
-  //         if (currentVersion != latestVersion) {
-  //           _showUpdateDialog(latestVersion, apkFileData);
-  //         } else {
-  //           // _showNoUpdateDialog();
-  //         }
-  //       } else {
-  //         print(
-  //             'Invalid response: latestVersion or apkFileData key not found.');
-  //       }
-  //     } else if (response.statusCode == 404) {
-  //       // Handle the case when no update is available
-  //       if (response.body == "No update available") {
-  //         // _showNoUpdateDialog();
-  //       } else {
-  //         print('Unexpected response body: ${response.body}');
-  //       }
-  //     } else {
-  //       print(
-  //           'Failed to check for updates: ${response.statusCode} ${response.reasonPhrase}');
-  //     }
-  //   } catch (e) {
-  //     print('Error while checking for updates: $e');
-  //   } finally {
-  //     setState(() {
-  //       _isLoading = false; // Stop loading
-  //     });
-  //   }
-  // }
-
-  void _showUpdateDialog(String latestVersion, String apkFileData) {
-    showDialog(
-      context: context,
-      barrierDismissible:
-          false, // Prevent dismissing the dialog by tapping outside
-      builder: (BuildContext context) {
-        return WillPopScope(
-          // Prevent the dialog from closing using the back button
-          onWillPop: () async => false,
-          child: AlertDialog(
-            title: Text("Update Available"),
-            content: Text(
-                "A new version ($latestVersion) is available. Please update the app."),
-            actions: <Widget>[
-              // TextButton(
-              //   child: Text("Later"),
-              //   onPressed: () {
-              //     Navigator.of(context).pop(); // Close the dialog
-              //   },
-              // ),
-              TextButton(
-                child: Text("Update Now"),
-                onPressed: () async {
-                  Navigator.of(context).pop(); // Close the dialog
-
-                  try {
-                    // Start downloading the APK file
-                    await _downloadAndInstallApk(apkFileData);
-                  } catch (e) {
-                    print('Failed to download or install APK: $e');
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _downloadAndInstallApk(String apkFileData) async {
-    try {
-      // Decode the base64 APK data and save to a local file
-      final bytes = base64Decode(apkFileData);
-      final directory =
-          await getExternalStorageDirectory(); // Use external storage
-      if (directory == null) {
-        throw Exception("External storage directory is null");
-      }
-      final filePath = '${directory.path}/update.apk';
-      final file = File(filePath);
-      print('File Path: $filePath');
-
-      await file.writeAsBytes(bytes);
-      print('APK file written successfully.');
-
-      // Install the APK using install_plugin
-      final result = await InstallPlugin.installApk(filePath,
-          appId: 'com.example.animated_movies_app');
-      print('Install result: $result');
-
-      // if (result == true) {
-      //   // Assuming the result indicates success
-      //   _showRestartDialog();
-      // }
-    } catch (e) {
-      print('Failed to download or install APK: $e');
-    }
-  }
-
-  void _showRestartDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Restart Required"),
-          content: Text("The app needs to be restarted to apply the updates."),
-          actions: <Widget>[
-            TextButton(
-              child: Text("OK"),
-              onPressed: () {
-                // Restart the app (this could also be done by closing the app)
-                SystemNavigator.pop(); // or use your method to restart the app
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // void _showNoUpdateDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text("No Update Available"),
-  //         content: Text("Your app is up-to-date!"),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: Text("OK"),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading // Show loading indicator if loading
-          ? Center(
-              // child: CircularProgressIndicator(),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'App updating, please wait...',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            )
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
           : IndexedStack(
               index: _selectedIndex,
-              children: _widgetOptions,
+              children: [
+                HomeContent(userData: widget.userData),
+                NotificationsScreen(userData: widget.userData),
+                MultipleForms(userData: widget.userData),
+
+                // 🔥 IMPORTANT: always pass latest data
+                AccountDetailsScreen(
+                  userData: widget.userData,
+                  userAccessList: userAccessList,
+                ),
+              ],
             ),
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
-        // notificationService: _notificationService,
         userData: widget.userData,
       ),
     );

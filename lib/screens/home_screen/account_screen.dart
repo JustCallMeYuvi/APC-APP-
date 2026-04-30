@@ -4,6 +4,7 @@ import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/constants/ui_constant.dart';
 import 'package:animated_movies_app/model/change_password_model.dart';
 import 'package:animated_movies_app/model/get_emp_details.dart';
+import 'package:animated_movies_app/model/user_access.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
 
 import 'package:flutter/material.dart';
@@ -15,8 +16,10 @@ import '../../auth_provider.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
   final LoginModelApi userData; // Add this line
+  final List<UserAccess> userAccessList; // 👈 ADD THIS
 
-  const AccountDetailsScreen({Key? key, required this.userData})
+  const AccountDetailsScreen(
+      {Key? key, required this.userData, required this.userAccessList})
       : super(key: key);
 
   @override
@@ -252,6 +255,12 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   //   }
   // }
 
+  bool hasPasswordAccess() {
+    return widget.userAccessList.any((tab) =>
+        tab.tabName == "Settings" &&
+        tab.pages.any((p) => p.pageRoute == "Password_Update"));
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -385,19 +394,35 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   ],
                 ),
               const SizedBox(height: 20),
-              const Text(
-                'Account Settings',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              // const Text(
+              //   'Account Settings',
+              //   style: TextStyle(
+              //     color: Colors.white,
+              //     fontSize: 24,
+              //     fontWeight: FontWeight.bold,
+              //   ),
+              // ),
+              // const SizedBox(height: 10),
+              // buildAccountSetting(
+              //   icon: Icons.lock,
+              //   label: 'Change Password',
+              // ),
+              if (hasPasswordAccess()) ...[
+                const SizedBox(height: 20),
+                const Text(
+                  'Account Settings',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              buildAccountSetting(
-                icon: Icons.lock,
-                label: 'Change Password',
-              ),
+                const SizedBox(height: 10),
+                buildAccountSetting(
+                  icon: Icons.lock,
+                  label: 'Change Password',
+                ),
+              ],
               // buildAccountSetting(
               //   icon: Icons.notifications,
               //   label: 'Notification Settings',
