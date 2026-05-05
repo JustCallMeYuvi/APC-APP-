@@ -1,8 +1,17 @@
-import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
-// ─────────────────────── Constants ──────────────────────────────
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../../screens/onboarding_screen/login_page.dart';
+import 'leave_model_employee_data_model.dart';
+import 'package:http/http.dart' as http;
+
+// ─────────────────────── Colors ───────────────────────────────
 class AppColors {
   static const bg = Color(0xFF0D0F1A);
   static const surface = Color(0xFF161829);
@@ -10,14 +19,15 @@ class AppColors {
   static const accent = Color(0xFF6C63FF);
   static const accentGlow = Color(0xFF8B85FF);
   static const teal = Color(0xFF00D4AA);
-  static const coral = Color(0xFFFF6B6B);
   static const textPrimary = Color(0xFFEEF0FF);
   static const textSecondary = Color(0xFF8A8FAD);
   static const border = Color(0xFF2A2D45);
   static const inputBg = Color(0xFF13152A);
 }
 
-// ────────────────────── Main Page ───────────────────────────────
+// ─────────────────────── Model ────────────────────────────────
+
+// ─────────────────────── Screen ───────────────────────────────
 class LeaveRequestScreen extends StatefulWidget {
   final LoginModelApi userData;
   const LeaveRequestScreen({super.key, required this.userData});
@@ -26,24 +36,13 @@ class LeaveRequestScreen extends StatefulWidget {
   State<LeaveRequestScreen> createState() => _LeaveRequestScreenState();
 }
 
-class _LeaveRequestScreenState extends State<LeaveRequestScreen>
-    with TickerProviderStateMixin {
-  // Step management
-  int _currentStep = 0;
-  final int _totalSteps = 4;
+class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
+  // Controllers
+  final _reasonCtrl = TextEditingController();
+  final _approverCtrl = TextEditingController();
 
-  late final AnimationController _fadeCtrl;
-  late final Animation<double> _fadeAnim;
-
-  // Form state
-  final TextEditingController _employeeIdCtrl = TextEditingController();
-  final TextEditingController _employeeNameCtrl = TextEditingController();
-  final TextEditingController _departmentCtrl = TextEditingController();
-  final TextEditingController _positionCtrl = TextEditingController();
-  final TextEditingController _reasonCtrl = TextEditingController();
-  final TextEditingController _approverNameCtrl = TextEditingController();
-
-  String? _leaveType;
+  // State
+  String _leaveType = 'Casual Leave';
   String? _hrApprover;
   DateTime? _fromDate;
   TimeOfDay? _fromTime;
@@ -53,61 +52,33 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
   bool _submitted = false;
 
   final _leaveTypes = [
-    {'label': 'Casual Leave', 'icon': Icons.beach_access_rounded},
-    {'label': 'Sick Leave', 'icon': Icons.medical_services_rounded},
-    {'label': 'Earned Leave', 'icon': Icons.star_rounded},
-    {'label': 'Maternity Leave', 'icon': Icons.favorite_rounded},
-    {'label': 'Paternity Leave', 'icon': Icons.child_care_rounded},
-    {'label': 'Loss of Pay', 'icon': Icons.money_off_rounded},
-    {'label': 'Compensatory Off', 'icon': Icons.swap_horiz_rounded},
+    {'label': 'Casual Leave', 'icon': '🏖️'},
+    {'label': 'Sick Leave', 'icon': '🏥'},
+    {'label': 'Annual Leave', 'icon': '⭐'},
+    {'label': 'Emergency Annual Leave', 'icon': '⭐'},
+
+    // {'label': 'Maternity Leave', 'icon': '❤️'},
+    {'label': 'Personal Leave', 'icon': '👶'},
+    // {'label': 'Loss of Pay', 'icon': '💸'},
+    // {'label': 'Compensatory Off', 'icon': '🔄'},
   ];
 
-  final _hrApprovers = ['Priya Sharma', 'Ravi Kumar', 'Meena Nair'];
+  // final _hrApprovers = ['Priya Sharma', 'Ravi Kumar', 'Meena Nair'];
+
+  final TextEditingController _barcodeCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _reasonCtrl.dispose();
+    _approverCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
-    _fadeCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
-    _fadeCtrl.forward();
-
-    final user = widget.userData;
-
-    _employeeIdCtrl.text = user.empNo;
-    _employeeNameCtrl.text = user.username;
-    _departmentCtrl.text = user.deptName ?? '';
-    _positionCtrl.text = user.position ?? '';
-  }
-
-  @override
-  void dispose() {
-    _fadeCtrl.dispose();
-    _employeeIdCtrl.dispose();
-    _employeeNameCtrl.dispose();
-    _departmentCtrl.dispose();
-    _positionCtrl.dispose();
-    _reasonCtrl.dispose();
-    _approverNameCtrl.dispose();
-    super.dispose();
-  }
-
-  void _nextStep() {
-    if (_currentStep < _totalSteps - 1) {
-      _fadeCtrl.reset();
-      setState(() => _currentStep++);
-      _fadeCtrl.forward();
-    }
-  }
-
-  void _prevStep() {
-    if (_currentStep > 0) {
-      _fadeCtrl.reset();
-      setState(() => _currentStep--);
-      _fadeCtrl.forward();
-    }
+    fetchEmployeeData(); // 🔥 call here
+    fetchHrApprovers();
   }
 
   String get _duration {
@@ -145,6 +116,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
       initialTime: TimeOfDay.now(),
       builder: (ctx, child) => _themedPicker(ctx, child),
     );
+    if (!mounted) return;
     setState(() {
       if (isFrom) {
         _fromDate = picked;
@@ -156,42 +128,219 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
     });
   }
 
-  Widget _themedPicker(BuildContext ctx, Widget? child) {
-    return Theme(
-      data: ThemeData.dark().copyWith(
-        colorScheme: const ColorScheme.dark(
-          primary: AppColors.accent,
-          onPrimary: Colors.white,
-          surface: AppColors.card,
-          onSurface: AppColors.textPrimary,
+  Widget _themedPicker(BuildContext ctx, Widget? child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppColors.accent,
+            onPrimary: Colors.white,
+            surface: AppColors.card,
+            onSurface: AppColors.textPrimary,
+          ),
+          dialogBackgroundColor: AppColors.surface,
         ),
-        dialogBackgroundColor: AppColors.surface,
-      ),
-      child: child!,
-    );
+        child: child!,
+      );
+
+  // Future<void> _submit() async {
+  //   setState(() => _isSubmitting = true);
+  //   await Future.delayed(const Duration(seconds: 2));
+  //   if (mounted) {
+  //     setState(() {
+  //       _isSubmitting = false;
+  //       _submitted = true;
+  //     });
+  //   }
+  // }
+
+  // String _fmt(DateTime? d, TimeOfDay? t) {
+  //   if (d == null) return 'Tap to select';
+  //   final date =
+  //       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  //   final time = t != null
+  //       ? '  ${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}'
+  //       : '';
+  //   return '$date$time';
+  // }
+
+  String _fmt(DateTime? d, TimeOfDay? t) {
+    if (d == null || t == null) return 'Tap to select';
+
+    final dt = combineDateTime(d, t);
+
+    // 🔥 12-hour format with AM/PM
+    return DateFormat("dd/MM/yyyy hh:mm a").format(dt!);
   }
 
-  Future<void> _submit() async {
-    setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      setState(() {
-        _isSubmitting = false;
-        _submitted = true;
-      });
+  List<HrApprover> hrApproverList = [];
+
+  Future<void> fetchHrApprovers() async {
+    final url = Uri.parse(
+      'http://10.3.0.70:9197/api/LEAVE_APPROVAL/HRform/getall',
+    );
+
+    try {
+      final response = await http.get(url);
+
+      print("HR API STATUS: ${response.statusCode}");
+      print("HR API BODY: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+
+        if (decoded is List) {
+          setState(() {
+            hrApproverList =
+                decoded.map((e) => HrApprover.fromJson(e)).toList();
+          });
+        }
+      }
+    } catch (e) {
+      print("❌ HR API Exception: $e");
     }
   }
 
-  // ── Build ────────────────────────────────────────────────────
+  EmployeeData? empData;
+  bool isLoadingEmp = false;
+
+  Future<void> fetchEmployeeData() async {
+    setState(() => isLoadingEmp = true);
+
+    final url = Uri.parse(
+        'http://10.3.0.70:9197/api/LEAVE_APPROVAL/GetDataList/${widget.userData.empNo}/5000');
+
+    try {
+      final response = await http.post(url);
+
+      print("====== EMPLOYEE API ======");
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+
+        if (decoded is List && decoded.isNotEmpty) {
+          final emp = EmployeeData.fromJson(decoded[0]);
+
+          print("✅ FINAL deptNo: ${emp.deptNo}");
+
+          setState(() {
+            empData = emp;
+          });
+
+          // 🔥 Call Approver API
+          if (emp.deptNo.isNotEmpty) {
+            await fetchApprover(emp.deptNo);
+          } else {
+            print("❌ deptNo is EMPTY — check API response");
+          }
+        } else {
+          print("⚠️ Employee response empty");
+        }
+      } else {
+        print("❌ Employee API error: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Employee Exception: $e");
+    }
+
+    setState(() => isLoadingEmp = false);
+  }
+
+// approval api fetch
+  ApproverData? deptApprover;
+  bool isLoadingApprover = false;
+  Future<void> fetchApprover(String deptNo) async {
+    if (deptNo.isEmpty) {
+      print("❌ DeptNo empty, skipping approver API");
+      return;
+    }
+
+    setState(() => isLoadingApprover = true);
+
+    final url = Uri.parse(
+        'http://10.3.0.70:9197/api/LEAVE_APPROVAL/api/approver/$deptNo/5000/${widget.userData.empNo}');
+
+    try {
+      final response = await http.get(url);
+
+      print("====== APPROVER API ======");
+      print("URL: $url");
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+
+        if (decoded is List && decoded.isNotEmpty) {
+          setState(() {
+            deptApprover = ApproverData.fromJson(decoded[0]);
+          });
+        } else if (decoded is Map<String, dynamic>) {
+          setState(() {
+            deptApprover = ApproverData.fromJson(decoded);
+          });
+        } else {
+          print("⚠️ Approver empty");
+        }
+      } else {
+        print("❌ Approver API error: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Approver Exception: $e");
+    }
+
+    setState(() => isLoadingApprover = false);
+  }
+
+  EmployeeData? specialEmp;
+  Timer? _debounce; // 🔥 debounce
+  Future<void> fetchByBarcode() async {
+    final barcode = _barcodeCtrl.text.trim();
+
+    if (barcode.isEmpty) return;
+
+    print("🔥 API CALL: $barcode");
+
+    final url = Uri.parse(
+        'http://10.3.0.70:9197/api/LEAVE_APPROVAL/GetDataList/$barcode/5000');
+
+    try {
+      final response = await http.post(url);
+
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+
+        if (decoded is List && decoded.isNotEmpty) {
+          setState(() {
+            specialEmp = EmployeeData.fromJson(decoded[0]);
+          });
+        } else {
+          setState(() {
+            specialEmp = null;
+          });
+        }
+      }
+    } catch (e) {
+      print("❌ Exception: $e");
+    }
+  }
+
+  // ── Build ───────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bg,
-      body: _submitted ? _buildSuccess() : _buildForm(),
+      // body: _submitted ? _buildSuccess() : _buildSingleScreen(),
+      body: isLoadingEmp
+          ? const Center(child: CircularProgressIndicator()) // ✅ HERE
+          : (_submitted ? _buildSuccess() : _buildSingleScreen()),
     );
   }
 
-  // ── Success Screen ───────────────────────────────────────────
+  // ── Success ─────────────────────────────────────────────────
   Widget _buildSuccess() {
     return Center(
       child: Padding(
@@ -200,796 +349,1463 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 100,
-              height: 100,
+              width: 90,
+              height: 90,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [AppColors.teal, AppColors.accent],
-                ),
+                    colors: [AppColors.teal, AppColors.accent]),
                 boxShadow: [
                   BoxShadow(
-                      color: AppColors.teal.withOpacity(0.4), blurRadius: 30)
+                      color: AppColors.teal.withOpacity(0.3), blurRadius: 28)
                 ],
               ),
               child: const Icon(Icons.check_rounded,
-                  color: Colors.white, size: 52),
+                  color: Colors.white, size: 48),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
             const Text('Request Submitted!',
                 style: TextStyle(
-                    fontSize: 26,
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary)),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             const Text('Your leave request has been sent\nfor approval.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 14, color: AppColors.textSecondary, height: 1.6)),
-            const SizedBox(height: 36),
-            _gradientButton('Back to Home',
-                onTap: () => setState(() {
-                      _submitted = false;
-                      _currentStep = 0;
-                    })),
+                    fontSize: 13, color: AppColors.textSecondary, height: 1.6)),
+            const SizedBox(height: 32),
+            _gradientBtn('Back to Home',
+                onTap: () => setState(() => _submitted = false)),
           ],
         ),
       ),
     );
   }
 
-  // ── Form Scaffold ────────────────────────────────────────────
-  Widget _buildForm() {
+  PlatformFile? selectedFile;
+  Future<void> pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      withData: true, // 🔥 IMPORTANT (loads bytes)
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        selectedFile = result.files.first;
+      });
+
+      print("Selected file: ${selectedFile!.name}");
+      print("Has bytes: ${selectedFile!.bytes != null}");
+    }
+  }
+
+  DateTime? combineDateTime(DateTime? date, TimeOfDay? time) {
+    if (date == null || time == null) return null;
+
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+  }
+
+  // submit api call
+  // Future<void> _submit() async {
+  //   setState(() => _isSubmitting = true);
+
+  //   final url = Uri.parse(
+  //     'http://10.3.0.70:9197/api/LEAVE_APPROVAL/BusinessTrip/Submit',
+  //   );
+  //   final fromDateTime = combineDateTime(_fromDate, _fromTime);
+  //   final toDateTime = combineDateTime(_toDate, _toTime);
+  //   try {
+  //     final body = {
+  //       "EmpNo": widget.userData.empNo,
+
+  //       // 🔥 FIX NAME (see below)
+  //       "EmpName": empData?.username ?? widget.userData.username,
+
+  //       "Department": empData?.deptName ?? '',
+  //       "Reason": _reasonCtrl.text,
+  //       "LeaveType": _leaveType,
+  //       // "FromDate": _fromDate?.toIso8601String() ?? '',
+  //       // "ToDate": _toDate?.toIso8601String() ?? '',
+  //       // 🔥 FIXED (date + time)
+  //       "FromDate": fromDateTime?.toIso8601String() ?? '',
+  //       "ToDate": toDateTime?.toIso8601String() ?? '',
+  //       "HRApprover": _hrApprover ?? '',
+  //       "SpecialApprover": specialEmp?.empNo ?? '',
+
+  //       // 🔥 FILE
+  //       if (selectedFile != null)
+  //         "FileBytesBase64": base64Encode(selectedFile!.bytes!),
+  //       if (selectedFile != null) "FileName": selectedFile!.name,
+  //     };
+
+  //     print("REQUEST BODY: $body");
+
+  //     final response = await http.post(
+  //       url,
+  //       headers: {
+  //         "Content-Type": "application/json", // 🔥 VERY IMPORTANT
+  //       },
+  //       body: jsonEncode(body),
+  //     );
+
+  //     print("SUBMIT STATUS: ${response.statusCode}");
+  //     print("SUBMIT BODY: ${response.body}");
+
+  //     if (response.statusCode == 200) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Successfully submitted!")),
+  //       );
+
+  //       setState(() {
+  //         _reasonCtrl.clear();
+  //         _barcodeCtrl.clear();
+  //         selectedFile = null;
+  //         _hrApprover = null;
+  //         specialEmp = null;
+  //         _fromDate = null;
+  //         _toDate = null;
+  //         _submitted = true;
+  //       });
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text(response.body)),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print("❌ Submit Exception: $e");
+
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Error occurred")),
+  //     );
+  //   }
+
+  //   setState(() => _isSubmitting = false);
+  // }
+
+  // Future<void> _submit() async {
+  //   setState(() => _isSubmitting = true);
+
+  //   final url = Uri.parse(
+  //     'http://10.3.0.70:9197/api/LEAVE_APPROVAL/BusinessTrip/Submit',
+  //   );
+
+  //   final fromDateTime = combineDateTime(_fromDate, _fromTime);
+  //   final toDateTime = combineDateTime(_toDate, _toTime);
+
+  //   try {
+  //     // 🔥 STEP 1: Create body
+  //     final body = {
+  //       "EmpNo": widget.userData.empNo,
+  //       "EmpName": empData?.username ?? widget.userData.username,
+  //       "Department": empData?.deptName ?? '',
+  //       "Reason": _reasonCtrl.text,
+  //       "LeaveType": _leaveType,
+  //       "FromDate": fromDateTime?.toIso8601String() ?? '',
+  //       "ToDate": toDateTime?.toIso8601String() ?? '',
+  //       "HRApprover": _hrApprover ?? '',
+  //       "SpecialApprover": specialEmp?.empNo ?? '',
+  //       "Dept_NO": specialEmp?.deptNo ?? '', // ✅ THIS YOU NEED
+  //       "Work_NO": specialEmp?.workNo ?? '', // ✅ THIS YOU NEED
+  //     };
+
+  //     // 🔥 STEP 2: ADD FILE HERE (THIS IS YOUR ANSWER)
+  //     if (selectedFile != null) {
+  //       Uint8List? bytes = selectedFile!.bytes;
+
+  //       if (bytes == null && selectedFile!.path != null) {
+  //         final file = File(selectedFile!.path!);
+  //         bytes = await file.readAsBytes();
+  //       }
+
+  //       if (bytes != null) {
+  //         body["FileBytesBase64"] = base64Encode(bytes);
+  //         body["FileName"] = selectedFile!.name;
+  //       }
+  //     }
+
+  //     print("FINAL BODY: $body");
+
+  //     // 🔥 STEP 3: SEND API
+  //     final response = await http.post(
+  //       url,
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: jsonEncode(body),
+  //     );
+
+  //     print("STATUS: ${response.statusCode}");
+  //     print("BODY: ${response.body}");
+
+  //     if (response.statusCode == 200) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Successfully submitted!")),
+  //       );
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text(response.body)),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print("❌ Exception: $e");
+  //   }
+
+  //   setState(() => _isSubmitting = false);
+  // }
+
+  double calculateLeaveHours() {
+    if (_fromDate == null ||
+        _toDate == null ||
+        _fromTime == null ||
+        _toTime == null) {
+      return 0;
+    }
+
+    final from = combineDateTime(_fromDate, _fromTime);
+    final to = combineDateTime(_toDate, _toTime);
+
+    if (from == null || to == null) return 0;
+
+    final diff = to.difference(from);
+
+    // Convert to hours (including decimals)
+    return diff.inMinutes / 60.0;
+  }
+
+  // Future<void> _submit() async {
+  //   setState(() => _isSubmitting = true);
+
+  //   final fromDateTime = combineDateTime(_fromDate, _fromTime);
+  //   final toDateTime = combineDateTime(_toDate, _toTime);
+
+  //   try {
+  //     // 🔹 VALIDATION (like web)
+  //     if (_leaveType == null || _leaveType!.isEmpty) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Please select Leave Type")),
+  //       );
+  //       return;
+  //     }
+
+  //     if (_reasonCtrl.text.trim().isEmpty) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Please enter reason")),
+  //       );
+  //       return;
+  //     }
+
+  //     if (_fromDate == null || _toDate == null) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Please select dates")),
+  //       );
+  //       return;
+  //     }
+
+  //     // 🔹 STEP 0: CHECK LEAVE API (MATCH WEB)
+  //     final checkUrl = Uri.parse(
+  //       'http://10.3.0.70:9197/api/LEAVE_APPROVAL/check-leave',
+  //     );
+
+  //     final checkBody = {
+  //       "Barcode": widget.userData.empNo,
+  //       "LeaveType": _leaveType, // ✅ IMPORTANT
+  //       "UserOrgId": 100,
+  //       "StartDate": _fromDate?.toIso8601String().split("T")[0],
+  //       "EndDate": _toDate?.toIso8601String().split("T")[0],
+  //     };
+
+  //     print("CHECK BODY: $checkBody");
+
+  //     final checkResponse = await http.post(
+  //       checkUrl,
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(checkBody),
+  //     );
+
+  //     print("CHECK STATUS: ${checkResponse.statusCode}");
+  //     print("CHECK BODY: ${checkResponse.body}");
+
+  //     if (checkResponse.statusCode != 200) {
+  //       throw Exception("Check API failed");
+  //     }
+
+  //     final checkData = jsonDecode(checkResponse.body);
+
+  //     if (checkData["Status"] != true) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text(checkData["Message"] ?? "Leave not allowed")),
+  //       );
+  //       return;
+  //     }
+
+  //     // 🔹 STEP 1: CALCULATE HOURS (OPTIONAL FOR SUBMIT)
+  //     final leaveHours = calculateLeaveHours();
+
+  //     // 🔹 STEP 2: SUBMIT API
+  //     final url = Uri.parse(
+  //       'http://10.3.0.70:9197/api/LEAVE_APPROVAL/BusinessTrip/Submit',
+  //     );
+
+  //     final body = {
+  //       "EmpNo": widget.userData.empNo,
+  //       "EmpName": empData?.username ?? widget.userData.username,
+  //       "Department": empData?.deptName ?? '',
+  //       "Reason": _reasonCtrl.text,
+  //       "LeaveType": _leaveType,
+  //       "FromDate": fromDateTime?.toIso8601String() ?? '',
+  //       "ToDate": toDateTime?.toIso8601String() ?? '',
+  //       "HRApprover": _hrApprover ?? '',
+  //       "SpecialApprover": specialEmp?.empNo ?? '',
+  //       "Dept_NO": specialEmp?.deptNo ?? '',
+  //       "Work_NO": specialEmp?.workNo ?? '',
+
+  //       // 🔥 OPTIONAL (if backend supports)
+  //       "TotalHours": leaveHours,
+  //     };
+
+  //     // 🔹 FILE ATTACH
+  //     if (selectedFile != null) {
+  //       Uint8List? bytes = selectedFile!.bytes;
+
+  //       if (bytes == null && selectedFile!.path != null) {
+  //         final file = File(selectedFile!.path!);
+  //         bytes = await file.readAsBytes();
+  //       }
+
+  //       if (bytes != null) {
+  //         body["FileBytesBase64"] = base64Encode(bytes);
+  //         body["FileName"] = selectedFile!.name;
+  //       }
+  //     }
+
+  //     print("FINAL BODY: $body");
+
+  //     final response = await http.post(
+  //       url,
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(body),
+  //     );
+
+  //     print("SUBMIT STATUS: ${response.statusCode}");
+  //     print("SUBMIT BODY: ${response.body}");
+
+  //     if (response.statusCode == 200) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Successfully submitted!")),
+  //       );
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text(response.body)),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print("❌ Exception: $e");
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("Error: $e")),
+  //     );
+  //   }
+
+  //   setState(() => _isSubmitting = false);
+  // }
+
+  String format12Hour(DateTime? dt) {
+    if (dt == null) return "";
+    return DateFormat("yyyy-MM-dd hh:mm a").format(dt);
+  }
+
+  Future<void> _submit() async {
+    setState(() => _isSubmitting = true);
+
+    final fromDateTime = combineDateTime(_fromDate, _fromTime);
+
+    final toDateTime = combineDateTime(_toDate, _toTime);
+
+    try {
+      String getBtType(String? type) {
+        switch (type) {
+          case "Casual Leave":
+            return "CL";
+
+          case "Sick Leave":
+            return "SL";
+
+          case "Personal Leave": // ✅ your custom UI
+            return "PL";
+
+          case "Annual Leave":
+            return "AL";
+
+          case "Emergency Annual Leave":
+            return "EAL";
+
+          default:
+            return "";
+        }
+      }
+
+      // String getHolidayKind(String? type) {
+      //   switch (type) {
+      //     case "Casual Leave":
+      //       return "02";
+      //     case "Sick Leave":
+      //       return "03";
+      //     case "Earned Leave":
+      //     case "Personal Leave":
+      //       return "15";
+      //     default:
+      //       return "";
+      //   }
+      // }
+      String getHolidayKind(String? type) {
+        switch (type) {
+          case "Casual Leave":
+            return "02";
+
+          case "Sick Leave":
+            return "03";
+
+          case "Personal Leave": // ✅ maps to PL
+            return "15";
+
+          case "Annual Leave":
+          case "Emergency Annual Leave":
+            return "05";
+
+          default:
+            return "";
+        }
+      }
+
+      final btType = getBtType(_leaveType);
+      final holidayKind = getHolidayKind(_leaveType);
+
+      print("BT TYPE: $btType");
+      print("HOLIDAY KIND: $holidayKind");
+
+      if (btType.isEmpty || holidayKind.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid Leave Type")),
+        );
+        return;
+      }
+
+      // 🔥 STEP 2: CHECK LEAVE API
+      final checkUrl = Uri.parse(
+        'http://10.3.0.70:9197/api/LEAVE_APPROVAL/check-leave',
+      );
+      // final checkUrl = Uri.parse(
+      //   'http://10.3.5.248:45455/api/LEAVE_APPROVAL/check-leave',
+      // );
+
+      final checkBody = {
+        "Barcode": widget.userData.empNo,
+        // "LeaveType": mappedType, // ✅ USE CODE
+        "LeaveType": holidayKind,
+        "UserOrgId": 100,
+        "StartDate": _fromDate?.toIso8601String().split("T")[0],
+        "EndDate": _toDate?.toIso8601String().split("T")[0],
+      };
+
+      final checkResponse = await http.post(
+        checkUrl,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(checkBody),
+      );
+
+      final checkData = jsonDecode(checkResponse.body);
+
+      print('CHECK API STATUS: ${checkResponse.statusCode}');
+      print('CHECK API BODY: $checkData');
+
+      if (checkData["Status"] != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(checkData["Message"] ?? "Leave not allowed")),
+        );
+        return;
+      }
+      /*  public string Barcode { get; set; }
+        public string Name { get; set; }
+        public string Department { get; set; }
+        public string Position { get; set; }
+        public string DeptNo { get; set; }
+        public string WorkNO { get; set; } */
+      // 🔥 STEP 3: PREPARE PAYLOAD (MATCH WEB)
+      final payload = {
+        "Employees": [
+          {
+            "Barcode": widget.userData.empNo,
+            "Name": empData?.username ?? widget.userData.username,
+            "Department": empData?.deptName ?? '',
+            "Position": empData?.position ?? '',
+            "DeptNo": empData?.deptNo ?? '',
+            "WorkNO": empData?.workNo ?? '',
+          }
+        ],
+        // "SplEmployees": [],
+
+        "SplEmployees":
+            // specialEmp != null
+            // ?
+            [
+          {
+            "Barcode": specialEmp?.empNo ?? '',
+            "Name": specialEmp?.username ?? '',
+            "Department": specialEmp?.deptName ?? '',
+            "Position": specialEmp?.position ?? '',
+            "DeptNo": specialEmp?.deptNo ?? '',
+            "WorkNO": specialEmp?.workNo ?? '',
+          }
+        ],
+        // : [],
+        "Reason": _reasonCtrl.text,
+        // "BtType": mappedType,
+        "BtType": btType, // ✅ FIXED
+        "FromDateTime": fromDateTime?.toIso8601String(),
+        "ToDateTime": toDateTime?.toIso8601String(),
+        // "FromDateTime": format12Hour(fromDateTime),
+        // "ToDateTime": format12Hour(toDateTime),
+        "TotalHours": calculateLeaveHours().toString(),
+        "TotalDays": "1",
+        "TotalMintues": (calculateLeaveHours() * 60).toInt().toString(),
+        "UserBarcode": widget.userData.empNo,
+        "Factory": 5000,
+        "OrgId": 100,
+        "HRBarcode": _hrApprover,
+        // "HolidayKind": mappedType,
+        "HolidayKind": holidayKind, // ✅ FIXED
+      };
+
+      print("FINAL PAYLOAD: $payload");
+
+      // 🔥 STEP 4: MULTIPART REQUEST
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse(
+          'http://10.3.0.70:9197/api/LEAVE_APPROVAL/BusinessTrip/Submit',
+        ),
+      );
+      // var request = http.MultipartRequest(
+      //   'POST',
+      //   Uri.parse(
+      //     'http://10.3.5.248:45455/api/LEAVE_APPROVAL/BusinessTrip/Submit',
+      //   ),
+      // );
+      // ✅ IMPORTANT: send JSON inside "request"
+      request.fields['request'] = jsonEncode(payload);
+
+      // 🔥 FILE ATTACH
+      if (selectedFile != null) {
+        Uint8List? bytes = selectedFile!.bytes;
+
+        if (bytes == null && selectedFile!.path != null) {
+          final file = File(selectedFile!.path!);
+          bytes = await file.readAsBytes();
+        }
+
+        if (bytes != null) {
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              'files',
+              bytes,
+              filename: selectedFile!.name,
+            ),
+          );
+        }
+      }
+
+      // 🔥 STEP 5: SEND
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      print("STATUS: ${response.statusCode}");
+      print("BODY: $responseBody");
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Successfully submitted!")),
+        );
+
+        // 🔥 RESET FORM
+        setState(() {
+          _reasonCtrl.clear();
+          _barcodeCtrl.clear();
+          selectedFile = null;
+          _hrApprover = null;
+          specialEmp = null;
+          _fromDate = null;
+          _toDate = null;
+          _submitted = true;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseBody)),
+        );
+      }
+    } catch (e) {
+      print("❌ Exception: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+
+    setState(() => _isSubmitting = false);
+  }
+
+  // ── Single Screen ───────────────────────────────────────────
+  Widget _buildSingleScreen() {
     return SafeArea(
       child: Column(
         children: [
           _buildHeader(),
-          _buildStepIndicator(),
           Expanded(
-            child: FadeTransition(
-              opacity: _fadeAnim,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                child: _buildCurrentStep(),
-              ),
-            ),
-          ),
-          _buildNavBar(),
-        ],
-      ),
-    );
-  }
-
-  // ── Header ───────────────────────────────────────────────────
-  Widget _buildHeader() {
-    final stepTitles = [
-      'Employee Info',
-      'Leave Details',
-      'Approval',
-      'Date & Time'
-    ];
-    final stepSubs = [
-      'Who is requesting?',
-      'Type & reason',
-      'Assign approvers',
-      'Set duration'
-    ];
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                  colors: [AppColors.accent, AppColors.accentGlow]),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                    color: AppColors.accent.withOpacity(0.4), blurRadius: 12)
-              ],
-            ),
-            child: const Icon(Icons.event_available_rounded,
-                color: Colors.white, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(stepTitles[_currentStep],
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary)),
-                Text(stepSubs[_currentStep],
-                    style: const TextStyle(
-                        fontSize: 12, color: AppColors.textSecondary)),
-              ],
-            ),
-          ),
-          _stepBadge(),
-        ],
-      ),
-    );
-  }
-
-  Widget _stepBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.accent.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.accent.withOpacity(0.3)),
-      ),
-      child: Text('${_currentStep + 1}/$_totalSteps',
-          style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.accentGlow)),
-    );
-  }
-
-  // ── Step Indicator ───────────────────────────────────────────
-  Widget _buildStepIndicator() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-      child: Row(
-        children: List.generate(_totalSteps * 2 - 1, (i) {
-          if (i.isOdd) {
-            final stepIdx = i ~/ 2;
-            final filled = stepIdx < _currentStep;
-            return Expanded(
-              child: Container(
-                height: 2,
-                decoration: BoxDecoration(
-                  gradient: filled
-                      ? const LinearGradient(
-                          colors: [AppColors.accent, AppColors.teal])
-                      : null,
-                  color: filled ? null : AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            );
-          }
-          final idx = i ~/ 2;
-          final done = idx < _currentStep;
-          final current = idx == _currentStep;
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: current ? 32 : 28,
-            height: current ? 32 : 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: (done || current)
-                  ? const LinearGradient(
-                      colors: [AppColors.accent, AppColors.accentGlow])
-                  : null,
-              color: (done || current) ? null : AppColors.card,
-              border: Border.all(
-                color: current
-                    ? AppColors.accent
-                    : (done ? Colors.transparent : AppColors.border),
-                width: current ? 2 : 1,
-              ),
-              boxShadow: current
-                  ? [
-                      BoxShadow(
-                          color: AppColors.accent.withOpacity(0.5),
-                          blurRadius: 10)
-                    ]
-                  : [],
-            ),
-            child: Center(
-              child: done
-                  ? const Icon(Icons.check_rounded,
-                      size: 14, color: Colors.white)
-                  : Text('${idx + 1}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: current ? Colors.white : AppColors.textSecondary,
-                      )),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  // ── Current Step Content ─────────────────────────────────────
-  Widget _buildCurrentStep() {
-    switch (_currentStep) {
-      case 0:
-        return _buildStep1();
-      case 1:
-        return _buildStep2();
-      case 2:
-        return _buildStep3();
-      case 3:
-        return _buildStep4();
-      default:
-        return const SizedBox();
-    }
-  }
-
-  // ── Step 1: Employee Info ─────────────────────────────────────
-  Widget _buildStep1() {
-    return Column(
-      children: [
-        _styledField(
-          ctrl: _employeeIdCtrl,
-          label: 'Employee ID',
-          hint: 'e.g. EMP-00123',
-          icon: Icons.badge_rounded,
-          readOnly: true,
-        ),
-        const SizedBox(height: 16),
-        _styledField(
-          ctrl: _employeeNameCtrl,
-          label: 'Full Name',
-          hint: 'Your full name',
-          icon: Icons.person_rounded,
-          readOnly: true,
-        ),
-        const SizedBox(height: 16),
-        _styledField(
-          ctrl: _departmentCtrl,
-          label: 'Department',
-          hint: 'e.g. Production',
-          icon: Icons.business_rounded,
-          readOnly: true,
-        ),
-        const SizedBox(height: 16),
-        _styledField(
-          ctrl: _positionCtrl,
-          label: 'Position',
-          hint: 'e.g. Floor Supervisor',
-          icon: Icons.work_rounded,
-          readOnly: true,
-        ),
-        const SizedBox(height: 24),
-        _infoChip(
-            'Pre-filled fields will be auto-populated\nfrom your employee profile.'),
-      ],
-    );
-  }
-
-  // ── Step 2: Leave Details ────────────────────────────────────
-  Widget _buildStep2() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _SectionTitle('Leave Type'),
-        const SizedBox(height: 12),
-        ...(_leaveTypes.map((lt) => _leaveTypeCard(lt))),
-        const SizedBox(height: 24),
-        const _SectionTitle('Reason for Leave'),
-        const SizedBox(height: 12),
-        _styledField(
-          ctrl: _reasonCtrl,
-          label: '',
-          hint: 'Briefly describe your reason...',
-          icon: Icons.notes_rounded,
-          maxLines: 4,
-        ),
-      ],
-    );
-  }
-
-  Widget _leaveTypeCard(Map<String, dynamic> lt) {
-    final selected = _leaveType == lt['label'];
-    return GestureDetector(
-      onTap: () => setState(() => _leaveType = lt['label'] as String),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.accent.withOpacity(0.12) : AppColors.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: selected ? AppColors.accent : AppColors.border,
-            width: selected ? 1.5 : 1,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                      color: AppColors.accent.withOpacity(0.2), blurRadius: 12)
-                ]
-              : [],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: selected
-                    ? AppColors.accent.withOpacity(0.2)
-                    : AppColors.inputBg,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(lt['icon'] as IconData,
-                  size: 18,
-                  color: selected
-                      ? AppColors.accentGlow
-                      : AppColors.textSecondary),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(lt['label'] as String,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                    color: selected
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
-                  )),
-            ),
-            if (selected)
-              Container(
-                width: 20,
-                height: 20,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                      colors: [AppColors.accent, AppColors.accentGlow]),
-                ),
-                child: const Icon(Icons.check_rounded,
-                    size: 12, color: Colors.white),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Step 3: Approval ─────────────────────────────────────────
-  Widget _buildStep3() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _approvalInfoCard(
-          label: 'Dept Approval',
-          barcode: '70068',
-          name: 'Yuvi',
-          color: AppColors.teal,
-          icon: Icons.supervisor_account_rounded,
-        ),
-        const SizedBox(height: 16),
-        _approvalInfoCard(
-          label: 'Applicant',
-          barcode: '67657',
-          name: 'Imran',
-          color: AppColors.accent,
-          icon: Icons.person_rounded,
-        ),
-        const SizedBox(height: 24),
-        const _SectionTitle('HR Dept Approval'),
-        const SizedBox(height: 12),
-        _styledDropdown(
-          value: _hrApprover,
-          hint: 'Select HR Approver',
-          icon: Icons.how_to_reg_rounded,
-          items: _hrApprovers,
-          onChanged: (v) => setState(() => _hrApprover = v),
-        ),
-        const SizedBox(height: 16),
-        _styledField(
-          ctrl: _approverNameCtrl,
-          label: 'Special Approver (optional)',
-          hint: 'Enter approver name',
-          icon: Icons.verified_user_rounded,
-        ),
-      ],
-    );
-  }
-
-  Widget _approvalInfoCard({
-    required String label,
-    required String barcode,
-    required String name,
-    required Color color,
-    required IconData icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.07),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.25)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label,
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: color,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5)),
-              const SizedBox(height: 3),
-              Text(name,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary)),
-              Text('ID: $barcode',
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.textSecondary)),
-            ],
-          ),
-          const Spacer(),
-          Icon(Icons.lock_rounded, size: 16, color: color.withOpacity(0.5)),
-        ],
-      ),
-    );
-  }
-
-  // ── Step 4: Date & Time ──────────────────────────────────────
-  Widget _buildStep4() {
-    return Column(
-      children: [
-        _dateTimeCard(
-          label: 'From',
-          date: _fromDate,
-          time: _fromTime,
-          color: AppColors.accent,
-          icon: Icons.flight_takeoff_rounded,
-          onTap: () => _pickDate(true),
-        ),
-        const SizedBox(height: 16),
-        _dateTimeCard(
-          label: 'To',
-          date: _toDate,
-          time: _toTime,
-          color: AppColors.teal,
-          icon: Icons.flight_land_rounded,
-          onTap: () => _pickDate(false),
-        ),
-        const SizedBox(height: 20),
-        _durationCard(),
-        const SizedBox(height: 28),
-        _gradientButton(
-          'Submit Request',
-          isLoading: _isSubmitting,
-          onTap: _submit,
-          icon: Icons.send_rounded,
-        ),
-      ],
-    );
-  }
-
-  Widget _dateTimeCard({
-    required String label,
-    required DateTime? date,
-    required TimeOfDay? time,
-    required Color color,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    final hasDate = date != null;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: hasDate ? color.withOpacity(0.4) : AppColors.border),
-          boxShadow: hasDate
-              ? [BoxShadow(color: color.withOpacity(0.15), blurRadius: 16)]
-              : [],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: TextStyle(
-                          fontSize: 11,
-                          color: color,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5)),
-                  const SizedBox(height: 4),
-                  Text(
-                    hasDate
-                        ? '${date!.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
-                            '  ${time?.hour.toString().padLeft(2, '0') ?? '--'}:${time?.minute.toString().padLeft(2, '0') ?? '--'}'
-                        : 'Tap to select date & time',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: hasDate ? FontWeight.w600 : FontWeight.w400,
-                      color: hasDate
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
+                  _sectionLabel('Employee Info'),
+                  const SizedBox(height: 10),
+                  // Row(children: [
+                  //   Expanded(child: _readField('Employee ID', widget.userData.empNo, Icons.badge_rounded)),
+                  //   const SizedBox(width: 12),
+                  //   Expanded(child: _readField('Department', widget.userData.deptName ?? '—', Icons.business_rounded)),
+                  // ]),
+                  // const SizedBox(height: 12),
+                  // Row(children: [
+                  //   Expanded(child: _readField('Full Name', widget.userData.username, Icons.person_rounded)),
+                  //   const SizedBox(width: 12),
+                  //   Expanded(child: _readField('Position', widget.userData.position ?? '—', Icons.work_rounded)),
+                  // ]),
+
+                  Row(children: [
+                    Expanded(
+                      child: _readField(
+                        'Employee ID',
+                        empData?.empNo ?? widget.userData.empNo,
+                        Icons.badge_rounded,
+                      ),
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _readField(
+                        'Department',
+                        empData?.deptName ?? widget.userData.deptName ?? '—',
+                        Icons.business_rounded,
+                      ),
+                    ),
+                  ]),
+
+                  const SizedBox(height: 12),
+
+                  Row(children: [
+                    Expanded(
+                      child: _readField(
+                        'Full Name',
+                        empData?.username ?? widget.userData.username,
+                        Icons.person_rounded,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _readField(
+                        'Position',
+                        empData?.position ?? widget.userData.position ?? '—',
+                        Icons.work_rounded,
+                      ),
+                    ),
+                  ]),
+
+                  const SizedBox(height: 20),
+
+                  _sectionLabel('Attachments'),
+                  const SizedBox(height: 10),
+
+                  GestureDetector(
+                    onTap: selectedFile == null
+                        ? pickFile
+                        : null, // 🔥 disable tap after select
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          // 🔥 Left icon (change based on state)
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              selectedFile == null
+                                  ? Icons.attach_file
+                                  : Icons.insert_drive_file, // 🔥 change icon
+                              color: AppColors.accent,
+                              size: 18,
+                            ),
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          // 🔥 File name
+                          Expanded(
+                            child: Text(
+                              selectedFile?.name ?? 'Upload file (Image / PDF)',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: selectedFile != null
+                                    ? AppColors.textPrimary
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+
+                          // 🔥 Right side action
+                          if (selectedFile == null)
+                            const Icon(Icons.upload_file,
+                                color: AppColors.textSecondary)
+                          else
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedFile = null; // 🔥 remove file
+                                });
+                              },
+                              child: const Icon(Icons.close,
+                                  color: Colors.red, size: 20),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  _sectionLabel('Leave Type'),
+                  const SizedBox(height: 10),
+                  _leaveTypeGrid(),
+                  const SizedBox(height: 24),
+
+                  _sectionLabel('Reason for Leave'),
+                  const SizedBox(height: 10),
+                  _reasonField(),
+                  const SizedBox(height: 24),
+
+                  _sectionLabel('Approvers'),
+                  const SizedBox(height: 10),
+                  // _approvalCard(
+                  //   label: 'Dept Approval',
+                  //   name: 'Yuvi',
+                  //   id: '70068',
+                  //   color: AppColors.teal,
+                  //   icon: Icons.supervisor_account_rounded,
+                  // ),
+
+                  _approvalCard(
+                    label: 'Dept Approval',
+                    name: deptApprover?.name ?? '—',
+                    id: deptApprover?.id ?? '—',
+                    color: AppColors.teal,
+                    icon: Icons.supervisor_account_rounded,
+                  ),
+                  const SizedBox(height: 10),
+                  // _approvalCard(
+                  //   label: 'Applicant',
+                  //   name: widget.userData.username,
+                  //   id: widget.userData.empNo,
+                  //   color: AppColors.accent,
+                  //   icon: Icons.person_rounded,
+                  // ),
+
+                  _approvalCard(
+                    label: 'Applicant',
+                    name: widget.userData.username,
+                    id: widget.userData.empNo,
+                    color: AppColors.accent,
+                    icon: Icons.person_rounded,
+                  ),
+                  const SizedBox(height: 12),
+                  _hrDropdown(),
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _inputField(
+                          ctrl: _barcodeCtrl,
+                          label: 'Barcode',
+                          hint: 'Enter',
+                          icon: Icons.qr_code,
+                          onChanged: (value) {
+                            if (_debounce?.isActive ?? false) {
+                              _debounce!.cancel();
+                            }
+
+                            _debounce =
+                                Timer(const Duration(milliseconds: 500), () {
+                              fetchByBarcode();
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _readField(
+                          'Department',
+                          specialEmp?.deptName ?? '—',
+                          Icons.business_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _readField(
+                          'Full Name',
+                          specialEmp?.username ?? '—',
+                          Icons.person_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _readField(
+                          'Position',
+                          specialEmp?.position ?? '—',
+                          Icons.work_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  _sectionLabel('Date & Time'),
+                  const SizedBox(height: 10),
+                  Row(children: [
+                    Expanded(
+                        child: _dtCard(
+                      label: 'FROM',
+                      icon: Icons.flight_takeoff_rounded,
+                      color: AppColors.accent,
+                      value: _fmt(_fromDate, _fromTime),
+                      hasValue: _fromDate != null,
+                      onTap: () => _pickDate(true),
+                    )),
+                    const SizedBox(width: 12),
+                    Expanded(
+                        child: _dtCard(
+                      label: 'TO',
+                      icon: Icons.flight_land_rounded,
+                      color: AppColors.teal,
+                      value: _fmt(_toDate, _toTime),
+                      hasValue: _toDate != null,
+                      onTap: () => _pickDate(false),
+                    )),
+                  ]),
+                  const SizedBox(height: 12),
+                  _durationBar(),
+                  const SizedBox(height: 16),
+                  _infoTip(
+                      'Employee fields are auto-populated from your profile. Tap date cards to set your leave period.'),
+                  const SizedBox(height: 24),
+                  // _gradientBtn('Submit Request',
+                  //     icon: Icons.send_rounded,
+                  //     isLoading: _isSubmitting,
+                  //     onTap: _submit),
+                  _gradientBtn(
+                    _isSubmitting
+                        ? 'Submitting...'
+                        : 'Submit Request', // 🔥 HERE
+                    icon: Icons.send_rounded,
+                    isLoading: _isSubmitting,
+                    onTap: _submit,
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                color: hasDate ? color : AppColors.textSecondary, size: 22),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _durationCard() {
-    final hasDuration = _fromDate != null && _toDate != null;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-      decoration: BoxDecoration(
-        gradient: hasDuration
-            ? const LinearGradient(
-                colors: [Color(0xFF1A1F3A), Color(0xFF1A2A38)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-        color: hasDuration ? null : AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color:
-              hasDuration ? AppColors.teal.withOpacity(0.4) : AppColors.border,
-        ),
-        boxShadow: hasDuration
-            ? [
-                BoxShadow(
-                    color: AppColors.teal.withOpacity(0.15), blurRadius: 20)
-              ]
-            : [],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: AppColors.teal.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.timelapse_rounded,
-                color: AppColors.teal, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Total Duration',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.teal,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5)),
-              const SizedBox(height: 4),
-              Text(_duration,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: hasDuration
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
-                    letterSpacing: 0.5,
-                  )),
-            ],
           ),
         ],
       ),
     );
   }
 
-  // ── Bottom Nav Bar ───────────────────────────────────────────
-  Widget _buildNavBar() {
+  // ── Header ──────────────────────────────────────────────────
+  Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
-      child: Row(
-        children: [
-          if (_currentStep > 0)
-            Expanded(
-              child: GestureDetector(
-                onTap: _prevStep,
-                child: Container(
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.arrow_back_rounded,
-                          color: AppColors.textSecondary, size: 18),
-                      SizedBox(width: 8),
-                      Text('Back',
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          if (_currentStep > 0) const SizedBox(width: 12),
-          if (_currentStep < _totalSteps - 1)
-            Expanded(
-              flex: 2,
-              child: _gradientButton('Continue',
-                  onTap: _nextStep, icon: Icons.arrow_forward_rounded),
-            ),
-        ],
-      ),
+      child: Row(children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+                colors: [AppColors.accent, AppColors.accentGlow]),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                  color: AppColors.accent.withOpacity(0.4), blurRadius: 10)
+            ],
+          ),
+          child: const Icon(Icons.event_available_rounded,
+              color: Colors.white, size: 20),
+        ),
+        const SizedBox(width: 12),
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Leave Request',
+                style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary)),
+            Text('Fill in all details and submit',
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+          ],
+        ),
+      ]),
     );
   }
 
-  // ── Reusable Widgets ─────────────────────────────────────────
-  Widget _styledField({
+  // ── Section Label ────────────────────────────────────────────
+  Widget _sectionLabel(String text) {
+    return Row(children: [
+      Container(
+        width: 3,
+        height: 15,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+              colors: [AppColors.accent, AppColors.teal],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter),
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+      const SizedBox(width: 8),
+      Text(text,
+          style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              letterSpacing: 0.4)),
+    ]);
+  }
+
+  // ── Read-only Field ──────────────────────────────────────────
+  Widget _readField(String label, String value, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3)),
+        const SizedBox(height: 5),
+        Container(
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.inputBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: AppColors.accent.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Icon(icon, size: 14, color: AppColors.accent),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(value,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500)),
+            ),
+          ]),
+        ),
+      ],
+    );
+  }
+
+  // ── Input Field ──────────────────────────────────────────────
+  Widget _inputField({
     required TextEditingController ctrl,
     required String label,
     required String hint,
     required IconData icon,
     int maxLines = 1,
-    bool readOnly = false,
-    VoidCallback? onTap,
+    Function(String)? onSubmitted, // 🔥 NEW
+    Function(String)? onChanged, // 🔥 OPTIONAL
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label.isNotEmpty) ...[
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 8),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3)),
+          const SizedBox(height: 5),
         ],
         TextFormField(
           controller: ctrl,
           maxLines: maxLines,
-          readOnly: readOnly,
-          onTap: onTap,
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w500,
-          ),
+          onFieldSubmitted: onSubmitted, // 🔥 trigger on enter
+          onChanged: onChanged, // 🔥 optional live typing
+          style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(
-              fontSize: 13,
-              color: Color(0xFF8A90A8),
-            ),
-
-            // 🔥 Better Icon Styling
+            hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF4A4F6A)),
             prefixIcon: Container(
               margin: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: AppColors.accent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, size: 18, color: AppColors.accent),
+              child: Icon(icon, size: 15, color: AppColors.accent),
             ),
-
             filled: true,
             fillColor: AppColors.inputBg,
-
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-
-            // 🔥 Smooth Rounded Border
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
-
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: AppColors.border.withOpacity(0.6),
-              ),
-            ),
-
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    BorderSide(color: AppColors.border.withOpacity(0.8))),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: AppColors.accent,
-                width: 1.5,
-              ),
-            ),
-
-            // 🔥 Subtle Shadow Effect
-            enabled: true,
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: AppColors.accent, width: 1.5)),
           ),
         ),
       ],
     );
   }
 
-  Widget _styledDropdown({
-    required String? value,
-    required String hint,
-    required IconData icon,
-    required List<String> items,
-    required void Function(String?) onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      onChanged: onChanged,
-      dropdownColor: AppColors.card,
-      style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF4A4F6A)),
-        prefixIcon: Icon(icon, size: 18, color: AppColors.textSecondary),
-        filled: true,
-        fillColor: AppColors.inputBg,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
-        ),
+  // ── Leave Type Grid ──────────────────────────────────────────
+  Widget _leaveTypeGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 3.2,
       ),
-      items: items
-          .map((e) => DropdownMenuItem(
-                value: e,
-                child: Text(e,
-                    style: const TextStyle(
-                        fontSize: 14, color: AppColors.textPrimary)),
-              ))
-          .toList(),
+      itemCount: _leaveTypes.length,
+      itemBuilder: (_, i) {
+        final lt = _leaveTypes[i];
+        final selected = _leaveType == lt['label'];
+        return GestureDetector(
+          onTap: () => setState(() => _leaveType = lt['label']!),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            decoration: BoxDecoration(
+              color: selected
+                  ? AppColors.accent.withOpacity(0.12)
+                  : AppColors.card,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: selected ? AppColors.accent : AppColors.border,
+                width: selected ? 1.5 : 1,
+              ),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                          color: AppColors.accent.withOpacity(0.2),
+                          blurRadius: 10)
+                    ]
+                  : [],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(children: [
+              Text(lt['icon']!, style: const TextStyle(fontSize: 15)),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(lt['label']!,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      color: selected
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                    )),
+              ),
+              if (selected)
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                        colors: [AppColors.accent, AppColors.accentGlow]),
+                  ),
+                  child: const Icon(Icons.check_rounded,
+                      size: 9, color: Colors.white),
+                ),
+            ]),
+          ),
+        );
+      },
     );
   }
 
-  Widget _gradientButton(
+  // ── Reason Field ─────────────────────────────────────────────
+  Widget _reasonField() {
+    return TextFormField(
+      controller: _reasonCtrl,
+      maxLines: 4,
+      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+      decoration: InputDecoration(
+        hintText: 'Briefly describe your reason...',
+        hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF4A4F6A)),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 0, 0),
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: AppColors.accent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.notes_rounded,
+                size: 15, color: AppColors.accent),
+          ),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        filled: true,
+        fillColor: AppColors.inputBg,
+        contentPadding: const EdgeInsets.fromLTRB(12, 14, 14, 14),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.border.withOpacity(0.8))),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
+      ),
+    );
+  }
+
+  // ── Approval Card ────────────────────────────────────────────
+  Widget _approvalCard({
+    required String label,
+    required String name,
+    required String id,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Row(children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label,
+              style: TextStyle(
+                  fontSize: 10,
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5)),
+          const SizedBox(height: 2),
+          Text(name,
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary)),
+          Text('ID: $id',
+              style: const TextStyle(
+                  fontSize: 10, color: AppColors.textSecondary)),
+        ]),
+        const Spacer(),
+        Icon(Icons.lock_rounded, size: 14, color: color.withOpacity(0.5)),
+      ]),
+    );
+  }
+
+  // ── HR Dropdown ──────────────────────────────────────────────
+  Widget _hrDropdown() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('HR Dept Approval',
+          style: TextStyle(
+              fontSize: 10,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3)),
+      const SizedBox(height: 5),
+      // DropdownButtonFormField<String>(
+      //   value: _hrApprover,
+      //   onChanged: (v) => setState(() => _hrApprover = v),
+      //   dropdownColor: AppColors.card,
+      //   style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+      //   decoration: InputDecoration(
+      //     hintText: 'Select HR Approver',
+      //     hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF4A4F6A)),
+      //     prefixIcon: Container(
+      //       margin: const EdgeInsets.all(10),
+      //       decoration: BoxDecoration(
+      //         color: AppColors.accent.withOpacity(0.1),
+      //         borderRadius: BorderRadius.circular(8),
+      //       ),
+      //       child: const Icon(Icons.how_to_reg_rounded,
+      //           size: 15, color: AppColors.accent),
+      //     ),
+      //     filled: true,
+      //     fillColor: AppColors.inputBg,
+      //     contentPadding:
+      //         const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      //     border: OutlineInputBorder(
+      //         borderRadius: BorderRadius.circular(12),
+      //         borderSide: BorderSide.none),
+      //     enabledBorder: OutlineInputBorder(
+      //         borderRadius: BorderRadius.circular(12),
+      //         borderSide: BorderSide(color: AppColors.border.withOpacity(0.8))),
+      //     focusedBorder: OutlineInputBorder(
+      //         borderRadius: BorderRadius.circular(12),
+      //         borderSide:
+      //             const BorderSide(color: AppColors.accent, width: 1.5)),
+      //   ),
+      //   items: _hrApprovers
+      //       .map((e) => DropdownMenuItem(
+      //             value: e,
+      //             child: Text(e,
+      //                 style: const TextStyle(
+      //                     fontSize: 13, color: AppColors.textPrimary)),
+      //           ))
+      //       .toList(),
+      // ),
+
+      DropdownButtonFormField<String>(
+        value: _hrApprover,
+        onChanged: (v) => setState(() => _hrApprover = v),
+        dropdownColor: AppColors.card,
+        style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+        decoration: InputDecoration(
+          hintText: 'Select HR Approver',
+          hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF4A4F6A)),
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.how_to_reg_rounded,
+                size: 15, color: AppColors.accent),
+          ),
+          filled: true,
+          fillColor: AppColors.inputBg,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border.withOpacity(0.8))),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide:
+                  const BorderSide(color: AppColors.accent, width: 1.5)),
+        ),
+
+        // 🔥 API DATA HERE
+        // items: hrApproverList.map((e) {
+        //   return DropdownMenuItem<String>(
+        //     // value: e.name, // or e.id if needed
+        //     value: e.id.toString(),
+        //     child: Text(
+        //       e.name,
+        //       style:
+        //           const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+        //     ),
+        //   );
+        // }).toList(),
+        items: hrApproverList.map((e) {
+          return DropdownMenuItem<String>(
+            value: e.id.toString(), // ✅ THIS IS FIX
+            child: Text(e.name), // display name
+          );
+        }).toList(),
+      ),
+    ]);
+  }
+
+  // ── Date-Time Card ───────────────────────────────────────────
+  Widget _dtCard({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required String value,
+    required bool hasValue,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: hasValue ? color.withOpacity(0.4) : AppColors.border),
+          boxShadow: hasValue
+              ? [BoxShadow(color: color.withOpacity(0.15), blurRadius: 12)]
+              : [],
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(icon, size: 12, color: color),
+            ),
+            const SizedBox(width: 6),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 10,
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.4)),
+          ]),
+          const SizedBox(height: 6),
+          Text(value,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: hasValue ? FontWeight.w600 : FontWeight.w400,
+                color:
+                    hasValue ? AppColors.textPrimary : AppColors.textSecondary,
+              )),
+        ]),
+      ),
+    );
+  }
+
+  // ── Duration Bar ─────────────────────────────────────────────
+  Widget _durationBar() {
+    final has = _fromDate != null && _toDate != null;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: has ? const Color(0xFF1A2A38) : AppColors.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: has ? AppColors.teal.withOpacity(0.4) : AppColors.border),
+        boxShadow: has
+            ? [
+                BoxShadow(
+                    color: AppColors.teal.withOpacity(0.1), blurRadius: 14)
+              ]
+            : [],
+      ),
+      child: Row(children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.teal.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.timelapse_rounded,
+              color: AppColors.teal, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('TOTAL DURATION',
+              style: TextStyle(
+                  fontSize: 10,
+                  color: AppColors.teal,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5)),
+          const SizedBox(height: 3),
+          Text(_duration,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.4,
+                color: has ? AppColors.textPrimary : AppColors.textSecondary,
+              )),
+        ]),
+      ]),
+    );
+  }
+
+  // ── Info Tip ─────────────────────────────────────────────────
+  Widget _infoTip(String text) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.accent.withOpacity(0.2)),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Icon(Icons.info_outline_rounded,
+            size: 15, color: AppColors.accentGlow),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(text,
+              style: const TextStyle(
+                  fontSize: 11, color: AppColors.textSecondary, height: 1.5)),
+        ),
+      ]),
+    );
+  }
+
+  // ── Gradient Button ──────────────────────────────────────────
+  Widget _gradientBtn(
     String label, {
     required VoidCallback onTap,
     IconData? icon,
@@ -999,19 +1815,18 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
       onTap: isLoading ? null : onTap,
       child: Container(
         height: 52,
+        width: double.infinity,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF5B52F5), Color(0xFF8B85FF)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+              colors: [Color(0xFF5B52F5), Color(0xFF8B85FF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: AppColors.accent.withOpacity(0.4),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
+                color: AppColors.accent.withOpacity(0.4),
+                blurRadius: 16,
+                offset: const Offset(0, 6)),
           ],
         ),
         child: Center(
@@ -1020,85 +1835,35 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen>
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: Colors.white,
-                  ))
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(label,
-                        style: const TextStyle(
+                      strokeWidth: 2.5, color: Colors.white))
+              : Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(label,
+                      style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
-                          letterSpacing: 0.3,
-                        )),
-                    if (icon != null) ...[
-                      const SizedBox(width: 8),
-                      Icon(icon, size: 18, color: Colors.white),
-                    ],
+                          letterSpacing: 0.3)),
+                  if (icon != null) ...[
+                    const SizedBox(width: 8),
+                    Icon(icon, size: 17, color: Colors.white),
                   ],
-                ),
+                ]),
         ),
-      ),
-    );
-  }
-
-  Widget _infoChip(String text) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.accent.withOpacity(0.07),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.accent.withOpacity(0.2)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.info_outline_rounded,
-              size: 16, color: AppColors.accentGlow),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(text,
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.textSecondary, height: 1.5)),
-          ),
-        ],
       ),
     );
   }
 }
 
-// ── Helper Widgets ───────────────────────────────────────────────
-class _SectionTitle extends StatelessWidget {
-  final String text;
-  const _SectionTitle(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 3,
-          height: 16,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.accent, AppColors.teal],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text(text,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              letterSpacing: 0.3,
-            )),
-      ],
-    );
-  }
-}
+// ── Usage Example ────────────────────────────────────────────────
+// Navigate to this screen like:
+//
+// Navigator.push(context, MaterialPageRoute(
+//   builder: (_) => LeaveRequestScreen(
+//     userData: LoginModelApi(
+//       empNo: 'EMP-00123',
+//       username: 'Imran Khan',
+//       deptName: 'Production',
+//       position: 'Floor Supervisor',
+//     ),
+//   ),
+// ));

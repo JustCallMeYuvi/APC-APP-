@@ -219,50 +219,50 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
   }
 
   Future<Map<String, dynamic>> changePassword(
-  String username,
-  String oldPassword,
-  String newPassword,
-) async {
-  final url = Uri.parse('${ApiHelper.baseUrl}UpdateUserPassword');
+    String username,
+    String oldPassword,
+    String newPassword,
+  ) async {
+    final url = Uri.parse('${ApiHelper.baseUrl}UpdateUserPassword');
 
-  try {
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "username": username,
-        "oldPassword": oldPassword,
-        "newPassword": newPassword,
-      }),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "username": username,
+          "oldPassword": oldPassword,
+          "newPassword": newPassword,
+        }),
+      );
 
-    print("STATUS: ${response.statusCode}");
-    print("BODY: ${response.body}");
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
 
-    // 🔥 HANDLE EMPTY RESPONSE
-    if (response.body.isEmpty) {
+      // 🔥 HANDLE EMPTY RESPONSE
+      if (response.body.isEmpty) {
+        return {
+          "success": false,
+          "message": "Empty response from server",
+        };
+      }
+
+      // 🔥 SAFE JSON PARSE
+      final responseJson = jsonDecode(response.body);
+
+      return {
+        "success": responseJson["success"] ?? false,
+        "message": responseJson["message"] ?? "Something went wrong",
+      };
+    } catch (e) {
+      print("ERROR: $e");
+
       return {
         "success": false,
-        "message": "Empty response from server",
+        "message": "Server error or invalid response",
       };
-    } 
-
-    // 🔥 SAFE JSON PARSE
-    final responseJson = jsonDecode(response.body);
-
-    return {
-      "success": responseJson["success"] ?? false,
-      "message": responseJson["message"] ?? "Something went wrong",
-    };
-  } catch (e) {
-    print("ERROR: $e");
-
-    return {
-      "success": false,
-      "message": "Server error or invalid response",
-    };
+    }
   }
-}
 
   /// 🔽 helpers (same)
   Widget _fieldLabel(String text) => Padding(
