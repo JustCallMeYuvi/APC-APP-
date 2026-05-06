@@ -102,21 +102,169 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     return '${diff.inDays}d ${diff.inHours % 24}h ${diff.inMinutes % 60}m';
   }
 
+  // Future<void> _pickDate(bool isFrom) async {
+  //   final picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(),
+  //     firstDate: DateTime(2020),
+  //     lastDate: DateTime(2030),
+  //     builder: (ctx, child) => _themedPicker(ctx, child),
+  //   );
+  //   if (picked == null || !mounted) return;
+  //   final time = await showTimePicker(
+  //     context: context,
+  //     initialTime: TimeOfDay.now(),
+  //     builder: (ctx, child) => _themedPicker(ctx, child),
+  //   );
+  //   if (!mounted) return;
+  //   setState(() {
+  //     if (isFrom) {
+  //       _fromDate = picked;
+  //       _fromTime = time;
+  //     } else {
+  //       _toDate = picked;
+  //       _toTime = time;
+  //     }
+  //   });
+  // }
   Future<void> _pickDate(bool isFrom) async {
+    final now = DateTime.now();
+
+    // 🔥 normalize date
+    final today = DateTime(now.year, now.month, now.day);
+
+    DateTime firstDate = DateTime(2020);
+    DateTime initialDate = today;
+
+    // 🔥 ANNUAL LEAVE
+    if (_leaveType == "Annual Leave") {
+      firstDate = today.add(const Duration(days: 15));
+      initialDate = firstDate;
+    }
+
+    // 🔥 EMERGENCY ANNUAL LEAVE
+    else if (_leaveType == "Emergency Annual Leave") {
+      firstDate = today;
+    }
+
+    // 🔥 PERSONAL LEAVE
+    else if (_leaveType == "Personal Leave") {
+      firstDate = today.subtract(const Duration(days: 1));
+    }
+
+    // 🔥 SICK LEAVE
+    else if (_leaveType == "Sick Leave") {
+      firstDate = today.subtract(const Duration(days: 1));
+    }
+
+    // 🔥 CASUAL LEAVE
+    else if (_leaveType == "Casual Leave") {
+      firstDate = today.subtract(const Duration(days: 1));
+    }
+
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
+      initialDate: initialDate,
+      firstDate: firstDate,
       lastDate: DateTime(2030),
+
+      // 🔥 disable unwanted dates
+      selectableDayPredicate: (date) {
+        final d = DateTime(date.year, date.month, date.day);
+
+        // ✅ Annual Leave → only after 15 days
+        if (_leaveType == "Annual Leave") {
+          return !d.isBefore(today.add(const Duration(days: 15)));
+        }
+
+        // ✅ Emergency AL → today + future
+        if (_leaveType == "Emergency Annual Leave") {
+          return !d.isBefore(today);
+        }
+
+        // ✅ PL & SL → yesterday/today/future
+        if (_leaveType == "Personal Leave" || _leaveType == "Sick Leave") {
+          return !d.isBefore(today.subtract(const Duration(days: 1)));
+        }
+
+        // ✅ Casual Leave → yesterday + today only
+        if (_leaveType == "Casual Leave") {
+          return d == today || d == today.subtract(const Duration(days: 1));
+        }
+
+        return true;
+      },
+
       builder: (ctx, child) => _themedPicker(ctx, child),
     );
+
     if (picked == null || !mounted) return;
+
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
       builder: (ctx, child) => _themedPicker(ctx, child),
     );
-    if (!mounted) return;
+
+    if (time == null || !mounted) return;
+
+    final selectedDateTime = combineDateTime(picked, time);
+
+    // ✅ CHECK TO DATE/TIME
+    if (!isFrom) {
+      final fromDateTime = combineDateTime(_fromDate, _fromTime);
+
+      if (fromDateTime != null &&
+          selectedDateTime != null &&
+          selectedDateTime.isBefore(fromDateTime)) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: AppColors.card,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Row(
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.orange,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  "Invalid Time",
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            content: const Text(
+              "To Date & Time must be greater than From Date & Time.",
+              style: TextStyle(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  "OK",
+                  style: TextStyle(
+                    color: AppColors.accent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+        return;
+      }
+    }
+
+    // ✅ SAVE
     setState(() {
       if (isFrom) {
         _fromDate = picked;
@@ -141,26 +289,95 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         child: child!,
       );
 
-  // Future<void> _submit() async {
-  //   setState(() => _isSubmitting = true);
-  //   await Future.delayed(const Duration(seconds: 2));
-  //   if (mounted) {
-  //     setState(() {
-  //       _isSubmitting = false;
-  //       _submitted = true;
-  //     });
-  //   }
-  // }
+  bool validateForm() {
+    // ✅ Reason
+    if (_reasonCtrl.text.trim().isEmpty) {
+      showValidationAlert(
+        "Reason Required",
+        "Please enter the reason for leave.",
+      );
+      return false;
+    }
 
-  // String _fmt(DateTime? d, TimeOfDay? t) {
-  //   if (d == null) return 'Tap to select';
-  //   final date =
-  //       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-  //   final time = t != null
-  //       ? '  ${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}'
-  //       : '';
-  //   return '$date$time';
-  // }
+    // ✅ HR Approver
+    if (_hrApprover == null || _hrApprover!.isEmpty) {
+      showValidationAlert(
+        "HR Approval Required",
+        "Please select HR department approval.",
+      );
+      return false;
+    }
+
+    // ✅ From Date
+    if (_fromDate == null || _fromTime == null) {
+      showValidationAlert(
+        "From Date Required",
+        "Please select From Date & Time.",
+      );
+      return false;
+    }
+
+    // ✅ To Date
+    if (_toDate == null || _toTime == null) {
+      showValidationAlert(
+        "To Date Required",
+        "Please select To Date & Time.",
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  void showValidationAlert(
+    String title,
+    String message,
+  ) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.orange,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "OK",
+              style: TextStyle(
+                color: AppColors.accent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   String _fmt(DateTime? d, TimeOfDay? t) {
     if (d == null || t == null) return 'Tap to select';
@@ -412,154 +629,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     );
   }
 
-  // submit api call
-  // Future<void> _submit() async {
-  //   setState(() => _isSubmitting = true);
-
-  //   final url = Uri.parse(
-  //     'http://10.3.0.70:9197/api/LEAVE_APPROVAL/BusinessTrip/Submit',
-  //   );
-  //   final fromDateTime = combineDateTime(_fromDate, _fromTime);
-  //   final toDateTime = combineDateTime(_toDate, _toTime);
-  //   try {
-  //     final body = {
-  //       "EmpNo": widget.userData.empNo,
-
-  //       // 🔥 FIX NAME (see below)
-  //       "EmpName": empData?.username ?? widget.userData.username,
-
-  //       "Department": empData?.deptName ?? '',
-  //       "Reason": _reasonCtrl.text,
-  //       "LeaveType": _leaveType,
-  //       // "FromDate": _fromDate?.toIso8601String() ?? '',
-  //       // "ToDate": _toDate?.toIso8601String() ?? '',
-  //       // 🔥 FIXED (date + time)
-  //       "FromDate": fromDateTime?.toIso8601String() ?? '',
-  //       "ToDate": toDateTime?.toIso8601String() ?? '',
-  //       "HRApprover": _hrApprover ?? '',
-  //       "SpecialApprover": specialEmp?.empNo ?? '',
-
-  //       // 🔥 FILE
-  //       if (selectedFile != null)
-  //         "FileBytesBase64": base64Encode(selectedFile!.bytes!),
-  //       if (selectedFile != null) "FileName": selectedFile!.name,
-  //     };
-
-  //     print("REQUEST BODY: $body");
-
-  //     final response = await http.post(
-  //       url,
-  //       headers: {
-  //         "Content-Type": "application/json", // 🔥 VERY IMPORTANT
-  //       },
-  //       body: jsonEncode(body),
-  //     );
-
-  //     print("SUBMIT STATUS: ${response.statusCode}");
-  //     print("SUBMIT BODY: ${response.body}");
-
-  //     if (response.statusCode == 200) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Successfully submitted!")),
-  //       );
-
-  //       setState(() {
-  //         _reasonCtrl.clear();
-  //         _barcodeCtrl.clear();
-  //         selectedFile = null;
-  //         _hrApprover = null;
-  //         specialEmp = null;
-  //         _fromDate = null;
-  //         _toDate = null;
-  //         _submitted = true;
-  //       });
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(response.body)),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print("❌ Submit Exception: $e");
-
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text("Error occurred")),
-  //     );
-  //   }
-
-  //   setState(() => _isSubmitting = false);
-  // }
-
-  // Future<void> _submit() async {
-  //   setState(() => _isSubmitting = true);
-
-  //   final url = Uri.parse(
-  //     'http://10.3.0.70:9197/api/LEAVE_APPROVAL/BusinessTrip/Submit',
-  //   );
-
-  //   final fromDateTime = combineDateTime(_fromDate, _fromTime);
-  //   final toDateTime = combineDateTime(_toDate, _toTime);
-
-  //   try {
-  //     // 🔥 STEP 1: Create body
-  //     final body = {
-  //       "EmpNo": widget.userData.empNo,
-  //       "EmpName": empData?.username ?? widget.userData.username,
-  //       "Department": empData?.deptName ?? '',
-  //       "Reason": _reasonCtrl.text,
-  //       "LeaveType": _leaveType,
-  //       "FromDate": fromDateTime?.toIso8601String() ?? '',
-  //       "ToDate": toDateTime?.toIso8601String() ?? '',
-  //       "HRApprover": _hrApprover ?? '',
-  //       "SpecialApprover": specialEmp?.empNo ?? '',
-  //       "Dept_NO": specialEmp?.deptNo ?? '', // ✅ THIS YOU NEED
-  //       "Work_NO": specialEmp?.workNo ?? '', // ✅ THIS YOU NEED
-  //     };
-
-  //     // 🔥 STEP 2: ADD FILE HERE (THIS IS YOUR ANSWER)
-  //     if (selectedFile != null) {
-  //       Uint8List? bytes = selectedFile!.bytes;
-
-  //       if (bytes == null && selectedFile!.path != null) {
-  //         final file = File(selectedFile!.path!);
-  //         bytes = await file.readAsBytes();
-  //       }
-
-  //       if (bytes != null) {
-  //         body["FileBytesBase64"] = base64Encode(bytes);
-  //         body["FileName"] = selectedFile!.name;
-  //       }
-  //     }
-
-  //     print("FINAL BODY: $body");
-
-  //     // 🔥 STEP 3: SEND API
-  //     final response = await http.post(
-  //       url,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: jsonEncode(body),
-  //     );
-
-  //     print("STATUS: ${response.statusCode}");
-  //     print("BODY: ${response.body}");
-
-  //     if (response.statusCode == 200) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Successfully submitted!")),
-  //       );
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(response.body)),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print("❌ Exception: $e");
-  //   }
-
-  //   setState(() => _isSubmitting = false);
-  // }
-
   double calculateLeaveHours() {
     if (_fromDate == null ||
         _toDate == null ||
@@ -579,142 +648,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     return diff.inMinutes / 60.0;
   }
 
-  // Future<void> _submit() async {
-  //   setState(() => _isSubmitting = true);
-
-  //   final fromDateTime = combineDateTime(_fromDate, _fromTime);
-  //   final toDateTime = combineDateTime(_toDate, _toTime);
-
-  //   try {
-  //     // 🔹 VALIDATION (like web)
-  //     if (_leaveType == null || _leaveType!.isEmpty) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Please select Leave Type")),
-  //       );
-  //       return;
-  //     }
-
-  //     if (_reasonCtrl.text.trim().isEmpty) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Please enter reason")),
-  //       );
-  //       return;
-  //     }
-
-  //     if (_fromDate == null || _toDate == null) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Please select dates")),
-  //       );
-  //       return;
-  //     }
-
-  //     // 🔹 STEP 0: CHECK LEAVE API (MATCH WEB)
-  //     final checkUrl = Uri.parse(
-  //       'http://10.3.0.70:9197/api/LEAVE_APPROVAL/check-leave',
-  //     );
-
-  //     final checkBody = {
-  //       "Barcode": widget.userData.empNo,
-  //       "LeaveType": _leaveType, // ✅ IMPORTANT
-  //       "UserOrgId": 100,
-  //       "StartDate": _fromDate?.toIso8601String().split("T")[0],
-  //       "EndDate": _toDate?.toIso8601String().split("T")[0],
-  //     };
-
-  //     print("CHECK BODY: $checkBody");
-
-  //     final checkResponse = await http.post(
-  //       checkUrl,
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode(checkBody),
-  //     );
-
-  //     print("CHECK STATUS: ${checkResponse.statusCode}");
-  //     print("CHECK BODY: ${checkResponse.body}");
-
-  //     if (checkResponse.statusCode != 200) {
-  //       throw Exception("Check API failed");
-  //     }
-
-  //     final checkData = jsonDecode(checkResponse.body);
-
-  //     if (checkData["Status"] != true) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(checkData["Message"] ?? "Leave not allowed")),
-  //       );
-  //       return;
-  //     }
-
-  //     // 🔹 STEP 1: CALCULATE HOURS (OPTIONAL FOR SUBMIT)
-  //     final leaveHours = calculateLeaveHours();
-
-  //     // 🔹 STEP 2: SUBMIT API
-  //     final url = Uri.parse(
-  //       'http://10.3.0.70:9197/api/LEAVE_APPROVAL/BusinessTrip/Submit',
-  //     );
-
-  //     final body = {
-  //       "EmpNo": widget.userData.empNo,
-  //       "EmpName": empData?.username ?? widget.userData.username,
-  //       "Department": empData?.deptName ?? '',
-  //       "Reason": _reasonCtrl.text,
-  //       "LeaveType": _leaveType,
-  //       "FromDate": fromDateTime?.toIso8601String() ?? '',
-  //       "ToDate": toDateTime?.toIso8601String() ?? '',
-  //       "HRApprover": _hrApprover ?? '',
-  //       "SpecialApprover": specialEmp?.empNo ?? '',
-  //       "Dept_NO": specialEmp?.deptNo ?? '',
-  //       "Work_NO": specialEmp?.workNo ?? '',
-
-  //       // 🔥 OPTIONAL (if backend supports)
-  //       "TotalHours": leaveHours,
-  //     };
-
-  //     // 🔹 FILE ATTACH
-  //     if (selectedFile != null) {
-  //       Uint8List? bytes = selectedFile!.bytes;
-
-  //       if (bytes == null && selectedFile!.path != null) {
-  //         final file = File(selectedFile!.path!);
-  //         bytes = await file.readAsBytes();
-  //       }
-
-  //       if (bytes != null) {
-  //         body["FileBytesBase64"] = base64Encode(bytes);
-  //         body["FileName"] = selectedFile!.name;
-  //       }
-  //     }
-
-  //     print("FINAL BODY: $body");
-
-  //     final response = await http.post(
-  //       url,
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode(body),
-  //     );
-
-  //     print("SUBMIT STATUS: ${response.statusCode}");
-  //     print("SUBMIT BODY: ${response.body}");
-
-  //     if (response.statusCode == 200) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Successfully submitted!")),
-  //       );
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(response.body)),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print("❌ Exception: $e");
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text("Error: $e")),
-  //     );
-  //   }
-
-  //   setState(() => _isSubmitting = false);
-  // }
-
   String format12Hour(DateTime? dt) {
     if (dt == null) return "";
     return DateFormat("yyyy-MM-dd hh:mm a").format(dt);
@@ -722,6 +655,12 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
 
   Future<void> _submit() async {
     setState(() => _isSubmitting = true);
+
+    // ✅ Validate form
+    if (!validateForm()) {
+      setState(() => _isSubmitting = false);
+      return;
+    }
 
     final fromDateTime = combineDateTime(_fromDate, _fromTime);
 
@@ -750,19 +689,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         }
       }
 
-      // String getHolidayKind(String? type) {
-      //   switch (type) {
-      //     case "Casual Leave":
-      //       return "02";
-      //     case "Sick Leave":
-      //       return "03";
-      //     case "Earned Leave":
-      //     case "Personal Leave":
-      //       return "15";
-      //     default:
-      //       return "";
-      //   }
-      // }
       String getHolidayKind(String? type) {
         switch (type) {
           case "Casual Leave":
@@ -785,6 +711,22 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
 
       final btType = getBtType(_leaveType);
       final holidayKind = getHolidayKind(_leaveType);
+
+      final totalHours = calculateLeaveHours();
+
+// ✅ Casual Leave max 8 hours
+      if (btType == "CL" && totalHours > 8) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Casual Leave cannot exceed 8 hours",
+            ),
+          ),
+        );
+
+        setState(() => _isSubmitting = false);
+        return;
+      }
 
       print("BT TYPE: $btType");
       print("HOLIDAY KIND: $holidayKind");
@@ -809,8 +751,12 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         // "LeaveType": mappedType, // ✅ USE CODE
         "LeaveType": holidayKind,
         "UserOrgId": 100,
-        "StartDate": _fromDate?.toIso8601String().split("T")[0],
-        "EndDate": _toDate?.toIso8601String().split("T")[0],
+        // "StartDate": _fromDate?.toIso8601String().split("T")[0],
+        // "EndDate": _toDate?.toIso8601String().split("T")[0],
+
+        // ✅ SEND FULL DATETIME
+        "StartDate": fromDateTime?.toIso8601String(),
+        "EndDate": toDateTime?.toIso8601String(),
       };
 
       final checkResponse = await http.post(
@@ -824,10 +770,72 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       print('CHECK API STATUS: ${checkResponse.statusCode}');
       print('CHECK API BODY: $checkData');
 
+      // if (checkData["Status"] != true) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text(checkData["Message"] ?? "Leave not allowed")),
+      //   );
+      //   return;
+      // }
+
       if (checkData["Status"] != true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(checkData["Message"] ?? "Leave not allowed")),
+        String errMsg = checkData["Message"] ?? "Leave not allowed";
+
+        // ✅ Remove ORA error
+        errMsg = errMsg.replaceAll(
+          RegExp(r'ORA-\d+:\s*'),
+          '',
         );
+
+        // ✅ Custom message for CL limit
+        if (errMsg.contains("already entered")) {
+          errMsg =
+              "You have already reached the Casual Leave limit for this time period.";
+        }
+
+        // ✅ STOP BUTTON LOADING
+        setState(() => _isSubmitting = false);
+
+        // ✅ SHOW ALERT
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: AppColors.card,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                SizedBox(width: 8),
+                Text(
+                  "Leave Alert",
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              errMsg,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  "OK",
+                  style: TextStyle(
+                    color: AppColors.accent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
         return;
       }
       /*  public string Barcode { get; set; }
@@ -850,10 +858,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         ],
         // "SplEmployees": [],
 
-        "SplEmployees":
-            // specialEmp != null
-            // ?
-            [
+        "SplEmployees": [
           {
             "Barcode": specialEmp?.empNo ?? '',
             "Name": specialEmp?.username ?? '',
@@ -863,17 +868,24 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
             "WorkNO": specialEmp?.workNo ?? '',
           }
         ],
-        // : [],
+
         "Reason": _reasonCtrl.text,
         // "BtType": mappedType,
         "BtType": btType, // ✅ FIXED
+        // "FromDateTime": fromDateTime?.toIso8601String(),
+        // "ToDateTime": toDateTime?.toIso8601String(),
+        // // "FromDateTime": format12Hour(fromDateTime),
+        // // "ToDateTime": format12Hour(toDateTime),
+        // "TotalHours": calculateLeaveHours().toString(),
+        // "TotalDays": "1",
+        // "TotalMintues": (calculateLeaveHours() * 60).toInt().toString(),
+
         "FromDateTime": fromDateTime?.toIso8601String(),
         "ToDateTime": toDateTime?.toIso8601String(),
-        // "FromDateTime": format12Hour(fromDateTime),
-        // "ToDateTime": format12Hour(toDateTime),
-        "TotalHours": calculateLeaveHours().toString(),
-        "TotalDays": "1",
-        "TotalMintues": (calculateLeaveHours() * 60).toInt().toString(),
+
+        "TotalHours": calculateLeaveHours(),
+        "TotalDays": 1,
+        "TotalMintues": (calculateLeaveHours() * 60).toInt(),
         "UserBarcode": widget.userData.empNo,
         "Factory": 5000,
         "OrgId": 100,
@@ -943,9 +955,36 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           _toDate = null;
           _submitted = true;
         });
-      } else {
+      }
+      // else {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text(responseBody)),
+      //   );
+      // }
+
+      else {
+        String errMsg = "Something went wrong";
+
+        try {
+          final decoded = jsonDecode(responseBody);
+
+          if (decoded["Message"] != null) {
+            errMsg = decoded["Message"].toString();
+          } else {
+            errMsg = responseBody;
+          }
+        } catch (e) {
+          errMsg = responseBody;
+        }
+
+        // ✅ Remove ORA error codes
+        errMsg = errMsg.replaceAll(
+          RegExp(r'ORA-\d+:\s*'),
+          '',
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(responseBody)),
+          SnackBar(content: Text(errMsg)),
         );
       }
     } catch (e) {
@@ -972,17 +1011,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 children: [
                   _sectionLabel('Employee Info'),
                   const SizedBox(height: 10),
-                  // Row(children: [
-                  //   Expanded(child: _readField('Employee ID', widget.userData.empNo, Icons.badge_rounded)),
-                  //   const SizedBox(width: 12),
-                  //   Expanded(child: _readField('Department', widget.userData.deptName ?? '—', Icons.business_rounded)),
-                  // ]),
-                  // const SizedBox(height: 12),
-                  // Row(children: [
-                  //   Expanded(child: _readField('Full Name', widget.userData.username, Icons.person_rounded)),
-                  //   const SizedBox(width: 12),
-                  //   Expanded(child: _readField('Position', widget.userData.position ?? '—', Icons.work_rounded)),
-                  // ]),
 
                   Row(children: [
                     Expanded(
