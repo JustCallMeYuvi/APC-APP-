@@ -1245,8 +1245,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                       onTap: () => _pickDate(false),
                     )),
                   ]),
-                  const SizedBox(height: 12),
-                  _durationBar(),
+                  // time duratiion bar (🔥 NEW)
+                  // const SizedBox(height: 12),
+                  // _durationBar(),
                   const SizedBox(height: 16),
                   _infoTip(
                       'Employee fields are auto-populated from your profile. Tap date cards to set your leave period.'),
@@ -1610,48 +1611,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               fontWeight: FontWeight.w600,
               letterSpacing: 0.3)),
       const SizedBox(height: 5),
-      // DropdownButtonFormField<String>(
-      //   value: _hrApprover,
-      //   onChanged: (v) => setState(() => _hrApprover = v),
-      //   dropdownColor: AppColors.card,
-      //   style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
-      //   decoration: InputDecoration(
-      //     hintText: 'Select HR Approver',
-      //     hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF4A4F6A)),
-      //     prefixIcon: Container(
-      //       margin: const EdgeInsets.all(10),
-      //       decoration: BoxDecoration(
-      //         color: AppColors.accent.withOpacity(0.1),
-      //         borderRadius: BorderRadius.circular(8),
-      //       ),
-      //       child: const Icon(Icons.how_to_reg_rounded,
-      //           size: 15, color: AppColors.accent),
-      //     ),
-      //     filled: true,
-      //     fillColor: AppColors.inputBg,
-      //     contentPadding:
-      //         const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      //     border: OutlineInputBorder(
-      //         borderRadius: BorderRadius.circular(12),
-      //         borderSide: BorderSide.none),
-      //     enabledBorder: OutlineInputBorder(
-      //         borderRadius: BorderRadius.circular(12),
-      //         borderSide: BorderSide(color: AppColors.border.withOpacity(0.8))),
-      //     focusedBorder: OutlineInputBorder(
-      //         borderRadius: BorderRadius.circular(12),
-      //         borderSide:
-      //             const BorderSide(color: AppColors.accent, width: 1.5)),
-      //   ),
-      //   items: _hrApprovers
-      //       .map((e) => DropdownMenuItem(
-      //             value: e,
-      //             child: Text(e,
-      //                 style: const TextStyle(
-      //                     fontSize: 13, color: AppColors.textPrimary)),
-      //           ))
-      //       .toList(),
-      // ),
-
       DropdownButtonFormField<String>(
         value: _hrApprover,
         onChanged: (v) => setState(() => _hrApprover = v),
@@ -1684,19 +1643,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               borderSide:
                   const BorderSide(color: AppColors.accent, width: 1.5)),
         ),
-
-        // 🔥 API DATA HERE
-        // items: hrApproverList.map((e) {
-        //   return DropdownMenuItem<String>(
-        //     // value: e.name, // or e.id if needed
-        //     value: e.id.toString(),
-        //     child: Text(
-        //       e.name,
-        //       style:
-        //           const TextStyle(fontSize: 13, color: AppColors.textPrimary),
-        //     ),
-        //   );
-        // }).toList(),
         items: hrApproverList.map((e) {
           return DropdownMenuItem<String>(
             value: e.id.toString(), // ✅ THIS IS FIX

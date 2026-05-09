@@ -53,6 +53,7 @@
 //   }
 // }
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:animated_movies_app/api/apis_page.dart';
 import 'package:animated_movies_app/screens/onboarding_screen/login_page.dart';
@@ -69,6 +70,19 @@ class AuthProvider with ChangeNotifier {
   bool get isLoggedIn => _isLoggedIn;
   LoginModelApi? get userData => _userData;
   String? get fcmToken => _fcmToken; // Add this getter
+
+  Timer? _logoutTimer;
+
+  void _startAutoLogoutTimer() {
+    _logoutTimer?.cancel();
+
+    _logoutTimer = Timer(
+      const Duration(minutes: 05),
+      () async {
+        await logout();
+      },
+    );
+  }
 
   AuthProvider() {
     // Initialize login state from SharedPreferences
@@ -96,11 +110,28 @@ class AuthProvider with ChangeNotifier {
     bool loggedIn = prefs.getBool('isLoggedIn') ?? false;
 
     if (loggedIn) {
+      String? loginTimeString = prefs.getString('loginTime');
+
+      if (loginTimeString != null) {
+        DateTime loginTime = DateTime.parse(loginTimeString);
+
+        Duration difference = DateTime.now().difference(loginTime);
+
+        // 10 MINUTES CHECK
+        if (difference.inMinutes >= 10) {
+          await logout();
+
+          return;
+        }
+      }
+
       // Load user data if logged in
       String userDataJson = prefs.getString('userData') ?? '{}';
       _userData = LoginModelApi.fromJson(json.decode(userDataJson));
       _isLoggedIn = true;
       _fcmToken = prefs.getString('fcmToken'); // Load FCM token
+      // START TIMER AGAIN
+      _startAutoLogoutTimer();
 
       try {
         // Construct the API URL using ApiHelper.gmsUrl
@@ -152,43 +183,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Future<void> login(LoginModelApi userData) async {
-  //   // Update local state
-  //   _isLoggedIn = true;
-  //   _userData = userData;
-  //   notifyListeners();
-
-  //   // Save to SharedPreferences
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   prefs.setBool('isLoggedIn', true);
-  //   prefs.setString('userData', json.encode(userData.toJson()));
-
-  //   // Obtain a new FCM token
-  //   // String? fcmToken = await FirebaseMessaging.instance.getToken();
-  //   // print('New FCM Token: $fcmToken');
-  //   try {
-  //     String? fcmToken = await FirebaseMessaging.instance.getToken();
-  //     print("FCM Token: $fcmToken");
-  //   } catch (e) {
-  //     print("Error getting FCM token: $e");
-  //   }
-
-  //   // Save the FCM token to SharedPreferences
-  //   _fcmToken = fcmToken;
-  //   prefs.setString('fcmToken', fcmToken ?? '');
-
-  //   // Send the barcode (empNo) and FCM token to your API
-  //   // Send the barcode (empNo), FCM token, and app version to your API
-  //   await _sendBarcodeAndFcmToken(
-  //     userData.empNo,
-  //     fcmToken,
-  //   );
-
-  //   // Send queued notifications
-  //   await _sendQueuedNotifications(userData.empNo);
-  //   // Send APK version to backend
-  // }
-
   Future<void> login(LoginModelApi userData) async {
     // Update local state
     _isLoggedIn = true;
@@ -199,6 +193,15 @@ class AuthProvider with ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('isLoggedIn', true);
     prefs.setString('userData', json.encode(userData.toJson()));
+
+    // SAVE LOGIN TIME
+    prefs.setString(
+      'loginTime',
+      DateTime.now().toIso8601String(),
+    );
+
+    // START AUTO LOGOUT TIMER
+    _startAutoLogoutTimer();
 
     // Obtain a new FCM token
     String? fcmToken = await FirebaseMessaging.instance.getToken();
@@ -293,6 +296,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
+    _logoutTimer?.cancel();
     // Update local state
     _isLoggedIn = false;
     _userData = null;
@@ -302,6 +306,12 @@ class AuthProvider with ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('isLoggedIn');
     prefs.remove('userData');
+
+    // ADD THIS
+    prefs.remove('loginTime');
+
+    // OPTIONAL
+    prefs.remove('fcmToken');
 
     // Delete the FCM token
     await FirebaseMessaging.instance.deleteToken();
