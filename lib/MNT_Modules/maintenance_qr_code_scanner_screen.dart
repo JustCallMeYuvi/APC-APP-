@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_movies_app/MNT_Modules/qr_codes_model.dart';
 import 'package:animated_movies_app/MNT_Modules/qr_scan_bloc.dart';
 import 'package:animated_movies_app/MNT_Modules/qr_scan_event.dart';
 import 'package:animated_movies_app/MNT_Modules/qr_scan_state.dart';
@@ -27,9 +28,49 @@ class _MaintenanceQrCodeScannerScreenState
   bool _isLoading = false;
   bool _isSubmitted = false;
 
+  List<OrgCodeModel> orgCodes = [];
+  OrgCodeModel? selectedOrg;
+  bool isOrgLoading = false;
+
   // ✅ ADD THIS
   int _mapCondition(String value) {
     return (value == 'Good' || value == 'OK') ? 1 : 0;
+  }
+
+  Future<void> fetchOrgCodes() async {
+    setState(() {
+      isOrgLoading = true;
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiHelper.mntURL}getOrgCodes'),
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+
+        setState(() {
+          orgCodes = data.map((e) => OrgCodeModel.fromJson(e)).toList();
+
+          if (orgCodes.isNotEmpty) {
+            selectedOrg = orgCodes.first;
+          }
+
+          isOrgLoading = false;
+        });
+      } else {
+        setState(() {
+          isOrgLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isOrgLoading = false;
+      });
+
+      print(e);
+    }
   }
 
   Future<void> insertQrRecord({
@@ -40,6 +81,8 @@ class _MaintenanceQrCodeScannerScreenState
 
     final body = {
       "powerPanelId": powerPanelId,
+      // "orgCode": selectedOrg?.orgCode,
+      "ORG_CODE": selectedOrg!.orgCode,
       "panelCondition": _mapCondition(panelCondition),
       "switchCondition": _mapCondition(switchCondition),
       "cableFasteningCondition": _mapCondition(cableCondition),
@@ -50,6 +93,7 @@ class _MaintenanceQrCodeScannerScreenState
     setState(() {
       _isLoading = true;
     });
+    print("ORG CODE 👉 ${selectedOrg!.orgCode}");
 
     try {
       final response = await http.post(
@@ -148,10 +192,14 @@ class _MaintenanceQrCodeScannerScreenState
       create: (_) => QrScanBloc(),
       child: Scaffold(
         body: BlocConsumer<QrScanBloc, QrScanState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state.error != null) {
               ScaffoldMessenger.of(context)
                   .showSnackBar(SnackBar(content: Text(state.error!)));
+            }
+            // ✅ AFTER QR SUCCESS
+            if (state.panel != null) {
+              await fetchOrgCodes();
             }
           },
           builder: (context, state) {
@@ -198,6 +246,7 @@ class _MaintenanceQrCodeScannerScreenState
                               });
 
                               context.read<QrScanBloc>().add(StartQrScan());
+                              // fetchOrgCodes(); // ✅ FETCH ORG CODES ON SCAN
                             },
                     ),
                   ),
@@ -346,6 +395,43 @@ class _MaintenanceQrCodeScannerScreenState
             const SizedBox(height: 10),
             const Divider(),
 
+            const SizedBox(height: 10),
+
+            const Text(
+              "Select Organization",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            isOrgLoading
+                ? const CircularProgressIndicator()
+                : DropdownButtonFormField<OrgCodeModel>(
+                    value: selectedOrg,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    items: orgCodes.map((org) {
+                      return DropdownMenuItem(
+                        value: org,
+                        child: Text(org.orgName),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOrg = value;
+                      });
+                    },
+                  ),
+
+            const SizedBox(height: 18),
             // 🔹 INFO SECTION (LEFT ALIGNED, EVEN)
             _infoRow(
                 Icons.confirmation_number, 'Panel Number', panel.powerPanelId),

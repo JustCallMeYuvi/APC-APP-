@@ -7,6 +7,7 @@
 //   // static String _baseUrl = 'http://203.153.32.85:54329/api/HR/'; //global url
 
 //   static String _baseUrl = 'http://10.3.0.70:9042/api/HR/'; // 70 local url
+//   static String serverStatus = ''; // NEW
 
 //   // static String _baseUrl =
 //   //     'http://apc-gms.apachefootwear.com:8084/api/HR/'; // using new link local url

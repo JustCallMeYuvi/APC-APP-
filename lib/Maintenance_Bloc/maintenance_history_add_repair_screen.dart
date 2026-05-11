@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animated_movies_app/MNT_Modules/qr_codes_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -29,6 +30,31 @@ class _MaintenanceHistoryAndRepairScreenState
   final replacedController = TextEditingController();
   final remarkController = TextEditingController();
 
+  List<OrgCodeModel> orgCodes = [];
+  OrgCodeModel? selectedOrg;
+
+  Future<void> fetchOrgCodes() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiHelper.mntURL}getOrgCodes'),
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+
+        setState(() {
+          orgCodes = data.map((e) => OrgCodeModel.fromJson(e)).toList();
+
+          if (orgCodes.isNotEmpty) {
+            selectedOrg = orgCodes.first;
+          }
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Map<String, dynamic>? data;
   List repairs = [];
 
@@ -40,6 +66,7 @@ class _MaintenanceHistoryAndRepairScreenState
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    fetchOrgCodes(); // ✅ LOAD DROPDOWN
   }
 
   @override
@@ -129,11 +156,14 @@ class _MaintenanceHistoryAndRepairScreenState
         body: jsonEncode({
           "loginBarcode": widget.userData.empNo,
           "powerPanelId": data!["powerPanelId"],
+          // "orgCode": selectedOrg?.orgCode,
+          "ORG_CODE": selectedOrg!.orgCode,
           "issue": issueController.text,
           "replacedItems": replacedController.text,
           "remark": remarkController.text,
         }),
       );
+      print("ORG CODE 👉 ${selectedOrg!.orgCode}");
 
       if (response.statusCode == 200) {
         issueController.clear();
@@ -268,13 +298,27 @@ class _MaintenanceHistoryAndRepairScreenState
                                     ],
                                   ),
                                   const SizedBox(height: 14),
+                                  // _colorCard(
+                                  //     "Last Repair",
+                                  //     data!["lastRepairDate"]
+                                  //         .toString()
+                                  //         .substring(0, 10),
+                                  //     Colors.cyan,
+                                  //     fullWidth: true),
                                   _colorCard(
-                                      "Last Repair",
-                                      data!["lastRepairDate"]
-                                          .toString()
-                                          .substring(0, 10),
-                                      Colors.cyan,
-                                      fullWidth: true),
+                                    "Last Repair",
+                                    data!["lastRepairDate"] != null &&
+                                            data!["lastRepairDate"]
+                                                    .toString()
+                                                    .length >=
+                                                10
+                                        ? data!["lastRepairDate"]
+                                            .toString()
+                                            .substring(0, 10)
+                                        : "No Repair",
+                                    Colors.cyan,
+                                    fullWidth: true,
+                                  ),
                                 ],
                               ),
                             ),
@@ -364,6 +408,9 @@ class _MaintenanceHistoryAndRepairScreenState
       itemCount: repairs.length,
       itemBuilder: (context, index) {
         final item = repairs[index];
+        print("FULL ITEM 👉 $item");
+        print("ITEM ORG CODE 👉 ${item["ORG_CODE"]}");
+
         return Container(
           margin: const EdgeInsets.only(bottom: 14),
           padding: const EdgeInsets.all(16),
@@ -374,6 +421,36 @@ class _MaintenanceHistoryAndRepairScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.cyan.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  orgCodes
+                      .firstWhere(
+                        (e) =>
+                            e.orgCode.toString() == item["ORG_CODE"].toString(),
+                        orElse: () => OrgCodeModel(
+                          orgCode: 0,
+                          orgName: "ORG",
+                        ),
+                      )
+                      .orgName,
+                  style: const TextStyle(
+                    color: Colors.cyanAccent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              Text(item["issue"],
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
               Text(item["issue"],
                   style: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w600)),
@@ -394,6 +471,39 @@ class _MaintenanceHistoryAndRepairScreenState
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
+          /// 🔹 ORGANIZATION DROPDOWN
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<OrgCodeModel>(
+                dropdownColor: const Color(0xFF1E293B),
+                value: selectedOrg,
+                isExpanded: true,
+                hint: const Text(
+                  "Select Organization",
+                  style: TextStyle(color: Colors.white54),
+                ),
+                style: const TextStyle(color: Colors.white),
+                items: orgCodes.map((org) {
+                  return DropdownMenuItem<OrgCodeModel>(
+                    value: org,
+                    child: Text(org.orgName),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedOrg = value;
+                  });
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 14),
           _input(issueController, "Issue"),
           const SizedBox(height: 14),
           _input(replacedController, "Replaced Items"),
