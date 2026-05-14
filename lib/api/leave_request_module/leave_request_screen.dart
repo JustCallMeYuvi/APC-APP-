@@ -629,6 +629,25 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     );
   }
 
+  // double calculateLeaveHours() {
+  //   if (_fromDate == null ||
+  //       _toDate == null ||
+  //       _fromTime == null ||
+  //       _toTime == null) {
+  //     return 0;
+  //   }
+
+  //   final from = combineDateTime(_fromDate, _fromTime);
+  //   final to = combineDateTime(_toDate, _toTime);
+
+  //   if (from == null || to == null) return 0;
+
+  //   final diff = to.difference(from);
+
+  //   // Convert to hours (including decimals)
+  //   return diff.inMinutes / 60.0;
+  // }
+
   double calculateLeaveHours() {
     if (_fromDate == null ||
         _toDate == null ||
@@ -642,10 +661,14 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
 
     if (from == null || to == null) return 0;
 
-    final diff = to.difference(from);
+    double totalHours = to.difference(from).inMinutes / 60;
 
-    // Convert to hours (including decimals)
-    return diff.inMinutes / 60.0;
+    // REMOVE LUNCH BREAK
+    if (totalHours >= 5) {
+      totalHours -= 0.75; // 45 mins
+    }
+
+    return totalHours;
   }
 
   String format12Hour(DateTime? dt) {
@@ -787,9 +810,41 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         );
 
         // ✅ Custom message for CL limit
+        // if (errMsg.contains("already entered")) {
+        //   errMsg =
+        //       "You have already reached the Casual Leave limit for this time period.";
+        // }
+
         if (errMsg.contains("already entered")) {
-          errMsg =
-              "You have already reached the Casual Leave limit for this time period.";
+          switch (btType) {
+            case "CL":
+              errMsg =
+                  "You have already reached the Casual Leave limit for this time period.";
+              break;
+
+            case "SL":
+              errMsg =
+                  "You have already reached the Sick Leave limit for this time period.";
+              break;
+
+            case "PL":
+              errMsg =
+                  "You have already reached the Personal Leave limit for this time period.";
+              break;
+
+            case "AL":
+              errMsg =
+                  "You have already reached the Annual Leave limit for this time period.";
+              break;
+
+            case "EAL":
+              errMsg =
+                  "You have already reached the Emergency Annual Leave limit for this time period.";
+              break;
+
+            default:
+              errMsg = "Leave limit already reached.";
+          }
         }
 
         // ✅ STOP BUTTON LOADING
@@ -869,6 +924,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           }
         ],
 
+// 🔥 FILE DETAILS
+        "FileName": selectedFile?.name ?? "",
+        "FileType": selectedFile?.extension ?? "",
         "Reason": _reasonCtrl.text,
         // "BtType": mappedType,
         "BtType": btType, // ✅ FIXED
@@ -922,6 +980,16 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         }
 
         if (bytes != null) {
+          // 🔥 SEND FILE NAME
+          request.fields['fileNames'] = selectedFile!.name;
+
+          // 🔥 SEND FILE TYPE
+          request.fields['fileTypes'] = selectedFile!.extension ?? '';
+
+          // 🔥 OPTIONAL INDEX
+          request.fields['fileEmpIndex'] = "0";
+
+          // 🔥 SEND FILE
           request.files.add(
             http.MultipartFile.fromBytes(
               'files',
@@ -929,6 +997,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               filename: selectedFile!.name,
             ),
           );
+
+          print("FILE NAME: ${selectedFile!.name}");
+          print("FILE TYPE: ${selectedFile!.extension}");
         }
       }
 
@@ -1055,66 +1126,150 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                   _sectionLabel('Attachments'),
                   const SizedBox(height: 10),
 
+                  // GestureDetector(
+                  //   onTap: selectedFile == null
+                  //       ? pickFile
+                  //       : null, // 🔥 disable tap after select
+                  //   child: Container(
+                  //     height: 60,
+                  //     decoration: BoxDecoration(
+                  //       color: AppColors.inputBg,
+                  //       borderRadius: BorderRadius.circular(12),
+                  //       border: Border.all(color: AppColors.border),
+                  //     ),
+                  //     padding: const EdgeInsets.symmetric(horizontal: 12),
+                  //     child: Row(
+                  //       children: [
+                  //         // 🔥 Left icon (change based on state)
+                  //         Container(
+                  //           width: 36,
+                  //           height: 36,
+                  //           decoration: BoxDecoration(
+                  //             color: AppColors.accent.withOpacity(0.1),
+                  //             borderRadius: BorderRadius.circular(8),
+                  //           ),
+                  //           child: Icon(
+                  //             selectedFile == null
+                  //                 ? Icons.attach_file
+                  //                 : Icons.insert_drive_file, // 🔥 change icon
+                  //             color: AppColors.accent,
+                  //             size: 18,
+                  //           ),
+                  //         ),
+
+                  //         const SizedBox(width: 10),
+
+                  //         // 🔥 File name
+                  //         Expanded(
+                  //           child: Text(
+                  //             selectedFile?.name ?? 'Upload file (Image / PDF)',
+                  //             overflow: TextOverflow.ellipsis,
+                  //             style: TextStyle(
+                  //               fontSize: 13,
+                  //               color: selectedFile != null
+                  //                   ? AppColors.textPrimary
+                  //                   : AppColors.textSecondary,
+                  //             ),
+                  //           ),
+                  //         ),
+
+                  //         // 🔥 Right side action
+                  //         if (selectedFile == null)
+                  //           const Icon(Icons.upload_file,
+                  //               color: AppColors.textSecondary)
+                  //         else
+                  //           GestureDetector(
+                  //             onTap: () {
+                  //               setState(() {
+                  //                 selectedFile = null; // 🔥 remove file
+                  //               });
+                  //             },
+                  //             child: const Icon(Icons.close,
+                  //                 color: Colors.red, size: 20),
+                  //           ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+
                   GestureDetector(
-                    onTap: selectedFile == null
-                        ? pickFile
-                        : null, // 🔥 disable tap after select
+                    onTap: selectedFile == null ? pickFile : null,
                     child: Container(
-                      height: 60,
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.inputBg,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.border),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Row(
                         children: [
-                          // 🔥 Left icon (change based on state)
+                          // FILE ICON
                           Container(
-                            width: 36,
-                            height: 36,
+                            width: 42,
+                            height: 42,
                             decoration: BoxDecoration(
                               color: AppColors.accent.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
                               selectedFile == null
                                   ? Icons.attach_file
-                                  : Icons.insert_drive_file, // 🔥 change icon
+                                  : _getFileIcon(selectedFile!.extension),
                               color: AppColors.accent,
-                              size: 18,
+                              size: 20,
                             ),
                           ),
 
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
 
-                          // 🔥 File name
+                          // FILE DETAILS
                           Expanded(
-                            child: Text(
-                              selectedFile?.name ?? 'Upload file (Image / PDF)',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: selectedFile != null
-                                    ? AppColors.textPrimary
-                                    : AppColors.textSecondary,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  selectedFile?.name ?? 'Upload file',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: selectedFile != null
+                                        ? AppColors.textPrimary
+                                        : AppColors.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  selectedFile != null
+                                      ? "${selectedFile!.extension?.toUpperCase()} • ${(selectedFile!.size / 1024).toStringAsFixed(1)} KB"
+                                      : 'Image / PDF supported',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
 
-                          // 🔥 Right side action
+                          // ACTION ICON
                           if (selectedFile == null)
-                            const Icon(Icons.upload_file,
-                                color: AppColors.textSecondary)
+                            const Icon(
+                              Icons.upload_file,
+                              color: AppColors.textSecondary,
+                            )
                           else
                             GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  selectedFile = null; // 🔥 remove file
+                                  selectedFile = null;
                                 });
                               },
-                              child: const Icon(Icons.close,
-                                  color: Colors.red, size: 20),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.red,
+                                size: 20,
+                              ),
                             ),
                         ],
                       ),
@@ -1336,6 +1491,29 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               color: AppColors.textPrimary,
               letterSpacing: 0.4)),
     ]);
+  }
+
+  IconData _getFileIcon(String? ext) {
+    switch (ext?.toLowerCase()) {
+      case 'pdf':
+        return Icons.picture_as_pdf;
+
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+        return Icons.image;
+
+      case 'doc':
+      case 'docx':
+        return Icons.description;
+
+      case 'xls':
+      case 'xlsx':
+        return Icons.table_chart;
+
+      default:
+        return Icons.insert_drive_file;
+    }
   }
 
   // ── Read-only Field ──────────────────────────────────────────
