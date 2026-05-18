@@ -1,4 +1,3 @@
-
 // ─── Disciplinary Card ────────────────────────────────────────────────────────
 
 import 'package:animated_movies_app/disciplinary_folder/disciplinary_model.dart';
@@ -139,18 +138,21 @@ class DisciplinaryCard extends StatelessWidget {
                       isNarrow: isNarrow,
                     )),
                     const SizedBox(width: 10),
-                    Expanded(
-                        child: _statChip(
-                      label: 'AMOUNT',
-                      value: data.rewardAmount == '0'
-                          ? '—'
-                          : '₹${data.rewardAmount}',
-                      icon: Icons.currency_rupee_rounded,
-                      color: AppColors.primary,
-                      bg: AppColors.tagBg,
-                      border: AppColors.divider,
-                      isNarrow: isNarrow,
-                    )),
+
+                    // NOTE: Amount is currently not used in disciplinary context, but keeping the code ready for future use
+
+                    // Expanded(
+                    //     child: _statChip(
+                    //   label: 'AMOUNT',
+                    //   value: data.rewardAmount == '0'
+                    //       ? '—'
+                    //       : '₹${data.rewardAmount}',
+                    //   icon: Icons.currency_rupee_rounded,
+                    //   color: AppColors.primary,
+                    //   bg: AppColors.tagBg,
+                    //   border: AppColors.divider,
+                    //   isNarrow: isNarrow,
+                    // )),
                   ],
                 ),
               ],

@@ -171,7 +171,7 @@ IconData getIconForPage(Page page) {
       return Icons.gavel_rounded;
     case 'Leaves':
       return Icons.holiday_village;
-    case 'Miss Punches':
+    case 'Miss & Late Punches':
       return Icons.punch_clock;
     case 'Leaves Dashboard':
       return Icons.dashboard;
