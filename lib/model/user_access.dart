@@ -177,6 +177,8 @@ IconData getIconForPage(Page page) {
       return Icons.dashboard;
     case 'PassUpdate':
       return Icons.password;
+    case 'Leave Request':
+      return Icons.time_to_leave;
     default:
       return Icons.help_outline; // Fallback icon
   }
