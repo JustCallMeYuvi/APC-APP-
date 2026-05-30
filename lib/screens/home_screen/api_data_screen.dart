@@ -97,6 +97,8 @@ import 'package:animated_movies_app/screens/ui_local_and_global_api_screens/api_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../ID_Scanner/id_scanner_page.dart';
+import '../../absent__rate_module/absent_rate_screen.dart';
 import '../../leaves_dashboard_folder/leaves_dashboard_screen.dart';
 import '../../leaves_module/employee_leaves_screen.dart';
 import '../../miss_punches_folder/miss_punches_screen.dart';
@@ -453,10 +455,18 @@ class _ApiDataScreenState extends State<ApiDataScreen> {
                                                                                                                                                                                                                             ? UpdatePasswordScreen(
                                                                                                                                                                                                                                 userData: widget.userData,
                                                                                                                                                                                                                               )
-                                                                                                                                                                                                                            : Text(
-                                                                                                                                                                                                                                'Data for ${widget.pageName} goes here.',
-                                                                                                                                                                                                                                style: const TextStyle(fontSize: 20),
-                                                                                                                                                                                                                              )
+                                                                                                                                                                                                                            : widget.pageRoute == 'Test_Page'
+                                                                                                                                                                                                                                ? const QrScannerScreen(
+                                                                                                                                                                                                                                    // userData: widget.userData,
+                                                                                                                                                                                                                                    )
+                                                                                                                                                                                                                                : widget.pageRoute == 'Absent_Rate'
+                                                                                                                                                                                                                                    ? const AbsentRateDashboard(
+                                                                                                                                                                                                                                        // userData: widget.userData,
+                                                                                                                                                                                                                                        )
+                                                                                                                                                                                                                                    : Text(
+                                                                                                                                                                                                                                        'Data for ${widget.pageName} goes here.',
+                                                                                                                                                                                                                                        style: const TextStyle(fontSize: 20),
+                                                                                                                                                                                                                                      )
 
             // : SignApprovalPage(
             //     userData: widget.userData,
