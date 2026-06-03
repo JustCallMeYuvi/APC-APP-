@@ -179,6 +179,10 @@ IconData getIconForPage(Page page) {
       return Icons.password;
     case 'Leave Request':
       return Icons.time_to_leave;
+    case 'Absent Rate':
+      return Icons.person_off_rounded;
+    case 'Turn Over':
+      return Icons.people_alt_outlined;
     default:
       return Icons.help_outline; // Fallback icon
   }
