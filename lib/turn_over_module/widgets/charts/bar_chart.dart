@@ -25,11 +25,11 @@ class BarChartWidget extends StatelessWidget {
           : fmtK(v);
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     if (vals.isEmpty) return const SizedBox();
     final hasNeg = vals.any((v) => v < 0);
     final maxV = vals.map((v) => v.abs()).reduce(max);
-    final bW = MediaQuery.of(ctx).size.width >= 600 ? 28.0 : 20.0;
+    final bW = MediaQuery.of(context).size.width >= 600 ? 28.0 : 20.0;
     return CCardWidget(
         title: metric,
         child: SizedBox(

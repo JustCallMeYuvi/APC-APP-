@@ -45,6 +45,7 @@ class _TurnOverScreenState extends State<TurnOverScreen>
   String? _error;
   late AnimationController _ac;
   late Animation<double> _fade;
+  int _requestId = 0;
 
   @override
   void initState() {
@@ -68,6 +69,7 @@ class _TurnOverScreenState extends State<TurnOverScreen>
     });
     try {
       _data = await TurnoverApiService.fetch(_filter);
+
       _ac
         ..reset()
         ..forward();
@@ -77,6 +79,49 @@ class _TurnOverScreenState extends State<TurnOverScreen>
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  // Future<void> _loadData() async {
+  //   final currentRequest = ++_requestId;
+
+  //   setState(() {
+  //     _loading = true;
+  //     _error = null;
+  //     _data = []; // clear old data immediately
+  //   });
+
+  //   try {
+  //     final result = await TurnoverApiService.fetch(_filter);
+
+  //     // Ignore old API responses
+  //     if (currentRequest != _requestId) return;
+
+  //     if (!mounted) return;
+
+  //     setState(() {
+  //       _data = result;
+  //     });
+
+  //     _ac
+  //       ..reset()
+  //       ..forward();
+  //   } catch (e) {
+  //     if (currentRequest != _requestId) return;
+
+  //     if (!mounted) return;
+
+  //     setState(() {
+  //       _error = e.toString();
+  //     });
+  //   } finally {
+  //     if (currentRequest != _requestId) return;
+
+  //     if (!mounted) return;
+
+  //     setState(() {
+  //       _loading = false;
+  //     });
+  //   }
+  // }
 
   void _onFilterChanged(FilterState fs) {
     setState(() => _filter = fs);
@@ -106,8 +151,16 @@ class _TurnOverScreenState extends State<TurnOverScreen>
         backgroundColor: kCBg,
         body: Column(children: [
           const TurnOutHeaderWidget(),
-          FilterBar(
-              filter: _filter, onChanged: _onFilterChanged, isWide: false),
+          // FilterBar(
+          //     filter: _filter, onChanged: _onFilterChanged, isWide: false),
+          IgnorePointer(
+            ignoring: _loading,
+            child: FilterBar(
+              filter: _filter,
+              onChanged: _onFilterChanged,
+              isWide: false,
+            ),
+          ),
           TabStripWidget(tab: _tab, onTab: (t) => setState(() => _tab = t)),
           Expanded(child: _body()),
         ]),
@@ -115,7 +168,9 @@ class _TurnOverScreenState extends State<TurnOverScreen>
 
   Widget _body() {
     if (_loading) return const LoaderWidget();
-    if (_error != null) return ErrorViewWidget(error: _error!, onRetry: _loadData);
+    if (_error != null) {
+      return ErrorViewWidget(error: _error!, onRetry: _loadData);
+    }
     if (_data.isEmpty) return const EmptyWidget();
     return FadeTransition(opacity: _fade, child: _tabContent());
   }

@@ -141,7 +141,8 @@ class AR {
     this.totalWorkingDays = 0,
   });
 
-  bool get isHoliday => totalPct >= 95;
+  // bool get isHoliday => totalPct >= 95;
+  bool get isHoliday => false;
 
   /// Factory from API model
   factory AR.fromApi(AttendanceReportModel e) {
@@ -244,6 +245,17 @@ class _AbsentRateDashboardState extends State<AbsentRateDashboard> {
         _data = result.map((e) => AR.fromApi(e)).toList();
         _loading = false;
       });
+      print("TOTAL RECORDS = ${_data.length}");
+      print("WORKING DAYS = ${_wd.length}");
+      // Check exact API values
+      for (final e in result) {
+        debugPrint(
+          'Date=${e.date} | '
+          'Male=${e.maleAbsentPercentage} | '
+          'Female=${e.femaleAbsentPercentage} | '
+          'Total=${e.totalAbsentPercentage}',
+        );
+      }
       for (final r in _data) {
         debugPrint(
           'Date: ${r.date} | Total: ${r.totalPct} | Male: ${r.malePct} | Female: ${r.femalePct}',
@@ -1619,9 +1631,15 @@ class _TableCardState extends State<_TableCard> {
       fmtShort(r.date),
       dayName(r.date),
       r.totalAbsent.toStringAsFixed(0),
-      '${r.malePct.toStringAsFixed(1)}%',
-      '${r.femalePct.toStringAsFixed(1)}%',
-      '${r.totalPct.toStringAsFixed(2)}%',
+      // '${r.malePct.toStringAsFixed(1)}%',
+      // '${r.femalePct.toStringAsFixed(1)}%',
+      // '${r.totalPct.toStringAsFixed(2)}%',
+      // '${r.malePct}%',
+      // '${r.femalePct}%',
+      // '${r.totalPct}%',
+      '${r.malePct.toString()}%',
+      '${r.femalePct.toString()}%',
+      '${r.totalPct.toString()}%',
     ];
   }
 

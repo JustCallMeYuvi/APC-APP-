@@ -1,10 +1,8 @@
-
 // ════════════════════════════════════════════════════════════
 //  TABLE TAB
 // ════════════════════════════════════════════════════════════
 
 import 'package:flutter/material.dart';
-
 
 import '../constants/turnover_colors.dart';
 import '../models/turnover_record.dart';
@@ -33,17 +31,43 @@ class _TableTabState extends State<TableTab> {
     }).toList();
 
     list.sort((a, b) {
-      int c = switch (_col) {
-        0 => a.tableLabel.compareTo(b.tableLabel),
-        1 => a.beginHC.compareTo(b.beginHC),
-        2 => a.endHC.compareTo(b.endHC),
-        3 => a.left.compareTo(b.left),
-        4 => a.pct.compareTo(b.pct),
-        5 => a.retentionPct.compareTo(b.retentionPct),
-        6 => a.netChange.compareTo(b.netChange),
-        _ => 0,
-      };
-      return _asc ? c : -c;
+      // int c = switch (_col) {
+      //   // 0 => a.tableLabel.compareTo(b.tableLabel),
+      //   0 => widget.isMonth
+      //       ? a.monthYear.compareTo(b.monthYear)
+      //       : a.year.compareTo(b.year),
+      //   1 => a.beginHC.compareTo(b.beginHC),
+      //   2 => a.endHC.compareTo(b.endHC),
+      //   3 => a.left.compareTo(b.left),
+      //   4 => a.pct.compareTo(b.pct),
+      //   5 => a.retentionPct.compareTo(b.retentionPct),
+      //   6 => a.netChange.compareTo(b.netChange),
+      //   _ => 0,
+      // };
+
+
+int c;
+
+if (widget.isMonth) {
+  c = switch (_col) {
+    0 => a.monthYear.compareTo(b.monthYear),
+    1 => a.beginHC.compareTo(b.beginHC),
+    2 => a.left.compareTo(b.left),
+    3 => a.pct.compareTo(b.pct),
+    _ => 0,
+  };
+} else {
+  c = switch (_col) {
+    0 => a.year.compareTo(b.year),
+    1 => a.beginHC.compareTo(b.beginHC),
+    2 => a.endHC.compareTo(b.endHC),
+    3 => a.left.compareTo(b.left),
+    4 => a.pct.compareTo(b.pct),
+    5 => a.retentionPct.compareTo(b.retentionPct),
+    6 => a.netChange.compareTo(b.netChange),
+    _ => 0,
+  };
+}      return _asc ? c : -c;
     });
     return list;
   }
@@ -59,9 +83,8 @@ class _TableTabState extends State<TableTab> {
             Expanded(
                 child: TextField(
               decoration: InputDecoration(
-                  hintText: widget.isMonth
-                      ? 'Filter by month…'
-                      : 'Filter by year…',
+                  hintText:
+                      widget.isMonth ? 'Filter by month…' : 'Filter by year…',
                   prefixIcon: const Icon(Icons.search_rounded, size: 16),
                   hintStyle: const TextStyle(fontSize: 12, color: kC3)),
               style: const TextStyle(fontSize: 13),

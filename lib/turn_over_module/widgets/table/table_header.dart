@@ -19,15 +19,32 @@ class TableHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext ctx) {
-    final cols = [
-      isMonth ? 'Month' : 'Year',
-      'Begin',
-      'End',
-      'Left',
-      'Rate',
-      'Retain',
-      'Net Δ'
-    ];
+    // final cols = [
+    //   isMonth ? 'Month' : 'Year',
+    //   'Begin',
+    //   'End',
+    //   'Left',
+    //   'Rate',
+    //   'Retain',
+    //   'Net Δ'
+    // ];
+
+      final cols = isMonth
+      ? [
+          'Month',
+          'Active Emp',
+          'Left',
+          'Turnover %',
+        ]
+      : [
+          'Year',
+          'Begin',
+          'End',
+          'Left',
+          'Rate',
+          'Retain',
+          'Net Δ',
+        ];
     return Container(
         decoration: const BoxDecoration(
             color: kC0,

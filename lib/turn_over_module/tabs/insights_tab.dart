@@ -1,4 +1,3 @@
-
 // ════════════════════════════════════════════════════════════
 //  INSIGHTS TAB
 // ════════════════════════════════════════════════════════════
@@ -18,13 +17,17 @@ class InsightsTab extends StatelessWidget {
   final TurnoverRecord agg;
   final bool isMonth;
   const InsightsTab(
-      {super.key, required this.data, required this.agg, required this.isMonth});
+      {super.key,
+      required this.data,
+      required this.agg,
+      required this.isMonth});
 
   @override
   Widget build(BuildContext ctx) {
     if (data.isEmpty) return const EmptyWidget();
     final sorted = [...data]..sort((a, b) => a.pct.compareTo(b.pct));
     final best = sorted.first, worst = sorted.last;
+    final highestAttrition = data.reduce((a, b) => a.left > b.left ? a : b);
     final avg = data.fold(0.0, (s, r) => s + r.pct) / data.length;
     final trend = data.length > 1 ? data.last.pct - data.first.pct : 0.0;
     final hi = data.where((r) => r.pct >= 20).length;
@@ -39,16 +42,27 @@ class InsightsTab extends StatelessWidget {
           color: kCTeal,
           title: 'Best $period: ${best.tableLabel}',
           body:
+              // 'Lowest turnover at ${best.pct.toStringAsFixed(2)}% — '
+              // '${commas(best.left)} departures from ${fmtK(best.avgHC)} avg staff.'
               'Lowest turnover at ${best.pct.toStringAsFixed(2)}% — '
-              '${commas(best.left)} departures from ${fmtK(best.avgHC)} avg staff.'),
+              '${commas(best.left)} employees left during this period.'),
       const SizedBox(height: 8),
       InsCard(
           icon: Icons.warning_amber_rounded,
           color: kCRose,
           title: 'Highest Turnover: ${worst.tableLabel}',
-          body:
-              'Peak at ${worst.pct.toStringAsFixed(2)}% — '
+          body: 'Peak at ${worst.pct.toStringAsFixed(2)}% — '
               '${commas(worst.left)} left. Investigate attrition drivers.'),
+      if (isMonth) ...[
+        const SizedBox(height: 8),
+        InsCard(
+          icon: Icons.person_remove_alt_1_rounded,
+          color: kCRose,
+          title: 'Highest Attrition: ${highestAttrition.tableLabel}',
+          body:
+              '${commas(highestAttrition.left)} employees left during this month.',
+        ),
+      ],
       const SizedBox(height: 8),
       InsCard(
           icon: Icons.trending_up_rounded,
@@ -75,13 +89,13 @@ class InsightsTab extends StatelessWidget {
               '${(hi / data.length * 100).toStringAsFixed(0)}% of periods had turnover ≥ 20%. '
               '${hi == 0 ? 'Excellent stability.' : 'Root-cause analysis recommended.'}'),
       const SizedBox(height: 16),
-      SecLabelWidget('${isMonth ? 'Month-over-Month' : 'Year-over-Year'} Δ Turnover'),
+      SecLabelWidget(
+          '${isMonth ? 'Month-over-Month' : 'Year-over-Year'} Δ Turnover'),
       const SizedBox(height: 8),
       if (data.length > 1)
         ...List.generate(data.length - 1, (i) {
           final d = data[i + 1].pct - data[i].pct;
-          return YoYWidget(
-              label: data[i + 1].tableLabel, delta: d);
+          return YoYWidget(label: data[i + 1].tableLabel, delta: d);
         }),
     ]);
   }
