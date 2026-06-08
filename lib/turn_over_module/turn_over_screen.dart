@@ -45,7 +45,6 @@ class _TurnOverScreenState extends State<TurnOverScreen>
   String? _error;
   late AnimationController _ac;
   late Animation<double> _fade;
-  int _requestId = 0;
 
   @override
   void initState() {
@@ -187,18 +186,10 @@ class _TurnOverScreenState extends State<TurnOverScreen>
         return TableTab(data: _data, isMonth: _isMonth);
       case 3:
         return InsightsTab(data: _data, agg: agg, isMonth: _isMonth);
-      case 4:
-        return SummaryTab(data: _data, agg: agg, isMonth: _isMonth);
+      // case 4:
+      //   return SummaryTab(data: _data, agg: agg, isMonth: _isMonth);
       default:
         return const SizedBox();
     }
   }
 }
-
-// ════════════════════════════════════════════════════════════
-//  SMALL REUSABLE WIDGETS
-// ════════════════════════════════════════════════════════════
-
-
-
-

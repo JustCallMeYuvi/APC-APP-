@@ -19,7 +19,7 @@ class SideNavWidget extends StatelessWidget {
     (Icons.bar_chart_rounded, 'Charts'),
     (Icons.table_chart_rounded, 'Table'),
     (Icons.lightbulb_rounded, 'Insights'),
-    (Icons.summarize_rounded, 'Summary'),
+    // (Icons.summarize_rounded, 'Summary'),
   ];
 
   @override

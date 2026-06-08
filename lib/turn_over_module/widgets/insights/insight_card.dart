@@ -9,7 +9,7 @@ class InsCard extends StatelessWidget {
   final Color color;
   final String title, body;
   const InsCard(
-      {required this.icon,
+      {super.key, required this.icon,
       required this.color,
       required this.title,
       required this.body});

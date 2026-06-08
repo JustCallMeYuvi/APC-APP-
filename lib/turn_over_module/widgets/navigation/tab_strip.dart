@@ -7,10 +7,11 @@ class TabStripWidget extends StatelessWidget {
   final int tab;
   final void Function(int) onTab;
   const TabStripWidget({super.key, required this.tab, required this.onTab});
-  static const _lbl = ['Overview', 'Charts', 'Table', 'Insights', 'Summary'];
+  // static const _lbl = ['Overview', 'Charts', 'Table', 'Insights', 'Summary'];
+   static const _lbl = ['Overview', 'Charts', 'Table', 'Insights',];
 
   @override
-  Widget build(BuildContext ctx) => Container(
+  Widget build(BuildContext context) => Container(
         color: kCCard,
         child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,

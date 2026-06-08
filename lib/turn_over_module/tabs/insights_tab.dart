@@ -23,7 +23,7 @@ class InsightsTab extends StatelessWidget {
       required this.isMonth});
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     if (data.isEmpty) return const EmptyWidget();
     final sorted = [...data]..sort((a, b) => a.pct.compareTo(b.pct));
     final best = sorted.first, worst = sorted.last;
