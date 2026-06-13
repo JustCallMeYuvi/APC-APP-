@@ -178,30 +178,79 @@ class EmpCount {
       };
 }
 
+// class EmpItem {
+//   final int year;
+//   final int? month;        // 👈 nullable, because allyears has no month
+//   final int totalJoined;
+//   final int totalResigned;
+  
+
+//   EmpItem({
+//     required this.year,
+//     this.month,
+//     required this.totalJoined,
+//     required this.totalResigned,
+//   });
+
+//   factory EmpItem.fromJson(Map<String, dynamic> json) => EmpItem(
+//         year: json['year'] ?? 0,
+//         month: json['month'], // may be null
+//         totalJoined: json['total_joined'] ?? 0,
+//         totalResigned: json['total_resigned'] ?? 0,
+//       );
+
+//   Map<String, dynamic> toJson() => {
+//         'year': year,
+//         if (month != null) 'month': month, // only send if not null
+//         'total_joined': totalJoined,
+//         'total_resigned': totalResigned,
+//       };
+// }
+
+
 class EmpItem {
   final int year;
-  final int? month;        // 👈 nullable, because allyears has no month
+  final int? month;
+
   final int totalJoined;
   final int totalResigned;
+
+  final int joinedMale;
+  final int joinedFemale;
+  final int resignedMale;
+  final int resignedFemale;
 
   EmpItem({
     required this.year,
     this.month,
     required this.totalJoined,
     required this.totalResigned,
+    required this.joinedMale,
+    required this.joinedFemale,
+    required this.resignedMale,
+    required this.resignedFemale,
   });
 
   factory EmpItem.fromJson(Map<String, dynamic> json) => EmpItem(
         year: json['year'] ?? 0,
-        month: json['month'], // may be null
+        month: json['month'],
         totalJoined: json['total_joined'] ?? 0,
         totalResigned: json['total_resigned'] ?? 0,
+
+        joinedMale: json['joined_male'] ?? 0,
+        joinedFemale: json['joined_female'] ?? 0,
+        resignedMale: json['resigned_male'] ?? 0,
+        resignedFemale: json['resigned_female'] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
         'year': year,
-        if (month != null) 'month': month, // only send if not null
+        if (month != null) 'month': month,
         'total_joined': totalJoined,
         'total_resigned': totalResigned,
+        'joined_male': joinedMale,
+        'joined_female': joinedFemale,
+        'resigned_male': resignedMale,
+        'resigned_female': resignedFemale,
       };
 }

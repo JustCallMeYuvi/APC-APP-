@@ -439,6 +439,11 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
   int _totalJoined = 0; // for right card
   int _totalResigned = 0; // for right card
 
+  int _joinedMale = 0;
+  int _joinedFemale = 0;
+  int _resignedMale = 0;
+  int _resignedFemale = 0;
+
   int _minYear = 0;
   int _maxYear = 0;
 
@@ -565,8 +570,8 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
       _error = null;
     });
 
-    // const baseUrl = 'http://10.3.0.70:9042/api/HR/EmpCount';
-    final baseUrl = '${ApiHelper.baseUrl}EmpCount';
+    const baseUrl = 'http://10.3.0.70:9042/api/HR/EmpCount';
+    // final baseUrl = '${ApiHelper.baseUrl}EmpCount';
     late Uri uri;
 
     final apiType = _typeApiMap[_selectedType] ?? 'allyears';
@@ -628,6 +633,18 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
           final int resignedSum =
               items.fold(0, (sum, e) => sum + (e.totalResigned));
 
+          final int joinedMaleSum =
+              items.fold(0, (sum, e) => sum + e.joinedMale);
+
+          final int joinedFemaleSum =
+              items.fold(0, (sum, e) => sum + e.joinedFemale);
+
+          final int resignedMaleSum =
+              items.fold(0, (sum, e) => sum + e.resignedMale);
+
+          final int resignedFemaleSum =
+              items.fold(0, (sum, e) => sum + e.resignedFemale);
+
           // -------------------------
           // CALCULATE MIN / MAX YEAR (for All Years mode)
           // -------------------------
@@ -647,6 +664,10 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
             _totalActive = empCount.totalActive;
             _totalJoined = joinedSum;
             _totalResigned = resignedSum;
+            _joinedMale = joinedMaleSum;
+            _joinedFemale = joinedFemaleSum;
+            _resignedMale = resignedMaleSum;
+            _resignedFemale = resignedFemaleSum;
 
             // update global min/max only in All Years mode
             if (apiType == 'allyears') {
@@ -880,7 +901,7 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
               ),
 
               SizedBox(
-                height: 200,
+                height: 300,
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _error != null
@@ -913,7 +934,9 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
                                       ),
                                       child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           const SizedBox(height: 6),
 
@@ -1004,28 +1027,136 @@ class _EmpCountScreenState extends State<EmpCountScreen> {
                                   const SizedBox(width: 12),
 
                                   // RIGHT TWO BOXES
+                                  // Expanded(
+                                  //   flex: 1,
+                                  //   child: Column(
+                                  //     children: [
+                                  //       Expanded(
+                                  //         child: _buildStatCard(
+                                  //           'No. of Joiners',
+                                  //           _totalJoined.toString(),
+                                  //           Colors.blue.shade50,
+                                  //         ),
+                                  //       ),
+                                  //       const SizedBox(height: 8),
+                                  //       Expanded(
+                                  //         child: _buildStatCard(
+                                  //           'No. of Resignations',
+                                  //           _totalResigned.toString(),
+                                  //           Colors.red.shade50,
+                                  //         ),
+                                  //       ),
+                                  //     ],
+                                  //   ),
+                                  // ),
+
                                   Expanded(
                                     flex: 1,
                                     child: Column(
                                       children: [
-                                        Expanded(
-                                          child: _buildStatCard(
-                                            'No. of Joiners',
-                                            _totalJoined.toString(),
-                                            Colors.blue.shade50,
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue.shade50,
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                'No. of Joiners',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.blue.shade800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                _totalJoined.toString(),
+                                                style: const TextStyle(
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const Divider(),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const Text('Male'),
+                                                  Text(_joinedMale.toString()),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const Text('Female'),
+                                                  Text(
+                                                      _joinedFemale.toString()),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        const SizedBox(height: 8),
-                                        Expanded(
-                                          child: _buildStatCard(
-                                            'No. of Resignations',
-                                            _totalResigned.toString(),
-                                            Colors.red.shade50,
+                                        const SizedBox(height: 10),
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade50,
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                'No. of Resignations',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.red.shade800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                _totalResigned.toString(),
+                                                style: const TextStyle(
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const Divider(),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const Text('Male'),
+                                                  Text(
+                                                      _resignedMale.toString()),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const Text('Female'),
+                                                  Text(_resignedFemale
+                                                      .toString()),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
               ),

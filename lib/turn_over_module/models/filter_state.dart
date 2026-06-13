@@ -17,7 +17,8 @@ class FilterState {
 
   const FilterState({
     this.subView = SubView.yearwise,
-    this.fromYear = 2006,
+    // this.fromYear = 2006,
+     this.fromYear = 2026,
     this.toYear = 2026,
     this.monthYear = 2025,
     this.fromMonth = 1,

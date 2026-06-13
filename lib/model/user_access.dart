@@ -183,6 +183,8 @@ IconData getIconForPage(Page page) {
       return Icons.person_off_rounded;
     case 'Turn Over':
       return Icons.people_alt_outlined;
+    case 'Actual KMS Entry':
+      return Icons.speed;
     default:
       return Icons.help_outline; // Fallback icon
   }
